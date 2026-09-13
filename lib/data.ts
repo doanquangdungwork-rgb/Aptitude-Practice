@@ -16,9 +16,9 @@ export const pillarMap: Record<string, string> = {
 };
 
 export function questionsForTest(testId: string) {
-  return allQuestions.filter((q) => q.id.startsWith(testId + "_"));
+  return allQuestions.filter((q: any) => q.testId === testId || q.id.startsWith(testId + "_"));
 }
 
 export function questionsForPillar(pillar: string, subtype?: string) {
-  return allQuestions.filter((q) => q.p === pillar && (!subtype || q.s === subtype));
+  return allQuestions.filter((q: any) => q.p === pillar && (!subtype || q.s === subtype));
 }

@@ -22,7 +22,6 @@ export default function ShareCard({kind,result}:Props){
  x.fillStyle="#302d36";x.font=`800 ${34*s}px Arial`;x.fillText("aptitude.",l,78*s);x.fillStyle="#77717f";x.font=`700 ${17*s}px Arial`;x.fillText(kind==="profile"?"A QUIET PLACE TO PRACTICE":kind==="dashboard"?"MY PRACTICE JOURNEY":"TEST RESULT",l,122*s);
  if(kind==="profile"){
   x.fillStyle="#302d36";x.font=`900 ${58*s}px Arial`;x.fillText("Practice with clarity.",l,245*s);x.fillStyle="#77717f";x.font=`500 ${27*s}px Arial`;x.fillText("Solve · review · progress · repeat",l,292*s);
-  const cards=["30 curated tests","755 questions","6 reasoning pillars"];cards.forEach((t,i)=>{const xx=l+i*wide?0:0});
   const cy=wide?370:610,cw=wide?300:470,ch=wide?105:155;["30 curated tests","755 questions","6 reasoning pillars"].forEach((t,i)=>{const xx=l+i*(cw+20*s);roundRect(x,xx,cy,cw,ch,22*s);x.fillStyle="rgba(255,255,255,.62)";x.fill();x.fillStyle="#4c4653";x.font=`800 ${20*s}px Arial`;x.fillText(t,xx+24*s,cy+62*s)});
  } else if(kind==="dashboard"){
   const top=wide?195:300;x.fillStyle="#302d36";x.font=`900 ${76*s}px Arial`;x.fillText(String(stats.streak),l,top+60*s);x.fillStyle="#77717f";x.font=`700 ${24*s}px Arial`;x.fillText("DAY STREAK",l+155*s,top+60*s);

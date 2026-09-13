@@ -25,3 +25,12 @@ export function setWrongQuestions(ids: string[]) { write("wrong", Array.from(new
 
 export function getStarredTests(): string[] { return read<string[]>("starred-tests", []); }
 export function toggleStarredTest(testId: string) { const current = getStarredTests(); const next = current.includes(testId) ? current.filter((id) => id !== testId) : [...current, testId]; write("starred-tests", next); return next.includes(testId); }
+
+export function getPracticeDays(userId: string): string[] { return read<string[]>(`practice-days:${userId}`, []); }
+export function recordPracticeDay(userId: string, date = new Date()) {
+  const day = new Date(date);
+  const isoDay = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+  const current = getPracticeDays(userId);
+  const next = Array.from(new Set([...current, isoDay])).sort();
+  write(`practice-days:${userId}`, next);
+}

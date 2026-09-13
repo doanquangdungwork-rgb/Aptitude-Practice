@@ -1,0 +1,11 @@
+create table if not exists public.profiles (id uuid primary key references auth.users(id) on delete cascade, display_name text, created_at timestamptz default now());
+create table if not exists public.attempts (id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, test_id text, pillar text, started_at timestamptz default now(), completed_at timestamptz, score numeric, correct_count int default 0, question_count int default 0);
+create table if not exists public.attempt_answers (id uuid primary key default gen_random_uuid(), attempt_id uuid not null references public.attempts(id) on delete cascade, question_id text not null, selected_answer text, is_correct boolean, answered_at timestamptz default now(), unique(attempt_id,question_id));
+create table if not exists public.bookmarks (user_id uuid not null references auth.users(id) on delete cascade, question_id text not null, created_at timestamptz default now(), primary key(user_id,question_id));
+create table if not exists public.wrong_questions (user_id uuid not null references auth.users(id) on delete cascade, question_id text not null, last_attempt_id uuid references public.attempts(id) on delete set null, created_at timestamptz default now(), primary key(user_id,question_id));
+alter table public.profiles enable row level security; alter table public.attempts enable row level security; alter table public.attempt_answers enable row level security; alter table public.bookmarks enable row level security; alter table public.wrong_questions enable row level security;
+create policy "own profile" on public.profiles for all using (auth.uid()=id) with check (auth.uid()=id);
+create policy "own attempts" on public.attempts for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own answers" on public.attempt_answers for all using (exists(select 1 from public.attempts a where a.id=attempt_id and a.user_id=auth.uid())) with check (exists(select 1 from public.attempts a where a.id=attempt_id and a.user_id=auth.uid()));
+create policy "own bookmarks" on public.bookmarks for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own wrong questions" on public.wrong_questions for all using (auth.uid()=user_id) with check (auth.uid()=user_id);

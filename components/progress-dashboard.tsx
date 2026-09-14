@@ -15,43 +15,102 @@ const monthLabel=(key:string)=>{const [y,m]=key.split("-").map(Number);return ne
 const yearFromKey=(key:string)=>Number(key.slice(0,4));
 
 function currentStreak(days:string[]){
- const set=new Set(days);
- const today=new Date();
- let cursor=new Date(today.getFullYear(),today.getMonth(),today.getDate());
- if(!set.has(toDateKey(cursor))) cursor.setDate(cursor.getDate()-1);
- let streak=0;
- while(set.has(toDateKey(cursor))){streak++;cursor.setDate(cursor.getDate()-1);}
- return streak;
+  const set=new Set(days);
+  const today=new Date();
+  let cursor=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  if(!set.has(toDateKey(cursor))) cursor.setDate(cursor.getDate()-1);
+  let streak=0;
+  while(set.has(toDateKey(cursor))){streak++;cursor.setDate(cursor.getDate()-1);}
+  return streak;
 }
 
 function StreakChart({userId}:{userId:string}){
- const now=new Date();
- const [selectedMonth,setSelectedMonth]=useState(monthKey(now));
- const [days,setDays]=useState<string[]>([]);
- useEffect(()=>setDays(getPracticeDays(userId)),[userId]);
- const years=useMemo(()=>{const found=days.map(yearFromKey);return Array.from(new Set([...found,now.getFullYear()])).sort((a,b)=>b-a)},[days]);
- const [year,month]=selectedMonth.split("-").map(Number);
- const daysInMonth=new Date(year,month,0).getDate();
- const active=new Set(days.filter(d=>d.startsWith(selectedMonth)));
- const streak=currentStreak(days);
- const completedDays=active.size;
- const monthOptions=Array.from({length:12},(_,i)=>({value:`${year}-${pad(i+1)}`,label:new Date(year,i,1).toLocaleDateString("en-US",{month:"long"})}));
- return <section className="dream-surface rounded-[2.25rem] p-7 md:p-9"><div className="relative z-10"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow">Consistency</p><div className="mt-2 flex items-end gap-3"><h2 className="text-4xl font-black tracking-[-.045em]">{streak}</h2><span className="mb-1 text-sm font-bold text-[#85818b]">day streak</span></div><p className="mt-2 text-sm text-[#77747d]">Finish at least one test in a day to keep your streak alive.</p></div><div className="flex gap-2"><select value={month} onChange={e=>setSelectedMonth(`${year}-${pad(Number(e.target.value))}`)} className="rounded-full border border-[#e2dce7] bg-white/75 px-4 py-2.5 text-sm font-bold text-[#666071] outline-none"><option value={1}>January</option><option value={2}>February</option><option value={3}>March</option><option value={4}>April</option><option value={5}>May</option><option value={6}>June</option><option value={7}>July</option><option value={8}>August</option><option value={9}>September</option><option value={10}>October</option><option value={11}>November</option><option value={12}>December</option></select><select value={year} onChange={e=>setSelectedMonth(`${e.target.value}-${pad(month)}`)} className="rounded-full border border-[#e2dce7] bg-white/75 px-4 py-2.5 text-sm font-bold text-[#666071] outline-none">{years.map(y=><option key={y} value={y}>{y}</option>)}</select></div></div><div className="mt-8 rounded-[1.75rem] border border-white/70 bg-white/45 p-5 md:p-6"><div className="mb-5 flex items-center justify-between gap-4"><div><div className="text-sm font-black">{monthLabel(selectedMonth)} {year}</div><div className="mt-1 text-xs text-[#918c96]">{completedDays} of {daysInMonth} days active</div></div><div className="flex items-center gap-2 text-xs font-semibold text-[#918c96]"><span className="h-2.5 w-2.5 rounded-full bg-[#dcd6e8]"/>Practice day</div></div><div className="grid grid-cols-7 gap-x-2 gap-y-5 sm:gap-x-4"><div className="text-center text-[10px] font-black uppercase tracking-wider text-[#aaa5ae]">M</div><div className="text-center text-[10px] font-black uppercase tracking-wider text-[#aaa5ae]">T</div><div className="text-center text-[10px] font-black uppercase tracking-wider text-[#aaa5ae]">W</div><div className="text-center text-[10px] font-black uppercase tracking-wider text-[#aaa5ae]">T</div><div className="text-center text-[10px] font-black uppercase tracking-wider text-[#aaa5ae]">F</div><div className="text-center text-[10px] font-black uppercase tracking-wider text-[#aaa5ae]">S</div><div className="text-center text-[10px] font-black uppercase tracking-wider text-[#aaa5ae]">S</div>{Array.from({length:daysInMonth},(_,i)=>{const day=i+1;const date=new Date(year,month-1,day);const activeDay=active.has(toDateKey(date));return <div key={day} className="flex flex-col items-center gap-1.5"><span className={`h-4 w-4 rounded-full border transition ${activeDay?"border-[#9b8daf] bg-gradient-to-br from-[#c9b9dc] via-[#b9cde0] to-[#e5b9c8] shadow-[0_3px_10px_rgba(137,115,153,.2)]":"border-[#ddd9df] bg-white/70"}`} title={`${monthLabel(selectedMonth)} ${day}${activeDay?" · completed":" · no test completed"}`}/><span className={`text-[10px] font-semibold ${activeDay?"text-[#6f6878]":"text-[#aaa5ae]"}`}>{day}</span></div>})}</div></div><div className="mt-5 flex flex-wrap gap-5 text-xs font-semibold text-[#85818b]"><span><b className="text-[#5d5668]">{completedDays}</b> active days</span><span><b className="text-[#5d5668]">{days.length}</b> total practice days</span></div></div></section>;
+  const now=new Date();
+  const [selectedMonth,setSelectedMonth]=useState(monthKey(now));
+  const [days,setDays]=useState<string[]>([]);
+  useEffect(()=>setDays(getPracticeDays(userId)),[userId]);
+  const years=useMemo(()=>{const found=days.map(yearFromKey);return Array.from(new Set([...found,now.getFullYear()])).sort((a,b)=>b-a)},[days]);
+  const [year,month]=selectedMonth.split("-").map(Number);
+  const daysInMonth=new Date(year,month,0).getDate();
+  const active=new Set(days.filter(d=>d.startsWith(selectedMonth)));
+  const streak=currentStreak(days);
+  const completedDays=active.size;
+
+  return <section className="dash-panel dash-panel--streak">
+    <div className="dash-panel-inner">
+      <div className="dash-head">
+        <div>
+          <p className="dash-kicker">01 · Consistency</p>
+          <div className="mt-3 flex items-end gap-3"><span className="dash-streak-number">{streak}</span><span className="dash-streak-unit">day streak</span></div>
+          <p className="dash-copy">Finish at least one test in a day to keep your streak alive.</p>
+        </div>
+        <div className="dash-head-right">
+          <select value={month} onChange={e=>setSelectedMonth(`${year}-${pad(Number(e.target.value))}`)} className="dash-select"><option value={1}>January</option><option value={2}>February</option><option value={3}>March</option><option value={4}>April</option><option value={5}>May</option><option value={6}>June</option><option value={7}>July</option><option value={8}>August</option><option value={9}>September</option><option value={10}>October</option><option value={11}>November</option><option value={12}>December</option></select>
+          <select value={year} onChange={e=>setSelectedMonth(`${e.target.value}-${pad(month)}`)} className="dash-select">{years.map(y=><option key={y} value={y}>{y}</option>)}</select>
+        </div>
+      </div>
+      <div className="dash-calendar">
+        <div className="dash-calendar-head"><div><div className="dash-calendar-title">{monthLabel(selectedMonth)} {year}</div><div className="dash-calendar-meta">{completedDays} of {daysInMonth} days active</div></div><div className="dash-calendar-legend"><i/>Practice day</div></div>
+        <div className="dash-week"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+        <div className="dash-days">
+          {Array.from({length:daysInMonth},(_,i)=>{const day=i+1;const date=new Date(year,month-1,day);const activeDay=active.has(toDateKey(date));return <div key={day} className="dash-day"><span className={`dash-dot ${activeDay?"active":""}`} title={`${monthLabel(selectedMonth)} ${day}${activeDay?" · completed":" · no test completed"}`}/><span className={`dash-day-number ${activeDay?"active":""}`}>{day}</span></div>})}
+        </div>
+        <div className="dash-foot"><span><b>{completedDays}</b> active days</span><span><b>{days.length}</b> total practice days</span></div>
+      </div>
+    </div>
+  </section>;
 }
 
 export default function ProgressDashboard({compact=false}:{compact?:boolean}){
- const [attempts,setAttempts]=useState<any[]>([]); const [bookmarks,setBookmarks]=useState(0); const [wrong,setWrong]=useState(0); const [userId,setUserId]=useState("");
- useEffect(()=>{setAttempts(getAttempts());setBookmarks(getBookmarks().length);setWrong(getWrongQuestions().length);supabase?.auth.getSession().then(({data})=>setUserId(data.session?.user?.id||""));const sub=supabase?.auth.onAuthStateChange((_e,session)=>setUserId(session?.user?.id||"")).data.subscription;return()=>sub?.unsubscribe()},[]);
- const latest=useMemo(()=>{const map=new Map<string,any>();attempts.filter(a=>a.completedAt).sort((a,b)=>new Date(b.completedAt).getTime()-new Date(a.completedAt).getTime()).forEach(a=>{if(!map.has(a.testId))map.set(a.testId,a)});return map},[attempts]);
- const completed=[...latest.values()];
- const stats=useMemo(()=>{let answered=0,correct=0;latest.forEach(a=>{questionsForTest(a.testId).forEach((q:any)=>{if(a.answers?.[q.id]){answered++;if(norm(a.answers[q.id])===norm(q.a))correct++;}})});const total=appCatalog.stats.question_count;return {answered,correct,accuracy:pct(correct,answered),coverage:pct(answered,total)}},[latest]);
- const pillars=useMemo(()=>appCatalog.pillars.map((p:any)=>{let answered=0,correct=0;latest.forEach((a:any)=>{const test=appCatalog.tests.find((t:any)=>t.test_id===a.testId);if(test?.pillar===p.id)questionsForTest(a.testId).forEach((q:any)=>{if(a.answers?.[q.id]){answered++;if(norm(a.answers[q.id])===norm(q.a))correct++;}})});return {...p,answered,correct,accuracy:pct(correct,answered)};}),[latest]);
- if(compact)return <section className="soft-card rounded-[2rem] p-7 md:p-8"><div className="flex items-end justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#8a9098]">Your progress</p><h2 className="mt-2 text-2xl font-black">Keep your momentum</h2></div><Link href="/dashboard" className="text-sm font-bold text-[#69628a]">Full dashboard →</Link></div><div className="mt-7 grid gap-3 sm:grid-cols-3"><div className="rounded-2xl bg-[#f0edf7] p-5"><div className="text-2xl font-black">{completed.length}/{appCatalog.tests.length}</div><div className="mt-1 text-xs font-semibold text-[#737982]">Tests completed</div></div><div className="rounded-2xl bg-[#eaf2f7] p-5"><div className="text-2xl font-black">{stats.accuracy}%</div><div className="mt-1 text-xs font-semibold text-[#737982]">Accuracy</div></div><div className="rounded-2xl bg-[#edf3ee] p-5"><div className="text-2xl font-black">{stats.answered}/{appCatalog.stats.question_count}</div><div className="mt-1 text-xs font-semibold text-[#737982]">Questions answered</div></div></div></section>;
- return <div className="space-y-8">
-  {userId?<StreakChart userId={userId}/>:<section className="dream-surface rounded-[2.25rem] p-7 md:p-9"><div className="relative z-10"><p className="eyebrow">Consistency</p><h2 className="mt-2 text-3xl font-black tracking-[-.04em]">Build your practice streak</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[#77747d]">Sign in with Google and finish at least one test on a day to start collecting your daily dots and streak.</p><Link href="/auth" className="mt-6 inline-block rounded-full bg-[#69617f] px-5 py-2.5 text-sm font-bold text-white">Sign in →</Link></div></section>}
-  <section className="soft-card rounded-[2.25rem] p-7 md:p-9"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#8a9098]">Overview</p><h1 className="mt-2 text-4xl font-black tracking-[-.04em]">Your progress</h1><p className="mt-2 text-sm text-[#737982]">A clear view of completion, accuracy and where to focus next.</p></div><div className="text-right"><div className="text-4xl font-black">{stats.coverage}%</div><div className="text-xs font-bold text-[#8a9098]">of question bank answered</div></div></div><div className="mt-7 h-2 overflow-hidden rounded-full bg-[#eceae5]"><div className="h-full rounded-full bg-[#8f89aa]" style={{width:`${stats.coverage}%`}}/></div><div className="mt-7 grid gap-3 sm:grid-cols-4"><div className="rounded-2xl bg-[#f0edf7] p-5"><b className="text-2xl">{completed.length}/{appCatalog.tests.length}</b><div className="mt-1 text-xs text-[#737982]">Tests completed</div></div><div className="rounded-2xl bg-[#eaf2f7] p-5"><b className="text-2xl">{stats.answered}/{appCatalog.stats.question_count}</b><div className="mt-1 text-xs text-[#737982]">Questions answered</div></div><div className="rounded-2xl bg-[#edf3ee] p-5"><b className="text-2xl">{stats.accuracy}%</b><div className="mt-1 text-xs text-[#737982]">Overall accuracy</div></div><div className="rounded-2xl bg-[#f5eee5] p-5"><b className="text-2xl">{wrong}</b><div className="mt-1 text-xs text-[#737982]">Wrong to review</div></div></div></section>
-  <section className="soft-card rounded-[2.25rem] p-7 md:p-9"><div className="flex items-end justify-between"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#8a9098]">By reasoning type</p><h2 className="mt-2 text-2xl font-black">Strengths & gaps</h2></div><span className="text-xs font-semibold text-[#8a9098]">Answered · accuracy</span></div><div className="mt-7 space-y-5">{pillars.map((p:any)=><div key={p.id}><div className="flex justify-between gap-4 text-sm"><div><span className="font-bold">{p.name}</span><span className="ml-2 text-[#9a9ea4]">{p.answered} answered</span></div><b>{p.accuracy}%</b></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-[#eeece7]"><div className="h-full rounded-full bg-[#9a94b4]" style={{width:`${p.accuracy}%`}}/></div></div>)}</div></section>
-  <section className="soft-card rounded-[2.25rem] p-7 md:p-9"><div className="flex items-end justify-between"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#8a9098]">All tests</p><h2 className="mt-2 text-2xl font-black">30-test progress</h2></div><Link href="/tests" className="text-sm font-bold text-[#69628a]">Practice tests →</Link></div><div className="mt-6 divide-y divide-[#eeeae5]">{appCatalog.tests.map((t:any,i:number)=>{const a=latest.get(t.test_id);const qs=questionsForTest(t.test_id);let c=0;let ans=0;if(a){qs.forEach((q:any)=>{if(a.answers?.[q.id]){ans++;if(norm(a.answers[q.id])===norm(q.a))c++;}})}const accuracy=pct(c,ans);return <Link href={`/tests/${t.test_id}`} key={t.test_id} className="group flex items-center gap-4 py-4"><span className="w-10 text-xs font-black text-[#9a9ea4]">{String(i+1).padStart(2,"0")}</span><div className="min-w-0 flex-1"><div className="truncate text-sm font-bold">{t.title.replaceAll("_"," ")}</div><div className="mt-1 text-xs text-[#8a9098]">{ans?`${c}/${qs.length} correct · ${accuracy}% accuracy`:"Not started"}</div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#eeece7]"><div className="h-full rounded-full bg-[#879d8b]" style={{width:`${a?accuracy:0}%`}}/></div></div><span className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-black ${a?"bg-[#edf3ee] text-[#667d6c]":"bg-[#f7f5f1] text-[#92969c]"}`}>{a?"Completed":"Not started"}</span></Link>})}</div></section>
-  <div className="grid gap-4 md:grid-cols-2"><Link href="/bookmarks" className="soft-card rounded-[2rem] p-6"><div className="text-xs font-black uppercase tracking-[.16em] text-[#8a9098]">Saved</div><div className="mt-2 text-2xl font-black">{bookmarks} bookmarks</div><p className="mt-1 text-sm text-[#737982]">Questions you chose to revisit.</p></Link><Link href="/tests" className="soft-card rounded-[2rem] p-6"><div className="text-xs font-black uppercase tracking-[.16em] text-[#8a9098]">Next</div><div className="mt-2 text-2xl font-black">Continue practicing</div><p className="mt-1 text-sm text-[#737982]">Pick an unfinished test and keep going.</p></Link></div>
- </div>;
+  const [attempts,setAttempts]=useState<any[]>([]);
+  const [bookmarks,setBookmarks]=useState(0);
+  const [wrong,setWrong]=useState(0);
+  const [userId,setUserId]=useState("");
+
+  useEffect(()=>{
+    setAttempts(getAttempts());
+    setBookmarks(getBookmarks().length);
+    setWrong(getWrongQuestions().length);
+    supabase?.auth.getSession().then(({data})=>setUserId(data.session?.user?.id||""));
+    const sub=supabase?.auth.onAuthStateChange((_e,session)=>setUserId(session?.user?.id||"")).data.subscription;
+    return()=>sub?.unsubscribe();
+  },[]);
+
+  const latest=useMemo(()=>{
+    const map=new Map<string,any>();
+    attempts.filter(a=>a.completedAt).sort((a,b)=>new Date(b.completedAt).getTime()-new Date(a.completedAt).getTime()).forEach(a=>{if(!map.has(a.testId))map.set(a.testId,a)});
+    return map;
+  },[attempts]);
+  const completed=[...latest.values()];
+  const stats=useMemo(()=>{
+    let answered=0,correct=0;
+    latest.forEach(a=>questionsForTest(a.testId).forEach((q:any)=>{if(a.answers?.[q.id]){answered++;if(norm(a.answers[q.id])===norm(q.a))correct++;}}));
+    const total=appCatalog.stats.question_count;
+    return {answered,correct,accuracy:pct(correct,answered),coverage:pct(answered,total)};
+  },[latest]);
+  const pillars=useMemo(()=>appCatalog.pillars.map((p:any)=>{
+    let answered=0,correct=0;
+    latest.forEach((a:any)=>{const test=appCatalog.tests.find((t:any)=>t.test_id===a.testId);if(test?.pillar===p.id)questionsForTest(a.testId).forEach((q:any)=>{if(a.answers?.[q.id]){answered++;if(norm(a.answers[q.id])===norm(q.a))correct++;}})});
+    return {...p,answered,correct,accuracy:pct(correct,answered)};
+  }),[latest]);
+
+  if(compact)return <section className="soft-card rounded-[2rem] p-7 md:p-8"><div className="flex items-end justify-between gap-4"><div><p className="eyebrow">Your progress</p><h2 className="mt-2 text-2xl font-medium">Keep your momentum</h2></div><Link href="/dashboard" className="action-link">Full dashboard →</Link></div><div className="mt-7 grid gap-3 sm:grid-cols-3"><div className="pastel-rose rounded-xl p-5"><div className="text-2xl font-medium">{completed.length}/{appCatalog.tests.length}</div><div className="mt-1 text-xs text-[#99968f]">Tests completed</div></div><div className="pastel-blue rounded-xl p-5"><div className="text-2xl font-medium">{stats.accuracy}%</div><div className="mt-1 text-xs text-[#99968f]">Accuracy</div></div><div className="pastel-mint rounded-xl p-5"><div className="text-2xl font-medium">{stats.answered}/{appCatalog.stats.question_count}</div><div className="mt-1 text-xs text-[#99968f]">Questions answered</div></div></div></section>;
+
+  return <div className="editorial-dashboard">
+    {userId?<StreakChart userId={userId}/>:<section className="dash-panel dash-panel--streak"><div className="dash-panel-inner"><p className="dash-kicker">01 · Consistency</p><h2 className="dash-title">Build your practice streak.</h2><p className="dash-copy max-w-2xl">Sign in with Google and finish at least one test on a day to start collecting your daily dots and streak.</p><Link href="/auth" className="dash-guest">Sign in →</Link></div></section>}
+
+    <section className="dash-panel dash-panel--overview">
+      <div className="dash-panel-inner">
+        <div className="dash-overview"><div><p className="dash-kicker">02 · Overview</p><h1 className="dash-title">Your progress.</h1><p className="dash-copy">A clear view of completion, accuracy and where to focus next.</p></div><div className="dash-coverage"><div className="dash-coverage-number">{stats.coverage}%</div><div className="dash-coverage-label">of question bank answered</div></div></div>
+        <div className="dash-bar"><div className="dash-bar-fill" style={{width:`${stats.coverage}%`}}/></div>
+        <div className="dash-stat-grid"><div className="dash-stat"><div className="dash-stat-value">{completed.length}/{appCatalog.tests.length}</div><div className="dash-stat-label">Tests completed</div></div><div className="dash-stat"><div className="dash-stat-value">{stats.answered}/{appCatalog.stats.question_count}</div><div className="dash-stat-label">Questions answered</div></div><div className="dash-stat"><div className="dash-stat-value">{stats.accuracy}%</div><div className="dash-stat-label">Overall accuracy</div></div><div className="dash-stat"><div className="dash-stat-value">{wrong}</div><div className="dash-stat-label">Wrong to review</div></div></div>
+      </div>
+    </section>
+
+    <section className="dash-panel dash-panel--pillars"><div className="dash-panel-inner"><div className="dash-head"><div><p className="dash-kicker">03 · Reasoning profile</p><h2 className="dash-title">Strengths & gaps.</h2></div><span className="dash-calendar-meta">Answered · accuracy</span></div><div className="dash-pillar-list">{pillars.map((p:any)=><div key={p.id} className="dash-pillar"><div className="dash-pillar-head"><div><span className="dash-pillar-name">{p.name}</span><span className="dash-pillar-meta"> · {p.answered} answered</span></div><span className="dash-pillar-score">{p.accuracy}%</span></div><div className="dash-pillar-track"><div className="dash-pillar-fill" style={{width:`${p.accuracy}%`}}/></div></div>)}</div></div></section>
+
+    <section className="dash-panel dash-panel--tests"><div className="dash-panel-inner"><div className="dash-head"><div><p className="dash-kicker">04 · Practice library</p><h2 className="dash-title">30-test progress.</h2></div><Link href="/tests" className="dash-link">Practice tests →</Link></div><div className="dash-test-list">{appCatalog.tests.map((t:any,i:number)=>{const a=latest.get(t.test_id);const qs=questionsForTest(t.test_id);let c=0,ans=0;if(a)qs.forEach((q:any)=>{if(a.answers?.[q.id]){ans++;if(norm(a.answers[q.id])===norm(q.a))c++;}});const accuracy=pct(c,ans);return <Link href={`/tests/${t.test_id}`} key={t.test_id} className="dash-test-row"><span className="dash-test-number">{String(i+1).padStart(2,"0")}</span><div><div className="dash-test-name">{t.title.replaceAll("_"," ")}</div><div className="dash-test-meta">{ans?`${c}/${qs.length} correct · ${accuracy}% accuracy`:"Not started"}</div><div className="dash-test-track"><div className="dash-test-fill" style={{width:`${a?accuracy:0}%`}}/></div></div><span className={`dash-test-status ${a?"done":""}`}>{a?"Completed":"Not started"}</span></Link>})}</div></div></section>
+
+    <div className="dash-bottom-grid"><Link href="/bookmarks" className="dash-action"><div className="dash-action-kicker">05 · Saved</div><div className="dash-action-title">{bookmarks} bookmarks.</div><p className="dash-action-copy">Questions you chose to revisit.</p></Link><Link href="/tests" className="dash-action"><div className="dash-action-kicker">06 · Next</div><div className="dash-action-title">Continue practicing.</div><p className="dash-action-copy">Pick an unfinished test and keep going.</p></Link></div>
+  </div>;
 }

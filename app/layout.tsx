@@ -1,4 +1,22 @@
 import "./globals.css";
+import "./nav.css";
 import Link from "next/link";
 import AccountMenu from "../components/account-menu";
-export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body><header className="site-header"><div className="nav-shell"><Link href="/" className="brand">Aptitude Lab</Link><nav className="main-nav"><Link href="/tests">Practice</Link><Link href="/dashboard">Progress</Link></nav><nav className="mobile-nav hidden max-[900px]:flex items-center gap-4 ml-auto mr-3 text-xs font-bold text-[#8f8d87]"><Link href="/tests">Practice</Link><Link href="/dashboard">Progress</Link></nav><AccountMenu /></div></header><main>{children}</main></body></html>}
+
+export default function RootLayout({children}:{children:React.ReactNode}){
+  return <html lang="en"><body>
+    <header className="site-header">
+      <div className="nav-shell">
+        <Link href="/" className="brand" aria-label="Aptitude with Derek">aptitude</Link>
+        <nav className="main-nav" aria-label="Primary navigation">
+          <Link href="/tests">Practice Tests</Link>
+          <Link href="/practice">Practice by Type</Link>
+          <Link href="/dashboard">Progression Dashboard</Link>
+          <Link href="/bookmarks">Bookmark</Link>
+        </nav>
+        <AccountMenu />
+      </div>
+    </header>
+    <main>{children}</main>
+  </body></html>
+}

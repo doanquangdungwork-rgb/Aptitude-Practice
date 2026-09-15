@@ -1,5 +1,6 @@
 import { allQuestions, appCatalog } from "./data";
 import type { CanonicalQuestion, CanonicalTest, ContentBlock } from "./canonical-engine";
+import canonicalTest001 from "../data/canonical/TEST_001.json";
 
 type LegacyOption = string | { id?: string; text?: string; label?: string; option?: string };
 type LegacyQuestion = {
@@ -77,6 +78,38 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
   };
 }
 
+function normalizeCanonicalTest(raw: unknown): CanonicalTest | null {
+  if (!raw || typeof raw !== "object") return null;
+  const test = raw as Partial<CanonicalTest>;
+  if (typeof test.id !== "string" || !Array.isArray(test.questions)) return null;
+
+  return {
+    id: test.id,
+    title: typeof test.title === "string" ? test.title : test.id,
+    taxonomy: {
+      pillar: String(test.taxonomy?.pillar ?? ""),
+      subtype: test.taxonomy?.subtype ? String(test.taxonomy.subtype) : undefined,
+    },
+    timing: test.timing ?? { mode: "none" },
+    questions: test.questions.map((q) => ({
+      ...q,
+      id: `${test.id}_${q.id}`,
+      number: Number(q.number),
+      subquestion: q.subquestion ?? null,
+      options: Array.isArray(q.options) ? q.options : [],
+      prompt: q.prompt ?? { blocks: [] },
+    })),
+  };
+}
+
+// Canonical files are intentionally allowed to override the legacy question bank.
+// As additional TEST_XXX.json files are generated, they can be added here without
+// changing the test runner itself. Until then, every catalog test still falls back
+// to the existing legacy source instead of becoming blank.
+const canonicalOverrides = new Map<string, CanonicalTest>();
+const test001 = normalizeCanonicalTest(canonicalTest001);
+if (test001) canonicalOverrides.set(test001.id, test001);
+
 const grouped = new Map<string, LegacyQuestion[]>();
 for (const rawQuestion of allQuestions as LegacyQuestion[]) {
   const id = String(rawQuestion.testId ?? rawQuestion.id.split("_")[0]);
@@ -85,7 +118,7 @@ for (const rawQuestion of allQuestions as LegacyQuestion[]) {
   grouped.set(id, list);
 }
 
-export const canonicalTests: CanonicalTest[] = Array.from(grouped.entries()).map(([id, questions]) => {
+const legacyTests: CanonicalTest[] = Array.from(grouped.entries()).map(([id, questions]) => {
   const catalogTest = appCatalog.tests.find(test => test.test_id === id);
   const first = questions[0];
   return {
@@ -96,6 +129,12 @@ export const canonicalTests: CanonicalTest[] = Array.from(grouped.entries()).map
     questions: questions.map(q => legacyQuestion(id, q)),
   };
 });
+
+const legacyById = new Map(legacyTests.map(test => [test.id, test]));
+
+export const canonicalTests: CanonicalTest[] = appCatalog.tests
+  .map((catalogTest) => canonicalOverrides.get(catalogTest.test_id) ?? legacyById.get(catalogTest.test_id))
+  .filter((test): test is CanonicalTest => Boolean(test));
 
 export function questionsForEngine(testId: string): CanonicalQuestion[] {
   return canonicalTests.find(test => test.id === testId)?.questions ?? [];

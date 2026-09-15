@@ -2,7 +2,7 @@
 
 import type { ContentBlock, CanonicalOption } from "../lib/canonical-engine";
 
-function Block({ block }: { block: ContentBlock }) {
+function Block({ block, hideImages = false }: { block: ContentBlock; hideImages?: boolean }) {
   if (block.type === "text") {
     return <p className="whitespace-pre-wrap leading-7">{block.value}</p>;
   }
@@ -10,17 +10,18 @@ function Block({ block }: { block: ContentBlock }) {
     return <div aria-hidden className={block.size === "lg" ? "h-8" : block.size === "sm" ? "h-2" : "h-4"} />;
   }
   if (block.type === "image") {
+    if (hideImages) return null;
     return (
       <figure className="overflow-hidden rounded-2xl border border-[#e7e5de] bg-white">
         <img src={`/question-assets/${block.assetRef}.webp`} alt={block.alt || "Question figure"} className="block h-auto max-h-[680px] w-full object-contain" />
       </figure>
     );
   }
-  return <div className="space-y-3">{block.blocks.map((child, i) => <Block key={i} block={child} />)}</div>;
+  return <div className="space-y-3">{block.blocks.map((child, i) => <Block key={i} block={child} hideImages={hideImages} />)}</div>;
 }
 
-export function QuestionPrompt({ blocks }: { blocks: ContentBlock[] }) {
-  return <div className="space-y-5">{blocks.map((block, i) => <Block key={i} block={block} />)}</div>;
+export function QuestionPrompt({ blocks, hideImages = false }: { blocks: ContentBlock[]; hideImages?: boolean }) {
+  return <div className="space-y-5">{blocks.map((block, i) => <Block key={i} block={block} hideImages={hideImages} />)}</div>;
 }
 
 export function CanonicalOptions({ options, selected, onSelect }: {

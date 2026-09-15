@@ -1,8 +1,8 @@
 "use client";
-import {useMemo,useState} from "react";
+import {useState} from "react";
 import type {CanonicalQuestion} from "../lib/canonical-engine";
-import {answersMatch,optionLabel} from "../lib/canonical-engine";
-import QuestionContent from "./question-content";
+import {answersMatch} from "../lib/canonical-engine";
+import {QuestionPrompt} from "./question-content";
 import QuestionResponse from "./question-response";
 
 export default function CanonicalTestRunner({questions}:{questions:CanonicalQuestion[]}){
@@ -15,7 +15,7 @@ export default function CanonicalTestRunner({questions}:{questions:CanonicalQues
  return <div className="quiz-shell">
   <div className="quiz-top"><div><div className="text-sm font-bold">Question {q.number}{q.subquestion||""} <span className="font-normal text-[#aaa7a0]">/ {questions.length}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{q.taxonomy?.pillar||"Reasoning"}</div></div></div>
   <div className="quiz-progress"><span style={{width:`${((index+1)/questions.length)*100}%`}}/></div>
-  <article className="quiz-card mt-6"><QuestionContent blocks={q.prompt.blocks}/><QuestionResponse response={q.response} options={q.options} value={value} onChange={setValue}/></article>
+  <article className="quiz-card mt-6"><QuestionPrompt blocks={q.prompt.blocks}/><QuestionResponse response={q.response} options={q.options} value={value} onChange={setValue}/></article>
   <div className="quiz-nav"><button disabled={!index} onClick={()=>setIndex(index-1)} className="outline-action disabled:opacity-30">Previous</button><span className="text-xs text-[#aaa7a0]">{answered?"Answer saved":"Not answered"}</span>{index<questions.length-1?<button onClick={()=>setIndex(index+1)} className="yellow-button">Next →</button>:<span className={`text-xs font-bold ${correct?"text-[#46734b]":"text-[#8a5d51]"}`}>{answered?(correct?"Matches answer key":"Does not match answer key"):"Skipped"}</span>}</div>
  </div>;
 }

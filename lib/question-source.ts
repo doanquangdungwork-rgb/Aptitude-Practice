@@ -1,4 +1,4 @@
-import { allQuestions } from "./data";
+import { allQuestions, appCatalog } from "./data";
 import type { CanonicalQuestion, CanonicalTest, ContentBlock } from "./canonical-engine";
 
 type LegacyOption = string | { id?: string; text?: string; label?: string; option?: string };
@@ -26,28 +26,61 @@ function legacyBlock(value: unknown): ContentBlock {
   return { type: "text", value: String(value ?? "").trim() };
 }
 
+function optionText(option: LegacyOption): string {
+  return String(typeof option === "string" ? option : option.text ?? option.label ?? option.option ?? option.id ?? "").trim();
+}
+
 function inferResponse(q: LegacyQuestion): CanonicalQuestion["response"] {
   const options = Array.isArray(q.o) ? q.o : [];
-  if (/enter the answer|calculate|how many|what percentage|what was the total|how much would/i.test(String(q.t ?? "")) && !options.length) return { type: "numeric" };
+  const text = String(q.t ?? "");
+  const id = String(q.testId ?? "");
+
+  if (/\btrue\s+false\s+cannot\s+say\b/i.test(text)) return { type: "single_choice" };
+  if (["TEST_007", "TEST_008", "TEST_009", "TEST_010"].includes(id)) return { type: "multiple_choice" };
+  if (/enter the answer|calculate|how many|what percentage|what was the total|how much would/i.test(text) && !options.length) return { type: "numeric" };
   return options.length ? { type: "single_choice" } : { type: "text" };
 }
 
-function optionText(option: LegacyOption): string {
-  return String(typeof option === "string" ? option : option.text ?? option.label ?? option.option ?? option.id ?? "").trim();
+function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"], options: { id: string; content: ContentBlock }[]): CanonicalQuestion["answer"] {
+  const rawAnswer = String(q.a ?? "").trim();
+  const text = String(q.t ?? "");
+  const explanation = String(q.explanation ?? "");
+
+  if (response.type === "multiple_choice") {
+    const values = rawAnswer.split(/[,|]/).map(v => v.trim()).filter(Boolean);
+    return { type: "multiple", values };
+  }
+
+  if (response.type === "numeric") return { type: "numeric", value: rawAnswer };
+
+  const tfMatch = text.match(/\b(True|False|Cannot Say)\s*$/i);
+  if (tfMatch) {
+    const answerMatch = explanation.match(/correct answer is\s+(true|false|cannot say)/i);
+    return { type: "single", value: (answerMatch?.[1] ?? rawAnswer).trim().toLowerCase() };
+  }
+
+  const matchedOption = options.find(option => option.id.toLowerCase() === rawAnswer.toLowerCase());
+  return { type: "single", value: matchedOption?.id ?? rawAnswer };
 }
 
 function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
   const rawOptions = Array.isArray(q.o) ? q.o : [];
   const response = inferResponse(q);
-  const options = rawOptions.map((option: LegacyOption, index: number) => ({
-    id: String(typeof option === "string" ? String.fromCharCode(65 + index) : option.id ?? option.label ?? String.fromCharCode(65 + index)),
-    content: legacyBlock(optionText(option)),
+  const optionTexts = /\btrue\s+false\s+cannot\s+say\b/i.test(String(q.t ?? "")) ? ["True", "False", "Cannot Say"] : rawOptions.map(optionText);
+  const options = optionTexts.map((value, index) => ({
+    id: String.fromCharCode(65 + index),
+    content: legacyBlock(value),
   }));
-  const rawAnswer = String(q.a ?? "").trim();
-  const matchedOption = options.find((option, index) =>
-    option.id.toLowerCase() === rawAnswer.toLowerCase() || optionText(rawOptions[index]).toLowerCase() === rawAnswer.toLowerCase()
-  );
-  const answerValue = matchedOption?.id ?? rawAnswer;
+
+  const answer = inferAnswer(q, response, options);
+  const mappedAnswer = response.type === "single_choice"
+    ? (() => {
+        const value = String(answer.type === "single" ? answer.value : "").trim().toLowerCase();
+        const match = options.find(option => option.content.type === "text" && option.content.value.trim().toLowerCase() === value);
+        return match ? { type: "single" as const, value: match.id } : answer;
+      })()
+    : answer;
+
   return {
     id: `${testId}_${q.id}`,
     number: Number(q.number ?? 0),
@@ -55,7 +88,7 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
     prompt: { blocks: legacyBlocks(q.t) },
     options,
     response,
-    answer: { type: response.type === "numeric" ? "numeric" : response.type === "single_choice" ? "single" : "text", value: answerValue },
+    answer: mappedAnswer,
     explanation: q.explanation ? { blocks: legacyBlocks(q.explanation) } : null,
     taxonomy: { pillar: q.p, subtype: q.s },
     source: { legacyId: q.id, sourceFile: q.sourceFile, sourcePage: q.sourcePage },
@@ -71,10 +104,11 @@ for (const rawQuestion of allQuestions as LegacyQuestion[]) {
 }
 
 export const canonicalTests: CanonicalTest[] = Array.from(grouped.entries()).map(([id, questions]) => {
+  const catalogTest = appCatalog.tests.find(test => test.test_id === id);
   const first = questions[0];
   return {
     id,
-    title: id,
+    title: catalogTest?.title ?? id,
     taxonomy: { pillar: String(first?.p ?? ""), subtype: first?.s ? String(first.s) : undefined },
     timing: { mode: "none" },
     questions: questions.map(q => legacyQuestion(id, q)),

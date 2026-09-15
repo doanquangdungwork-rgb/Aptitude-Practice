@@ -31,24 +31,38 @@ function optionText(option: LegacyOption): string {
   return String(typeof option === "string" ? option : option.text ?? option.label ?? option.option ?? option.id ?? "").trim();
 }
 
+function isTrueFalseCannotSay(text: string) {
+  return /\btrue\s+false\s+cannot\s+say\b/i.test(text);
+}
+
 function inferResponse(q: LegacyQuestion): CanonicalQuestion["response"] {
   const options = Array.isArray(q.o) ? q.o : [];
   const text = String(q.t ?? "");
-  if (/\btrue\s+false\s+cannot\s+say\b/i.test(text)) return { type: "single_choice" };
+  if (isTrueFalseCannotSay(text)) return { type: "single_choice" };
   if (/enter the answer|calculate|how many|what percentage|what was the total|how much would/i.test(text) && !options.length) return { type: "numeric" };
   return options.length ? { type: "single_choice" } : { type: "text" };
 }
 
 function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"], options: { id: string; content: ContentBlock }[]): CanonicalQuestion["answer"] {
-  const rawAnswer = String(q.a ?? "").trim();
+  const raw = q.a;
+  const rawAnswer = String(raw ?? "").trim();
   const text = String(q.t ?? "");
   const explanation = String(q.explanation ?? "");
+
   if (response.type === "numeric") return { type: "numeric", value: rawAnswer };
-  const tfMatch = text.match(/\b(True|False|Cannot Say)\s*$/i);
-  if (tfMatch) {
+
+  if (isTrueFalseCannotSay(text)) {
     const answerMatch = explanation.match(/correct answer is\s+(true|false|cannot say)/i);
     return { type: "single", value: (answerMatch?.[1] ?? rawAnswer).trim().toLowerCase() };
   }
+
+  if (response.type === "text") return { type: "text", value: rawAnswer };
+
+  if (response.type === "multiple_choice") {
+    const values = Array.isArray(raw) ? raw.map(String) : rawAnswer.split(/[,|]/).map(v => v.trim()).filter(Boolean);
+    return { type: "multiple", values };
+  }
+
   const matchedOption = options.find(option => option.id.toLowerCase() === rawAnswer.toLowerCase());
   return { type: "single", value: matchedOption?.id ?? rawAnswer };
 }
@@ -56,7 +70,7 @@ function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"],
 function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
   const rawOptions = Array.isArray(q.o) ? q.o : [];
   const response = inferResponse(q);
-  const optionTexts = /\btrue\s+false\s+cannot\s+say\b/i.test(String(q.t ?? "")) ? ["True", "False", "Cannot Say"] : rawOptions.map(optionText);
+  const optionTexts = isTrueFalseCannotSay(String(q.t ?? "")) ? ["True", "False", "Cannot Say"] : rawOptions.map(optionText);
   const options = optionTexts.map((value, index) => ({ id: String.fromCharCode(65 + index), content: legacyBlock(value) }));
   const answer = inferAnswer(q, response, options);
   const mappedAnswer = response.type === "single_choice" ? (() => {
@@ -82,7 +96,6 @@ function normalizeCanonicalTest(raw: unknown): CanonicalTest | null {
   if (!raw || typeof raw !== "object") return null;
   const test = raw as Partial<CanonicalTest>;
   if (typeof test.id !== "string" || !Array.isArray(test.questions)) return null;
-
   return {
     id: test.id,
     title: typeof test.title === "string" ? test.title : test.id,
@@ -102,10 +115,6 @@ function normalizeCanonicalTest(raw: unknown): CanonicalTest | null {
   };
 }
 
-// Canonical files are intentionally allowed to override the legacy question bank.
-// As additional TEST_XXX.json files are generated, they can be added here without
-// changing the test runner itself. Until then, every catalog test still falls back
-// to the existing legacy source instead of becoming blank.
 const canonicalOverrides = new Map<string, CanonicalTest>();
 const test001 = normalizeCanonicalTest(canonicalTest001);
 if (test001) canonicalOverrides.set(test001.id, test001);

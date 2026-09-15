@@ -22,6 +22,10 @@ function legacyBlocks(value: unknown): ContentBlock[] {
   return text ? [{ type: "text", value: text }] : [];
 }
 
+function legacyBlock(value: unknown): ContentBlock {
+  return { type: "text", value: String(value ?? "").trim() };
+}
+
 function inferResponse(q: LegacyQuestion): CanonicalQuestion["response"] {
   const options = Array.isArray(q.o) ? q.o : [];
   if (/enter the answer|calculate|how many|what percentage|what was the total|how much would/i.test(String(q.t ?? "")) && !options.length) return { type: "numeric" };
@@ -37,10 +41,10 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
   const response = inferResponse(q);
   const options = rawOptions.map((option: LegacyOption, index: number) => ({
     id: String(typeof option === "string" ? String.fromCharCode(65 + index) : option.id ?? option.label ?? String.fromCharCode(65 + index)),
-    content: legacyBlocks(optionText(option)),
+    content: legacyBlock(optionText(option)),
   }));
   const rawAnswer = String(q.a ?? "").trim();
-  const matchedOption = options.find((option: { id: string; content: ContentBlock[] }, index: number) =>
+  const matchedOption = options.find((option, index) =>
     option.id.toLowerCase() === rawAnswer.toLowerCase() || optionText(rawOptions[index]).toLowerCase() === rawAnswer.toLowerCase()
   );
   const answerValue = matchedOption?.id ?? rawAnswer;

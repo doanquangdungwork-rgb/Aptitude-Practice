@@ -8,26 +8,32 @@ function legacyBlocks(value: unknown): ContentBlock[] {
 
 function inferResponse(q: any): CanonicalQuestion["response"] {
   const options = Array.isArray(q.o) ? q.o : [];
-  if (q.s === "capp" && /rank/i.test(String(q.t ?? ""))) return { type: "ranking" };
-  if (q.s === "tgb" && /rank/i.test(String(q.t ?? ""))) return { type: "ranking" };
   if (/enter the answer|calculate|how many|what percentage|what was the total|how much would/i.test(String(q.t ?? "")) && !options.length) return { type: "numeric" };
   return options.length ? { type: "single_choice" } : { type: "text" };
+}
+
+function optionText(option: any) {
+  return String(typeof option === "string" ? option : option.text ?? option.label ?? option.option ?? option.id ?? "").trim();
 }
 
 function legacyQuestion(testId: string, q: any): CanonicalQuestion {
   const rawOptions = Array.isArray(q.o) ? q.o : [];
   const response = inferResponse(q);
+  const options = rawOptions.map((option: any, index: number) => ({
+    id: String(typeof option === "string" ? String.fromCharCode(65 + index) : option.id ?? option.label ?? String.fromCharCode(65 + index)),
+    content: legacyBlocks(optionText(option)),
+  }));
+  const rawAnswer = String(q.a ?? "").trim();
+  const matchedOption = options.find(option => option.id.toLowerCase() === rawAnswer.toLowerCase() || optionText(rawOptions[options.indexOf(option)]).toLowerCase() === rawAnswer.toLowerCase());
+  const answerValue = matchedOption?.id ?? rawAnswer;
   return {
     id: `${testId}_${q.id}`,
     number: Number(q.number ?? 0),
     subquestion: q.subquestion ?? null,
     prompt: { blocks: legacyBlocks(q.t) },
-    options: rawOptions.map((option: any, index: number) => ({
-      id: String(typeof option === "string" ? option : option.id ?? option.label ?? String.fromCharCode(65 + index)),
-      content: legacyBlocks(typeof option === "string" ? option : option.text ?? option.label ?? option.option),
-    })),
+    options,
     response,
-    answer: { type: response.type === "numeric" ? "numeric" : "text", value: String(q.a ?? "") },
+    answer: { type: response.type === "numeric" ? "numeric" : response.type === "single_choice" ? "single" : "text", value: answerValue },
     explanation: q.explanation ? { blocks: legacyBlocks(q.explanation) } : null,
     taxonomy: { pillar: q.p, subtype: q.s },
     source: { legacyId: q.id, sourceFile: q.sourceFile, sourcePage: q.sourcePage },

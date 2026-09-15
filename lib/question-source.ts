@@ -21,6 +21,9 @@ type LegacyQuestion = {
 type ReferenceMaterial = { id: string; assetRef: string; label: string };
 
 export function referenceMaterialsForQuestion(testId: string, questionNumber: number): ReferenceMaterial[] {
+  if (testId === "TEST_001" && questionNumber >= 1 && questionNumber <= 12) {
+    return [{ id: `CAPP_Q${questionNumber}`, assetRef: `ASSET_${String(questionNumber).padStart(4, "0")}`, label: `Chart ${questionNumber}` }];
+  }
   if (testId !== "TEST_002") return [];
   if (questionNumber <= 16) return [{ id: "DATA_P2", assetRef: "TEST_002_DATA_P2", label: "Data Set 1" }];
   if (questionNumber <= 32) return [{ id: "DATA_P3", assetRef: "TEST_002_DATA_P3", label: "Data Set 2" }];
@@ -28,6 +31,12 @@ export function referenceMaterialsForQuestion(testId: string, questionNumber: nu
 }
 
 export function referenceMaterialsForTest(testId: string): ReferenceMaterial[] {
+  if (testId === "TEST_001") {
+    return Array.from({ length: 12 }, (_, index) => {
+      const questionNumber = index + 1;
+      return { id: `CAPP_Q${questionNumber}`, assetRef: `ASSET_${String(questionNumber).padStart(4, "0")}`, label: `Chart ${questionNumber}` };
+    });
+  }
   if (testId !== "TEST_002") return [];
   return [
     { id: "DATA_P2", assetRef: "TEST_002_DATA_P2", label: "Data Set 1" },

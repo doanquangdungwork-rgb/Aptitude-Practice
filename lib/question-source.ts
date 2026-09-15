@@ -67,31 +67,6 @@ function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"],
   return { type: "single", value: matchedOption?.id ?? rawAnswer };
 }
 
-function legacyAssetBlocks(testId: string, q: LegacyQuestion): ContentBlock[] {
-  const number = Number(q.number ?? 0);
-
-  // Cut-e Numerical uses separate Reading sheets for the data tables/charts.
-  // Q1–16 use Reading page 2, Q17–32 page 3, and Q33–49 page 4.
-  if (testId === "TEST_002" || testId === "TEST_003") {
-    const readingPage = number <= 16 ? 2 : number <= 32 ? 3 : 4;
-    return [{
-      type: "image",
-      assetRef: `${testId}_DATA_P${readingPage}`,
-      alt: "Numerical reasoning data table and chart",
-    }];
-  }
-
-  if (q.sourcePage) {
-    return [{
-      type: "image",
-      assetRef: `${testId}_P${q.sourcePage + 1}`,
-      alt: "Question figure",
-    }];
-  }
-
-  return [];
-}
-
 function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
   const rawOptions = Array.isArray(q.o) ? q.o : [];
   const response = inferResponse(q);
@@ -107,7 +82,7 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
     id: `${testId}_${q.id}`,
     number: Number(q.number ?? 0),
     subquestion: q.subquestion ?? null,
-    prompt: { blocks: [...legacyAssetBlocks(testId, q), ...legacyBlocks(q.t)] },
+    prompt: { blocks: legacyBlocks(q.t) },
     options,
     response,
     answer: mappedAnswer,

@@ -19,6 +19,7 @@ export default function TestPage() {
   const qs = useMemo(() => questionsForEngine(testId), [testId]);
   const actualQuestionCount = qs.length;
   const referenceMaterials = useMemo(() => referenceMaterialsForTest(testId), [testId]);
+  const hasReferencePanel = referenceMaterials.length > 0;
   const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -71,7 +72,7 @@ export default function TestPage() {
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} />
     <ReferenceViewer materials={referenceMaterials} initialIndex={questionReferenceIndex >= 0 ? questionReferenceIndex : 0} />
-    <article className="quiz-card mt-6" id={`question-${q.number}`}><div className="flex items-start justify-between gap-5"><div className="quiz-question flex-1"><QuestionPrompt blocks={q.prompt.blocks} /></div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div><QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} /></article>
+    <article className="quiz-card mt-6" id={`question-${q.number}`}><div className="flex items-start justify-between gap-5"><div className="quiz-question flex-1"><QuestionPrompt blocks={q.prompt.blocks} hideImages={hasReferencePanel} /></div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div><QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} /></article>
     <div className="quiz-nav"><button disabled={!idx} onClick={() => setIdx(idx - 1)} className="outline-action disabled:opacity-30">Previous</button>{idx < actualQuestionCount - 1 ? <button onClick={() => setIdx(idx + 1)} className="yellow-button">Next →</button> : <button onClick={finish} className="yellow-button">Finish test</button>}</div>
   </div></div>;
 }

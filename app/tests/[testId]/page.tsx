@@ -3,19 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { appCatalog, pillarMap } from "../../../lib/data";
-import { questionsForEngine } from "../../../lib/question-source";
+import { questionsForEngine, referenceMaterialsForTest, referenceMaterialsForQuestion } from "../../../lib/question-source";
 import { answersMatch } from "../../../lib/canonical-engine";
 import { completeAttempt, getAttempt, getBookmarks, getCompletedAttempt, getWrongQuestions, recordPracticeDay, saveAttempt, setWrongQuestions, toggleBookmark } from "../../../lib/progress";
 import { supabase } from "../../../lib/supabase";
 import { QuestionPrompt } from "../../../components/question-content";
 import QuestionResponse from "../../../components/question-response";
 import QuestionNavigator from "../../../components/question-navigator";
+import ReferenceViewer from "../../../components/reference-viewer";
 
 export default function TestPage() {
   const { testId } = useParams<{ testId: string }>();
   const router = useRouter();
   const test = appCatalog.tests.find((x: any) => x.test_id === testId);
   const qs = useMemo(() => questionsForEngine(testId), [testId]);
+  const referenceMaterials = useMemo(() => referenceMaterialsForTest(testId), [testId]);
   const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -61,10 +63,13 @@ export default function TestPage() {
     router.push(`/tests/${testId}/result`);
   };
 
+  const questionReferenceIndex = referenceMaterials.findIndex(m => m.id === referenceMaterialsForQuestion(testId, q.number)[0]?.id);
+
   return <div className="app-page"><div className="quiz-shell">
     <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {qs.length}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]}</div></div><button onClick={() => router.push("/tests")} className="outline-action">Exit</button></div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <QuestionNavigator count={qs.length} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} />
+    <ReferenceViewer materials={referenceMaterials} initialIndex={questionReferenceIndex >= 0 ? questionReferenceIndex : 0} />
     <article className="quiz-card mt-6" id={`question-${q.number}`}><div className="flex items-start justify-between gap-5"><div className="quiz-question flex-1"><QuestionPrompt blocks={q.prompt.blocks} /></div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div><QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} /></article>
     <div className="quiz-nav"><button disabled={!idx} onClick={() => setIdx(idx - 1)} className="outline-action disabled:opacity-30">Previous</button>{idx < qs.length - 1 ? <button onClick={() => setIdx(idx + 1)} className="yellow-button">Next →</button> : <button onClick={finish} className="yellow-button">Finish test</button>}</div>
   </div></div>;

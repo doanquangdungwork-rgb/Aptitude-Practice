@@ -6,18 +6,13 @@ export default function QuestionResponse({response,options,answer,value,onChange
  const selected=Array.isArray(value)?value.map(String):[];
  if(response.type==="ranking"){
   const current=value&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,number>:{};
-  // Ranking labels may be represented as answer.parts keys when the source has no
-  // separate option list. The rank numbers themselves are never rendered.
-  const rankingItems=options.length
-    ? options.map(o=>({id:o.id,content:o.content}))
-    : answer?.type==="ranking"
-      ? Object.keys(answer.parts).map(id=>({id,content:{type:"text" as const,value:id}}))
-      : [];
+  const rankingItems=options.length?options.map(o=>({id:o.id,content:o.content})):answer?.type==="ranking"?Object.keys(answer.parts).map(id=>({id,content:{type:"text" as const,value:id}})):[];
   const rankCount=response.rankCount ?? rankingItems.length;
-  return <div className="mt-8 grid gap-3">{rankingItems.map((o,i)=><label key={o.id} className="flex items-center gap-3 rounded-xl border border-[#e7e5de] bg-white p-3"><span className="font-bold">{String.fromCharCode(65+i)}.</span><span className="flex-1"><QuestionPrompt blocks={[o.content]}/></span><select value={current[o.id]??""} onChange={e=>onChange({...current,[o.id]:Number(e.target.value)})} className="rounded-lg border border-[#dedbd2] bg-[#fbfaf6] px-3 py-2"><option value="">Rank</option>{Array.from({length:rankCount},(_,n)=><option key={n+1} value={n+1}>{n+1}</option>)}</select></label>)}</div>;
+  return <div className="mt-8 grid gap-3">{rankingItems.map((o,i)=><label key={o.id} className="flex items-center gap-3 rounded-xl border border-[#e7e5de] bg-white p-3"><span className="font-bold">{String.fromCharCode(65+i)}.</span><span className="flex-1"><QuestionPrompt blocks={[o.content]}/></span><select aria-label={`Rank ${o.id}`} value={current[o.id]??""} onChange={e=>{const next={...current};if(e.target.value==="")delete next[o.id];else next[o.id]=Number(e.target.value);onChange(next)}} className="rounded-lg border border-[#dedbd2] bg-[#fbfaf6] px-3 py-2"><option value="">Rank</option>{Array.from({length:rankCount},(_,n)=><option key={n+1} value={n+1}>{n+1}</option>)}</select></label>)}</div>;
  }
  if(response.type==="numeric") return <input type="text" inputMode="decimal" value={value==null?"":String(value)} onChange={e=>onChange(e.target.value)} placeholder="Enter your answer…" className="mt-8 w-full rounded-xl border border-[#e7e5de] bg-white px-4 py-4 outline-none focus:border-[#222321]"/>;
  if(response.type==="text") return <input type="text" inputMode="text" value={value==null?"":String(value)} onChange={e=>onChange(e.target.value)} placeholder="Type your answer…" className="mt-8 w-full rounded-xl border border-[#e7e5de] bg-white px-4 py-4 outline-none focus:border-[#222321]"/>;
- if(response.type==="multiple_choice") return <div className="mt-8 grid gap-3">{options.map((o,i)=>{const active=selected.includes(o.id);return <button key={o.id} type="button" onClick={()=>onChange(active?selected.filter(x=>x!==o.id):[...selected,o.id])} className={`quiz-option text-left ${active?"selected":""}`}><span className="mr-3 font-bold">{String.fromCharCode(65+i)}.</span><QuestionPrompt blocks={[o.content]}/></button>})}</div>;
- return <div className="mt-8 grid gap-3">{options.map((o,i)=><button key={o.id} type="button" onClick={()=>onChange(o.id)} className={`quiz-option text-left ${String(value??"")===o.id?"selected":""}`}><span className="mr-3 font-bold">{String.fromCharCode(65+i)}.</span><QuestionPrompt blocks={[o.content]}/></button>)}</div>;
+ if(response.type==="multiple_choice") return <div className="mt-8 grid gap-3">{options.map((o,i)=>{const active=selected.includes(o.id);return <button key={o.id} type="button" aria-pressed={active} onClick={()=>onChange(active?selected.filter(x=>x!==o.id):[...selected,o.id])} className={`quiz-option text-left ${active?"selected":""}`}><span className="mr-3 font-bold">{String.fromCharCode(65+i)}.</span><QuestionPrompt blocks={[o.content]}/></button>})}</div>;
+ if(response.type==="composite") return <div className="mt-8 rounded-xl border border-[#e7e5de] bg-white p-4 text-sm text-[#77736b]">This question uses a composite response and is not yet supported.</div>;
+ return <div className="mt-8 grid gap-3">{options.map((o,i)=><button key={o.id} type="button" aria-pressed={String(value??"")===o.id} onClick={()=>onChange(o.id)} className={`quiz-option text-left ${String(value??"")===o.id?"selected":""}`}><span className="mr-3 font-bold">{String.fromCharCode(65+i)}.</span><QuestionPrompt blocks={[o.content]}/></button>)}</div>;
 }

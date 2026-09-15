@@ -2,7 +2,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 
-const zipPath = resolve("assets/question-assets.zip");
+const zipPath = resolve("Aptitude-question-assets-final.zip");
 const outputDir = resolve("public");
 
 if (!existsSync(zipPath)) {

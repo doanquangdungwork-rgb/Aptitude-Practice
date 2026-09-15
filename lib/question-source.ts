@@ -33,10 +33,7 @@ function optionText(option: LegacyOption): string {
 function inferResponse(q: LegacyQuestion): CanonicalQuestion["response"] {
   const options = Array.isArray(q.o) ? q.o : [];
   const text = String(q.t ?? "");
-  const id = String(q.testId ?? "");
-
   if (/\btrue\s+false\s+cannot\s+say\b/i.test(text)) return { type: "single_choice" };
-  if (["TEST_007", "TEST_008", "TEST_009", "TEST_010"].includes(id)) return { type: "multiple_choice" };
   if (/enter the answer|calculate|how many|what percentage|what was the total|how much would/i.test(text) && !options.length) return { type: "numeric" };
   return options.length ? { type: "single_choice" } : { type: "text" };
 }
@@ -45,20 +42,12 @@ function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"],
   const rawAnswer = String(q.a ?? "").trim();
   const text = String(q.t ?? "");
   const explanation = String(q.explanation ?? "");
-
-  if (response.type === "multiple_choice") {
-    const values = rawAnswer.split(/[,|]/).map(v => v.trim()).filter(Boolean);
-    return { type: "multiple", values };
-  }
-
   if (response.type === "numeric") return { type: "numeric", value: rawAnswer };
-
   const tfMatch = text.match(/\b(True|False|Cannot Say)\s*$/i);
   if (tfMatch) {
     const answerMatch = explanation.match(/correct answer is\s+(true|false|cannot say)/i);
     return { type: "single", value: (answerMatch?.[1] ?? rawAnswer).trim().toLowerCase() };
   }
-
   const matchedOption = options.find(option => option.id.toLowerCase() === rawAnswer.toLowerCase());
   return { type: "single", value: matchedOption?.id ?? rawAnswer };
 }
@@ -67,20 +56,13 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
   const rawOptions = Array.isArray(q.o) ? q.o : [];
   const response = inferResponse(q);
   const optionTexts = /\btrue\s+false\s+cannot\s+say\b/i.test(String(q.t ?? "")) ? ["True", "False", "Cannot Say"] : rawOptions.map(optionText);
-  const options = optionTexts.map((value, index) => ({
-    id: String.fromCharCode(65 + index),
-    content: legacyBlock(value),
-  }));
-
+  const options = optionTexts.map((value, index) => ({ id: String.fromCharCode(65 + index), content: legacyBlock(value) }));
   const answer = inferAnswer(q, response, options);
-  const mappedAnswer = response.type === "single_choice"
-    ? (() => {
-        const value = String(answer.type === "single" ? answer.value : "").trim().toLowerCase();
-        const match = options.find(option => option.content.type === "text" && option.content.value.trim().toLowerCase() === value);
-        return match ? { type: "single" as const, value: match.id } : answer;
-      })()
-    : answer;
-
+  const mappedAnswer = response.type === "single_choice" ? (() => {
+    const value = String(answer.type === "single" ? answer.value : "").trim().toLowerCase();
+    const match = options.find(option => option.content.type === "text" && option.content.value.trim().toLowerCase() === value);
+    return match ? { type: "single" as const, value: match.id } : answer;
+  })() : answer;
   return {
     id: `${testId}_${q.id}`,
     number: Number(q.number ?? 0),

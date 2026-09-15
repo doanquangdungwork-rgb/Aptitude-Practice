@@ -19,7 +19,11 @@ function write(name: string, value: unknown) {
 
 export function getAttempts(): Attempt[] { return read<Attempt[]>("attempts", []); }
 export function getAttempt(testId: string) { return getAttempts().find((x) => x.testId === testId && !x.completedAt); }
-export function getCompletedAttempt(testId: string) { return getAttempts().find((x) => x.testId === testId && !!x.completedAt); }
+export function getCompletedAttempt(testId: string) {
+  return getAttempts()
+    .filter((x) => x.testId === testId && !!x.completedAt)
+    .sort((a, b) => new Date(b.completedAt || 0).getTime() - new Date(a.completedAt || 0).getTime())[0];
+}
 export function saveAttempt(attempt: Attempt) { write("attempts", [attempt, ...getAttempts().filter((x) => x.id !== attempt.id)]); }
 export function completeAttempt(id: string, answers: Record<string, unknown>, durationSeconds?: number) {
   const now = new Date().toISOString();

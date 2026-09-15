@@ -20,9 +20,27 @@ type LegacyQuestion = {
 
 type ReferenceMaterial = { id: string; assetRef: string; label: string };
 
+// Capp Numerical 4 repeats the same four underlying charts across its 12 questions:
+// Q1-3 use the annual-salary chart, Q4-6 the property-prices table,
+// Q7-9 the coffee-prices chart, and Q10-12 the South American economies table.
+// Keep only one reference card per unique chart so the viewer never shows duplicates.
+const CAPP_UNIQUE_CHARTS: ReferenceMaterial[] = [
+  { id: "CAPP_CHART_1", assetRef: "ASSET_0001", label: "Annual salary" },
+  { id: "CAPP_CHART_2", assetRef: "ASSET_0004", label: "Average property prices" },
+  { id: "CAPP_CHART_3", assetRef: "ASSET_0007", label: "Coffee prices" },
+  { id: "CAPP_CHART_4", assetRef: "ASSET_0010", label: "South American economies" },
+];
+
+function cappChartForQuestion(questionNumber: number): ReferenceMaterial {
+  if (questionNumber <= 3) return CAPP_UNIQUE_CHARTS[0];
+  if (questionNumber <= 6) return CAPP_UNIQUE_CHARTS[1];
+  if (questionNumber <= 9) return CAPP_UNIQUE_CHARTS[2];
+  return CAPP_UNIQUE_CHARTS[3];
+}
+
 export function referenceMaterialsForQuestion(testId: string, questionNumber: number): ReferenceMaterial[] {
   if (testId === "TEST_001" && questionNumber >= 1 && questionNumber <= 12) {
-    return [{ id: `CAPP_Q${questionNumber}`, assetRef: `ASSET_${String(questionNumber).padStart(4, "0")}`, label: `Chart ${questionNumber}` }];
+    return [cappChartForQuestion(questionNumber)];
   }
   if (testId !== "TEST_002") return [];
   if (questionNumber <= 16) return [{ id: "DATA_P2", assetRef: "TEST_002_DATA_P2", label: "Data Set 1" }];
@@ -31,12 +49,7 @@ export function referenceMaterialsForQuestion(testId: string, questionNumber: nu
 }
 
 export function referenceMaterialsForTest(testId: string): ReferenceMaterial[] {
-  if (testId === "TEST_001") {
-    return Array.from({ length: 12 }, (_, index) => {
-      const questionNumber = index + 1;
-      return { id: `CAPP_Q${questionNumber}`, assetRef: `ASSET_${String(questionNumber).padStart(4, "0")}`, label: `Chart ${questionNumber}` };
-    });
-  }
+  if (testId === "TEST_001") return CAPP_UNIQUE_CHARTS;
   if (testId !== "TEST_002") return [];
   return [
     { id: "DATA_P2", assetRef: "TEST_002_DATA_P2", label: "Data Set 1" },

@@ -1,0 +1,26 @@
+name: Restore question bank
+
+on:
+  push:
+    paths:
+      - .github/workflows/restore-question-bank.yml
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore complete question bank
+        run: |
+          git checkout 81a52fb1cdb0b84dd700f68778bf5c99fb5b0c48 -- data/questions.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/questions.json
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: restore complete 30-test question bank"
+          git push

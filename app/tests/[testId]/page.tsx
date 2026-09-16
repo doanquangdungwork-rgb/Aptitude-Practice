@@ -19,7 +19,7 @@ export default function TestPage() {
   const qs = useMemo(() => questionsForEngine(testId), [testId]);
   const actualQuestionCount = qs.length;
   const referenceMaterials = useMemo(() => referenceMaterialsForTest(testId), [testId]);
-  const isScreenshotTest = testId === "TEST_030";
+  const isScreenshotTest = /^TEST_03[0-3]$/.test(testId);
   const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -132,7 +132,7 @@ export default function TestPage() {
           </div>
           <div className="source-question-image">
             <div className="source-question-image-stage" style={{ width: `${Math.max(100, screenshotZoom)}%` }}>
-              <img src={`/question-assets/TEST_030_Q${String(q.number).padStart(2, "0")}.webp`} alt={`Deductive Reasoning Test 1 — Question ${q.number}`} />
+              <img src={`/question-assets/${testId}_Q${String(q.number).padStart(2, "0")}.webp`} alt={`${test.title.replaceAll("_", " ")} — Question ${q.number}`} />
             </div>
           </div>
         </div> : isImageChoice ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : textOnlyPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : hasPassage ? <div className="visual-passage-panel">

@@ -12,14 +12,29 @@ function Block({ block, hideImages = false }: { block: ContentBlock; hideImages?
   if (block.type === "image") {
     if (hideImages) return null;
     if (block.crop) {
+      // Crop coordinates are measured in the source asset's native pixel space.
+      // Do not assume a fixed source width: that was causing 5-option questions
+      // to drift into the neighbouring option. Scale the native image itself and
+      // let the crop window clip it.
       const scale = block.crop.width <= 50 ? 2 : 2.15;
+      const cropWidth = block.crop.width * scale;
+      const cropHeight = block.crop.height * scale;
+      const isOptionCrop = block.crop.width <= 50;
       return (
-        <figure className="visual-crop relative shrink-0 overflow-hidden rounded-xl border border-[#e7e5de] bg-white" style={{ width: block.crop.width * scale, height: block.crop.height * scale }}>
+        <figure
+          className={`visual-crop relative shrink-0 overflow-hidden bg-transparent ${isOptionCrop ? "visual-option-crop" : "visual-question-crop"}`}
+          style={{ width: cropWidth, height: cropHeight }}
+        >
           <img
             src={`/question-assets/${block.assetRef}.webp`}
             alt={block.alt || "Question figure"}
             className="absolute left-0 top-0 max-w-none"
-            style={{ width: 529 * scale, transform: `translate(${-block.crop.x * scale}px, ${-block.crop.y * scale}px)` }}
+            style={{
+              width: "auto",
+              height: "auto",
+              transformOrigin: "top left",
+              transform: `translate(${-block.crop.x * scale}px, ${-block.crop.y * scale}px) scale(${scale})`,
+            }}
           />
         </figure>
       );

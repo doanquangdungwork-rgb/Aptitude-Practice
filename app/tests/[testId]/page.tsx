@@ -94,7 +94,7 @@ export default function TestPage() {
 
     <div className="quiz-workspace">
       <section className="quiz-question-pane">
-        <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Question navigator" />
+        <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
         <article className="quiz-card quiz-question-card" id={`question-${q.number}`}>
           <div className="quiz-question-head"><div><p className="eyebrow">{label}</p><div className="quiz-question mt-3"><QuestionPrompt blocks={q.prompt.blocks} hideImages={hasVisualPanel} /></div></div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
           <div className="quiz-answer-label">Choose your answer</div>

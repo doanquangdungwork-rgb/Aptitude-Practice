@@ -28,6 +28,7 @@ export default function TestPage() {
   const [bookmarked, setBookmarked] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [screenshotZoom, setScreenshotZoom] = useState(100);
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   useEffect(() => {
     const saved = getAttempt(testId);
@@ -35,9 +36,13 @@ export default function TestPage() {
     if (saved) { setStarted(true); setAnswers(saved.answers); setAttemptId(saved.id); setStartedAt(saved.startedAt); }
     else if (done) setCompleted(true);
   }, [testId]);
+
   const q = qs[idx];
+  const testDurationSeconds = Math.max(0, actualQuestionCount * 60);
+
   useEffect(() => { if (q) setBookmarked(getBookmarks().includes(q.id)); }, [q?.id]);
   useEffect(() => { if (isScreenshotTest) setScreenshotZoom(100); }, [q?.id, isScreenshotTest]);
+
   const questionImageRefs = useMemo(() => {
     if (!q?.prompt?.blocks) return [] as string[];
     const refs: string[] = [];
@@ -58,18 +63,60 @@ export default function TestPage() {
   const hasPassage = Boolean(q?.context && String(q.context).trim());
   const textOnlyPassage = hasPassage && !hasVisualPanel;
 
+  const answer = q ? answers[q.id] : undefined;
+  const label = q ? (q.subquestion ? `Question ${q.number}${q.subquestion}` : `Question ${q.number}`) : "";
+  const progress = actualQuestionCount ? ((idx + 1) / actualQuestionCount) * 100 : 0;
+  const isAnswered = (value: unknown) => value !== undefined && value !== "" && !(Array.isArray(value) && value.length === 0);
+
+  const updateAnswer = (value: unknown) => {
+    if (!q) return;
+    const next = { ...answers, [q.id]: value };
+    setAnswers(next);
+    const old = getAttempt(testId);
+    saveAttempt({ id: attemptId, testId, startedAt: old?.startedAt || startedAt || new Date().toISOString(), updatedAt: new Date().toISOString(), answers: next });
+  };
+
+  const finish = async () => {
+    if (!attemptId || !startedAt) return;
+    const wrong = qs.filter(x => answers[x.id] !== undefined && !answersMatch(x, answers[x.id])).map(x => x.id);
+    setWrongQuestions([...new Set([...getWrongQuestions(), ...wrong])]);
+    const seconds = Math.max(0, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000));
+    completeAttempt(attemptId, answers, Math.min(seconds, testDurationSeconds || seconds));
+    const session = await supabase?.auth.getSession();
+    const uid = session?.data.session?.user?.id;
+    if (uid) recordPracticeDay(uid, new Date());
+    router.push(`/tests/${testId}/result`);
+  };
+
+  useEffect(() => {
+    if (!started || !startedAt || !testDurationSeconds) return;
+    const tick = () => {
+      const elapsed = Math.max(0, Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000));
+      const remaining = Math.max(0, testDurationSeconds - elapsed);
+      setRemainingSeconds(remaining);
+      if (remaining <= 0) void finish();
+    };
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, [started, startedAt, testDurationSeconds]);
+
+  const changeScreenshotZoom = (delta: number) => setScreenshotZoom((value) => Math.min(200, Math.max(60, value + delta)));
+  const formatCountdown = (seconds: number) => {
+    const safe = Math.max(0, seconds);
+    const hours = Math.floor(safe / 3600);
+    const minutes = Math.floor((safe % 3600) / 60);
+    const secs = safe % 60;
+    return hours > 0 ? `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}` : `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
+
   if (!test) return <div className="app-page"><div className="pastel-peach rounded-[16px] p-8"><h1 className="section-title">Test not found</h1><button onClick={() => router.push("/tests")} className="yellow-button mt-6">Back to tests</button></div></div>;
   if (completed && !started) return <div className="app-page"><div className="quiz-card"><p className="eyebrow">Completed test</p><h1 className="section-title mt-3">{test.title.replaceAll("_", " ")}</h1><p className="mt-3 text-sm text-[#99968f]">You have already completed this test. Your result is saved.</p><div className="mt-7 flex flex-wrap gap-3"><button onClick={() => router.push(`/tests/${testId}/result`)} className="yellow-button">Review result →</button><button onClick={() => { const id = crypto.randomUUID(); const now = new Date().toISOString(); setCompleted(false); setStarted(true); setIdx(0); setAnswers({}); setAttemptId(id); setStartedAt(now); saveAttempt({ id, testId, startedAt: now, updatedAt: now, answers: {} }); }} className="outline-action">Retake test</button></div></div></div>;
-  if (!started) return <div className="app-page"><div className="quiz-card pastel-lavender"><p className="eyebrow">{pillarMap[test.pillar]} · TEST {testId.replace("TEST_", "")}</p><h1 className="mt-4 text-5xl font-medium tracking-[-.055em]">{test.title.replaceAll("_", " ")}</h1><div className="mt-6 flex flex-wrap gap-2 text-xs font-bold text-[#7d7972]"><span className="rounded-full bg-white px-4 py-2">{actualQuestionCount} questions</span><span className="rounded-full bg-white px-4 py-2">No countdown</span><span className="rounded-full bg-white px-4 py-2">Your time is recorded</span></div><button disabled={!actualQuestionCount} onClick={() => { const id = crypto.randomUUID(); const now = new Date().toISOString(); setAttemptId(id); setStartedAt(now); setStarted(true); setIdx(0); setAnswers({}); saveAttempt({ id, testId, startedAt: now, updatedAt: now, answers: {} }); }} className="yellow-button mt-8 disabled:opacity-40">{actualQuestionCount ? "Start test →" : "No questions loaded"}</button></div></div>;
+  if (!started) return <div className="app-page"><div className="quiz-card pastel-lavender"><p className="eyebrow">{pillarMap[test.pillar]} · TEST {testId.replace("TEST_", "")}</p><h1 className="mt-4 text-5xl font-medium tracking-[-.055em]">{test.title.replaceAll("_", " ")}</h1><div className="mt-6 flex flex-wrap gap-2 text-xs font-bold text-[#7d7972]"><span className="rounded-full bg-white px-4 py-2">{actualQuestionCount} questions</span><span className="rounded-full bg-white px-4 py-2">{actualQuestionCount} minute{actualQuestionCount === 1 ? "" : "s"}</span></div><button disabled={!actualQuestionCount} onClick={() => { const id = crypto.randomUUID(); const now = new Date().toISOString(); setAttemptId(id); setStartedAt(now); setStarted(true); setIdx(0); setAnswers({}); setRemainingSeconds(testDurationSeconds); saveAttempt({ id, testId, startedAt: now, updatedAt: now, answers: {} }); }} className="yellow-button mt-8 disabled:opacity-40">{actualQuestionCount ? "Start test →" : "No questions loaded"}</button></div></div>;
   if (!q) return null;
-  const answer = answers[q.id]; const label = q.subquestion ? `Question ${q.number}${q.subquestion}` : `Question ${q.number}`; const progress = ((idx + 1) / actualQuestionCount) * 100;
-  const isAnswered = (value: unknown) => value !== undefined && value !== "" && !(Array.isArray(value) && value.length === 0);
-  const updateAnswer = (value: unknown) => { const next = { ...answers, [q.id]: value }; setAnswers(next); const old = getAttempt(testId); saveAttempt({ id: attemptId, testId, startedAt: old?.startedAt || startedAt || new Date().toISOString(), updatedAt: new Date().toISOString(), answers: next }); };
-  const finish = async () => { const wrong = qs.filter(x => answers[x.id] !== undefined && !answersMatch(x, answers[x.id])).map(x => x.id); setWrongQuestions([...new Set([...getWrongQuestions(), ...wrong])]); const seconds = Math.max(0, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000)); completeAttempt(attemptId, answers, seconds); const session = await supabase?.auth.getSession(); const uid = session?.data.session?.user?.id; if (uid) recordPracticeDay(uid, new Date()); router.push(`/tests/${testId}/result`); };
-  const changeScreenshotZoom = (delta: number) => setScreenshotZoom((value) => Math.min(200, Math.max(60, value + delta)));
 
   return <div className={`app-page quiz-page ${hasPassage ? "passage-test" : ""} ${isScreenshotTest ? "screenshot-test" : ""}`}>
-    <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
+    <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><div className={`test-countdown ${remainingSeconds <= 60 ? "urgent" : ""}`} aria-label="Time remaining">{formatCountdown(remainingSeconds)}</div><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
       <section className="quiz-reference-pane passage-material-pane">
@@ -120,6 +167,8 @@ export default function TestPage() {
       .screenshot-zoom-toolbar span{min-width:46px;text-align:center;font-size:12px;font-weight:700;color:#6d6962}
       .source-question-image-stage{min-width:100%;margin:0 auto}
       .source-question-image-stage img{display:block;width:100%;height:auto;max-width:none}
+      .test-countdown{min-width:72px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.02em;text-align:center;color:#4f4c47}
+      .test-countdown.urgent{color:#b55a4d;border-color:#e6c4bd;background:#fff8f6}
       .visual-choice-material{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:28px}
       .visual-choice-material :global(.visual-crop){margin:18px auto 0}
       .reference-text-content{max-width:720px;margin:0 auto;padding:34px 38px;color:#5f5d58;font-size:14px;line-height:1.8;white-space:pre-line;align-self:center;text-align:left}

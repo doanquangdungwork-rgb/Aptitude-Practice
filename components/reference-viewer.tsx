@@ -7,43 +7,14 @@ type ReferenceMaterial = { id: string; assetRef: string; label: string };
 export default function ReferenceViewer({ materials, initialIndex = 0, compact = false }: { materials: ReferenceMaterial[]; initialIndex?: number; compact?: boolean }) {
   const [page, setPage] = useState(Math.min(initialIndex, Math.max(materials.length - 1, 0)));
   const [zoom, setZoom] = useState(100);
-  useEffect(() => {
-    setPage(Math.min(initialIndex, Math.max(materials.length - 1, 0)));
-    setZoom(100);
-  }, [initialIndex, materials.length]);
-
+  useEffect(() => { setPage(Math.min(initialIndex, Math.max(materials.length - 1, 0))); }, [initialIndex, materials.length]);
   const current = useMemo(() => materials[Math.min(page, materials.length - 1)], [materials, page]);
   if (!materials.length || !current) return null;
-
   const zoomIn = () => setZoom(v => Math.min(180, v + 10));
   const zoomOut = () => setZoom(v => Math.max(60, v - 10));
-  const resetZoom = () => setZoom(100);
-
-  return (
-    <section className={`reference-viewer ${compact ? "reference-viewer-compact" : ""}`} aria-label="Question reference">
-      <div className="reference-toolbar">
-        <div className="reference-heading">
-          <span className="eyebrow">Reference</span>
-          <span className="reference-label">{current.label}</span>
-        </div>
-        <div className="reference-zoom" aria-label="Zoom controls">
-          <button type="button" onClick={zoomOut} disabled={zoom <= 60} aria-label="Zoom out">−</button>
-          <button type="button" onClick={resetZoom} className="reference-zoom-value" aria-label="Reset zoom">{zoom}%</button>
-          <button type="button" onClick={zoomIn} disabled={zoom >= 180} aria-label="Zoom in">+</button>
-        </div>
-      </div>
-
-      {materials.length > 1 && (
-        <div className="reference-tabs" role="tablist" aria-label="Reference pages">
-          {materials.map((m, i) => <button key={m.id} type="button" role="tab" aria-selected={i === page} onClick={() => { setPage(i); setZoom(100); }} className={i === page ? "active" : ""}>{m.label}</button>)}
-        </div>
-      )}
-
-      <div className="reference-stage">
-        <div className="reference-canvas">
-          <img src={`/question-assets/${current.assetRef}.webp`} alt={current.label} style={{ width: `${zoom}%` }} />
-        </div>
-      </div>
-    </section>
-  );
+  return <section className={`reference-viewer ${compact ? "reference-viewer-compact" : ""}`} aria-label="Question reference">
+    <div className="reference-toolbar"><div className="reference-heading"><span className="eyebrow">Reference</span><span className="reference-label">{current.label}</span></div><div className="reference-zoom"><button type="button" onClick={zoomOut} disabled={zoom <= 60}>−</button><button type="button" onClick={() => setZoom(100)} className="reference-zoom-value">{zoom}%</button><button type="button" onClick={zoomIn} disabled={zoom >= 180}>+</button></div></div>
+    {materials.length > 1 && <div className="reference-tabs" role="tablist">{materials.map((m,i)=><button key={m.id} type="button" role="tab" aria-selected={i===page} onClick={()=>setPage(i)} className={i===page?"active":""}>{m.label}</button>)}</div>}
+    <div className="reference-stage"><div className="reference-canvas"><img src={`/question-assets/${current.assetRef}.webp`} alt={current.label} style={{ width:`${zoom}%` }} /></div></div>
+  </section>;
 }

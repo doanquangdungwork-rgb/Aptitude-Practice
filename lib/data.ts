@@ -1,9 +1,13 @@
 import questions from "../data/questions.json";
+import deductiveTest1 from "../data/deductive-test1.json";
 import catalog from "../data/catalog.json";
 
-export type Question = typeof questions[number];
+export type Question = (typeof questions)[number] | (typeof deductiveTest1)[number];
 export type Catalog = typeof catalog;
-export const allQuestions = questions as Question[];
+
+const baseQuestions = questions as Question[];
+const test030Questions = deductiveTest1 as Question[];
+export const allQuestions = [...baseQuestions.filter((q: any) => q.testId !== "TEST_030"), ...test030Questions];
 export const appCatalog = catalog as Catalog;
 
 export const pillarMap: Record<string, string> = {

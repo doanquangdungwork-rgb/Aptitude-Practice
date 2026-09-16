@@ -41,12 +41,16 @@ export default function TestPage() {
     const walk = (blocks: any[]) => blocks.forEach((block) => { if (block?.type === "image" && block.assetRef) refs.push(block.assetRef); if (block?.type === "mixed" && Array.isArray(block.blocks)) walk(block.blocks); });
     walk(q.prompt.blocks as any[]); return [...new Set(refs)];
   }, [q?.id]);
+  const isImageChoice = q?.response?.type === "image_choice";
+  const questionImageBlocks = useMemo(() => (q?.prompt?.blocks ?? []).filter((block: any) => block?.type === "image"), [q?.id]);
+  const questionTextBlocks = useMemo(() => (q?.prompt?.blocks ?? []).filter((block: any) => block?.type === "text"), [q?.id]);
   const currentReferenceMaterials = useMemo(() => referenceMaterialsForQuestion(testId, q?.number ?? idx + 1), [testId, q?.number, idx]);
   const visualMaterials = useMemo(() => {
+    if (isImageChoice) return [];
     if (referenceMaterials.length) return referenceMaterials;
     if (currentReferenceMaterials.length) return currentReferenceMaterials;
     return questionImageRefs.map((assetRef, i) => ({ id: `${testId}-question-image-${i}`, assetRef, label: `Question ${q?.number ?? idx + 1}` }));
-  }, [referenceMaterials, currentReferenceMaterials, questionImageRefs, testId, q?.number, idx]);
+  }, [isImageChoice, referenceMaterials, currentReferenceMaterials, questionImageRefs, testId, q?.number, idx]);
   const hasVisualPanel = visualMaterials.length > 0;
   const hasPassage = Boolean(q?.context && String(q.context).trim());
   const textOnlyPassage = hasPassage && !hasVisualPanel;
@@ -65,7 +69,7 @@ export default function TestPage() {
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
       <section className="quiz-reference-pane passage-material-pane">
-        {textOnlyPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : hasPassage ? <div className="visual-passage-panel">
+        {isImageChoice ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : textOnlyPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : hasPassage ? <div className="visual-passage-panel">
           <div className="visual-passage-copy"><span className="eyebrow">Passage</span><span className="visual-passage-label">Information for {label}</span><p>{q.context}</p></div>
           <div className="passage-reference-wrap"><ReferenceViewer materials={visualMaterials} initialIndex={0} compact /></div>
         </div> : hasVisualPanel ? <ReferenceViewer materials={visualMaterials} initialIndex={0} /> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference image is attached to this question.</p></div>}
@@ -73,7 +77,7 @@ export default function TestPage() {
       <section className="quiz-question-pane answer-pane">
         <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
         <article className="quiz-card quiz-question-card" id={`question-${q.number}`}>
-          <div className="quiz-question-head"><div><p className="eyebrow">{label}</p><div className="quiz-question mt-3"><QuestionPrompt blocks={q.prompt.blocks} hideImages={hasPassage || hasVisualPanel} /></div></div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
+          <div className="quiz-question-head"><div><p className="eyebrow">{label}</p><div className="quiz-question mt-3">{isImageChoice ? <QuestionPrompt blocks={questionTextBlocks as any} /> : <QuestionPrompt blocks={q.prompt.blocks} hideImages={hasPassage || hasVisualPanel} />}</div></div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
           <div className="quiz-answer-label">Choose your answer</div>
           <QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} />
         </article>
@@ -83,6 +87,8 @@ export default function TestPage() {
     <style jsx>{`
       .passage-test .quiz-reference-pane{grid-column:1;grid-row:1;min-height:0}
       .passage-test .quiz-question-pane{grid-column:2;grid-row:1;min-height:0}
+      .visual-choice-material{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:28px}
+      .visual-choice-material :global(.visual-crop){margin:18px auto 0}
       .reference-text-content{max-width:720px;margin:0 auto;padding:34px 38px;color:#5f5d58;font-size:14px;line-height:1.8;white-space:pre-line;align-self:center;text-align:left}
       .visual-passage-panel{height:100%;min-height:0;display:flex;flex-direction:column;gap:16px;overflow:hidden}
       .visual-passage-copy{flex:0 0 auto;padding:2px 0 0;display:flex;flex-direction:column;gap:4px}
@@ -91,7 +97,7 @@ export default function TestPage() {
       .passage-reference-wrap{flex:1 1 0;min-height:240px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
       .passage-reference-wrap :global(.reference-viewer){height:100%;min-height:0;border:0;border-radius:0;box-shadow:none}
       .passage-reference-wrap :global(.reference-stage){min-height:0}
-      @media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.reference-text-content{padding:24px}.passage-reference-wrap{min-height:360px}}
+      @media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.visual-choice-material{min-height:320px;padding:20px}.reference-text-content{padding:24px}.passage-reference-wrap{min-height:360px}}
     `}</style>
   </div>;
 }

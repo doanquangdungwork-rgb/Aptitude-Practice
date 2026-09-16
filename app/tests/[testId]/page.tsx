@@ -19,7 +19,6 @@ export default function TestPage() {
   const qs = useMemo(() => questionsForEngine(testId), [testId]);
   const actualQuestionCount = qs.length;
   const referenceMaterials = useMemo(() => referenceMaterialsForTest(testId), [testId]);
-  const hasReferencePanel = referenceMaterials.length > 0;
   const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -38,6 +37,23 @@ export default function TestPage() {
 
   const q = qs[idx];
   useEffect(() => { if (q) setBookmarked(getBookmarks().includes(q.id)); }, [q?.id]);
+
+  const questionImageRefs = useMemo(() => {
+    if (!q?.prompt?.blocks) return [] as string[];
+    const refs: string[] = [];
+    const walk = (blocks: any[]) => blocks.forEach((block) => {
+      if (block?.type === "image" && block.assetRef) refs.push(block.assetRef);
+      if (block?.type === "mixed" && Array.isArray(block.blocks)) walk(block.blocks);
+    });
+    walk(q.prompt.blocks as any[]);
+    return [...new Set(refs)];
+  }, [q?.id]);
+
+  const visualMaterials = useMemo(() => {
+    if (referenceMaterials.length) return referenceMaterials;
+    return questionImageRefs.map((assetRef, i) => ({ id: `${testId}-question-image-${i}`, assetRef, label: `Question ${q?.number ?? idx + 1}` }));
+  }, [referenceMaterials, questionImageRefs, testId, q?.number, idx]);
+  const hasVisualPanel = visualMaterials.length > 0;
 
   if (!test) return <div className="app-page"><div className="pastel-peach rounded-[16px] p-8"><h1 className="section-title">Test not found</h1><button onClick={() => router.push("/tests")} className="yellow-button mt-6">Back to tests</button></div></div>;
 
@@ -65,14 +81,31 @@ export default function TestPage() {
     router.push(`/tests/${testId}/result`);
   };
 
-  const questionReferenceIndex = referenceMaterials.findIndex(m => m.id === referenceMaterialsForQuestion(testId, q.number)[0]?.id);
+  const referenceIndex = referenceMaterials.length
+    ? referenceMaterials.findIndex(m => m.id === referenceMaterialsForQuestion(testId, q.number)[0]?.id)
+    : 0;
 
-  return <div className="app-page"><div className="quiz-shell">
-    <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]}</div></div><button onClick={() => router.push("/tests")} className="outline-action">Exit</button></div>
+  return <div className="app-page quiz-page">
+    <div className="quiz-top">
+      <div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div>
+      <div className="flex items-center gap-2"><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div>
+    </div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
-    <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} />
-    <ReferenceViewer materials={referenceMaterials} initialIndex={questionReferenceIndex >= 0 ? questionReferenceIndex : 0} />
-    <article className="quiz-card mt-6" id={`question-${q.number}`}><div className="flex items-start justify-between gap-5"><div className="quiz-question flex-1"><QuestionPrompt blocks={q.prompt.blocks} hideImages={hasReferencePanel} /></div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div><QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} /></article>
-    <div className="quiz-nav"><button disabled={!idx} onClick={() => setIdx(idx - 1)} className="outline-action disabled:opacity-30">Previous</button>{idx < actualQuestionCount - 1 ? <button onClick={() => setIdx(idx + 1)} className="yellow-button">Next →</button> : <button onClick={finish} className="yellow-button">Finish test</button>}</div>
-  </div></div>;
+
+    <div className="quiz-workspace">
+      <section className="quiz-question-pane">
+        <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Question navigator" />
+        <article className="quiz-card quiz-question-card" id={`question-${q.number}`}>
+          <div className="quiz-question-head"><div><p className="eyebrow">{label}</p><div className="quiz-question mt-3"><QuestionPrompt blocks={q.prompt.blocks} hideImages={hasVisualPanel} /></div></div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
+          <div className="quiz-answer-label">Choose your answer</div>
+          <QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} />
+        </article>
+        <div className="quiz-nav"><button disabled={!idx} onClick={() => setIdx(idx - 1)} className="outline-action disabled:opacity-30">← Previous</button>{idx < actualQuestionCount - 1 ? <button onClick={() => setIdx(idx + 1)} className="yellow-button">Next →</button> : <button onClick={finish} className="yellow-button">Finish test</button>}</div>
+      </section>
+
+      <section className="quiz-reference-pane">
+        {hasVisualPanel ? <ReferenceViewer materials={visualMaterials} initialIndex={referenceIndex >= 0 ? referenceIndex : 0} /> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference image is attached to this question.</p></div>}
+      </section>
+    </div>
+  </div>;
 }

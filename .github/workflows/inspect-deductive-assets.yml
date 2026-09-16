@@ -1,0 +1,28 @@
+name: inspect-deductive-assets
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Aptitude-question-assets-final.zip'
+      - '.github/workflows/inspect-deductive-assets.yml'
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect asset archive
+        run: |
+          unzip -l Aptitude-question-assets-final.zip | grep -Ei 'TEST_03[0-3]|Deductive' > /tmp/manifest || true
+          cat /tmp/manifest
+          cp /tmp/manifest deductive-asset-manifest.txt
+      - name: Commit manifest and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deductive-asset-manifest.txt
+          rm -f .github/workflows/inspect-deductive-assets.yml
+          git add -u .github/workflows/inspect-deductive-assets.yml
+          git commit -m "chore: inspect deductive asset archive"
+          git push

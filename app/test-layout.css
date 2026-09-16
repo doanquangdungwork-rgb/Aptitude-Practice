@@ -1,16 +1,19 @@
-/* Test/review workspace layout overrides */
+/* Test + review workspace — keep the original split-screen aptitude layout. */
 .quiz-workspace,
 .review-workspace {
-  grid-template-columns: minmax(520px, 1.08fr) minmax(440px, .92fr);
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
+  gap: 14px;
 }
 
-/* Chart / reference on the LEFT, questions on the RIGHT. */
+/* LEFT: source / snapshot / reference material. RIGHT: question + answer set. */
 .quiz-reference-pane,
 .review-reference-pane {
   grid-column: 1;
   grid-row: 1;
   min-width: 0;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .quiz-question-pane,
@@ -19,6 +22,8 @@
   grid-row: 1;
   min-width: 0;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .quiz-page {
@@ -27,10 +32,7 @@
   overflow: hidden;
 }
 
-.quiz-page .quiz-top {
-  flex: 0 0 auto;
-}
-
+.quiz-page .quiz-top,
 .quiz-page .quiz-progress {
   flex: 0 0 auto;
 }
@@ -42,41 +44,40 @@
   overflow: hidden;
 }
 
+/* Right-hand question stack: navigator → question → navigation. */
 .quiz-question-pane,
-.review-question-pane,
-.quiz-reference-pane,
-.review-reference-pane {
-  overflow: hidden;
+.review-question-pane {
+  display: flex;
+  flex-direction: column;
 }
 
 .quiz-question-pane .question-navigator,
 .review-question-pane .question-navigator {
   flex: 0 0 auto;
-  margin-top: 12px;
+  margin: 0 0 10px;
 }
 
 .quiz-question-card {
-  overflow-y: auto;
-  scrollbar-width: thin;
+  flex: 1 1 auto;
   min-height: 0;
+  height: auto;
+  overflow-y: auto;
+  margin-top: 0;
+  scrollbar-width: thin;
 }
 
-.quiz-question-card .quiz-question-head {
-  flex: 0 0 auto;
-}
-
-.quiz-question-card .quiz-answer-label {
-  flex: 0 0 auto;
-}
-
+.quiz-question-card .quiz-question-head,
+.quiz-question-card .quiz-answer-label,
 .quiz-question-card .quiz-option {
   flex: 0 0 auto;
 }
 
 .quiz-nav {
   flex: 0 0 auto;
+  margin-top: 9px;
 }
 
+/* Left reference panel stays fixed while its contents scroll/zoom internally. */
 .reference-viewer {
   height: 100%;
   min-height: 0;
@@ -87,25 +88,27 @@
   overflow: auto;
 }
 
-/* Review: question navigator stays visible; only the answer list scrolls. */
+/* Review keeps the same two-pane shell; only the question column scrolls. */
 .review-question-pane .question-navigator {
   position: relative;
   top: auto;
 }
 
 .review-scroll {
-  min-height: 0;
   flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  padding: 12px 2px 20px;
+  overflow-x: hidden;
+  padding: 0 2px 20px;
   scrollbar-width: thin;
 }
 
 .review-scroll .review-item {
-  scroll-margin-top: 12px;
+  scroll-margin-top: 10px;
 }
 
 .review-reference-pane .reference-viewer {
+  height: 100%;
   min-height: 0;
 }
 
@@ -116,12 +119,14 @@
 @media (max-width: 1050px) {
   .quiz-workspace,
   .review-workspace {
-    grid-template-columns: minmax(440px, 1.02fr) minmax(380px, .98fr);
+    grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr);
+    gap: 12px;
   }
 }
 
 @media (max-width: 800px) {
-  .quiz-page {
+  .quiz-page,
+  .review-page {
     height: auto;
     min-height: 0;
     overflow: visible;
@@ -141,11 +146,8 @@
   .review-reference-pane {
     grid-column: 1;
     grid-row: auto;
-  }
-
-  .quiz-reference-pane,
-  .review-reference-pane {
-    order: 2;
+    height: auto;
+    overflow: visible;
   }
 
   .quiz-question-pane,
@@ -153,6 +155,14 @@
     order: 1;
   }
 
+  .quiz-reference-pane,
+  .review-reference-pane {
+    order: 2;
+    min-height: 500px;
+    height: 65vh;
+  }
+
+  .quiz-question-card,
   .review-scroll {
     overflow: visible;
   }

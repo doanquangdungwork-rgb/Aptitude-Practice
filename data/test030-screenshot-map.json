@@ -1,0 +1,29 @@
+{
+  "testId": "TEST_030",
+  "sourceFile": "DeductiveTest1-Questions.pdf",
+  "questionCount": 22,
+  "questions": [
+    {"number":1,"image":"/question-assets/TEST_030_Q01.webp","answer":"A"},
+    {"number":2,"image":"/question-assets/TEST_030_Q02.webp","answer":"B"},
+    {"number":3,"image":"/question-assets/TEST_030_Q03.webp","answer":"A"},
+    {"number":4,"image":"/question-assets/TEST_030_Q04.webp","answer":"B"},
+    {"number":5,"image":"/question-assets/TEST_030_Q05.webp","answer":"C"},
+    {"number":6,"image":"/question-assets/TEST_030_Q06.webp","answer":"B"},
+    {"number":7,"image":"/question-assets/TEST_030_Q07.webp","answer":"C"},
+    {"number":8,"image":"/question-assets/TEST_030_Q08.webp","answer":"B"},
+    {"number":9,"image":"/question-assets/TEST_030_Q09.webp","answer":"A"},
+    {"number":10,"image":"/question-assets/TEST_030_Q10.webp","answer":"C"},
+    {"number":11,"image":"/question-assets/TEST_030_Q11.webp","answer":"C"},
+    {"number":12,"image":"/question-assets/TEST_030_Q12.webp","answer":"B"},
+    {"number":13,"image":"/question-assets/TEST_030_Q13.webp","answer":"A"},
+    {"number":14,"image":"/question-assets/TEST_030_Q14.webp","answer":"A"},
+    {"number":15,"image":"/question-assets/TEST_030_Q15.webp","answer":"C"},
+    {"number":16,"image":"/question-assets/TEST_030_Q16.webp","answer":"B"},
+    {"number":17,"image":"/question-assets/TEST_030_Q17.webp","answer":"E"},
+    {"number":18,"image":"/question-assets/TEST_030_Q18.webp","answer":"D"},
+    {"number":19,"image":"/question-assets/TEST_030_Q19.webp","answer":"A"},
+    {"number":20,"image":"/question-assets/TEST_030_Q20.webp","answer":"C"},
+    {"number":21,"image":"/question-assets/TEST_030_Q21.webp","answer":"B"},
+    {"number":22,"image":"/question-assets/TEST_030_Q22.webp","answer":"A"}
+  ]
+}

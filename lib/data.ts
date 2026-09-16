@@ -7,7 +7,15 @@ import catalog from "../data/catalog.json";
 
 export type ExtraQuestion = { id: string; testId: string; number: number; p: string; s: string; t: string; o: string[]; a: string };
 export type Question = (typeof questions)[number] | (typeof deductiveTest1)[number] | ExtraQuestion;
-export type Catalog = typeof catalog;
+
+export type CatalogTest = { test_id: string; title: string; pillar: string; subtype?: string; [key: string]: unknown };
+export type CatalogPillar = { id: string; name: string; description: string; [key: string]: unknown };
+export type Catalog = {
+  tests: CatalogTest[];
+  pillars: CatalogPillar[];
+  subtypes: Record<string, unknown>;
+  stats: { question_count: number; test_count: number; answered_source_count: number; [key: string]: unknown };
+};
 
 type CompactRow = [number, string, string[], string, number];
 const baseQuestions = questions as Question[];
@@ -16,7 +24,7 @@ const test031Questions: ExtraQuestion[] = deductiveTest2.map((row) => { const [n
 const test032Questions: ExtraQuestion[] = deductiveTest3.map((row) => { const [number, t, o, a] = row as CompactRow; return { id: `TEST_032_Q${number}`, testId: "TEST_032", number, p: "deductive", s: "deductive_reasoning", t, o, a }; });
 const test033Questions: ExtraQuestion[] = deductiveTest4.map((row) => { const [number, t, o, a] = row as CompactRow; return { id: `TEST_033_Q${number}`, testId: "TEST_033", number, p: "deductive", s: "deductive_reasoning", t, o, a }; });
 export const allQuestions: Question[] = [...baseQuestions.filter((q: any) => !["TEST_030", "TEST_031", "TEST_032", "TEST_033"].includes(q.testId)), ...test030Questions, ...test031Questions, ...test032Questions, ...test033Questions];
-export const appCatalog = catalog as Catalog;
+export const appCatalog: Catalog = catalog as unknown as Catalog;
 
 export const pillarMap: Record<string, string> = {
   deductive: "Deductive Reasoning",
@@ -27,10 +35,10 @@ export const pillarMap: Record<string, string> = {
   situational_judgement: "Situational Judgement",
 };
 
-export function questionsForTest(testId: string) {
+export function questionsForTest(testId: string): Question[] {
   return allQuestions.filter((q: any) => q.testId === testId || q.id.startsWith(testId + "_"));
 }
 
-export function questionsForPillar(pillar: string, subtype?: string) {
+export function questionsForPillar(pillar: string, subtype?: string): Question[] {
   return allQuestions.filter((q: any) => q.p === pillar && (!subtype || q.s === subtype));
 }

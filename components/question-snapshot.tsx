@@ -22,10 +22,10 @@ function wrapText(value: string, maxChars: number) {
   return lines;
 }
 
-function blockText(blocks: ContentBlock[]) {
-  return blocks.flatMap((block) => {
+function blockText(blocks: ContentBlock[]): string {
+  return blocks.flatMap((block): string[] => {
     if (block.type === "text") return [block.value];
-    if (block.type === "mixed") return blockText(block.blocks);
+    if (block.type === "mixed") return [blockText(block.blocks)];
     return [];
   }).join("\n").trim();
 }

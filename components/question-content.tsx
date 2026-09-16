@@ -14,11 +14,12 @@ function Block({ block, hideImages = false }: { block: ContentBlock; hideImages?
     if (block.crop) {
       const scale = block.crop.width <= 50 ? 2 : 2.15;
       return (
-        <figure className="visual-crop" style={{ width: block.crop.width * scale, height: block.crop.height * scale }}>
+        <figure className="visual-crop relative shrink-0 overflow-hidden rounded-xl border border-[#e7e5de] bg-white" style={{ width: block.crop.width * scale, height: block.crop.height * scale }}>
           <img
             src={`/question-assets/${block.assetRef}.webp`}
             alt={block.alt || "Question figure"}
-            style={{ width: 529 * scale, maxWidth: "none", transform: `translate(${-block.crop.x * scale}px, ${-block.crop.y * scale}px)` }}
+            className="absolute left-0 top-0 max-w-none"
+            style={{ width: 529 * scale, transform: `translate(${-block.crop.x * scale}px, ${-block.crop.y * scale}px)` }}
           />
         </figure>
       );

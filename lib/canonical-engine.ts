@@ -1,11 +1,13 @@
+export type ImageCrop = { x: number; y: number; width: number; height: number };
 export type ContentBlock =
   | { type: "text"; value: string }
-  | { type: "image"; assetRef: string; alt?: string }
+  | { type: "image"; assetRef: string; alt?: string; crop?: ImageCrop }
   | { type: "mixed"; blocks: ContentBlock[] }
   | { type: "spacer"; size?: "sm" | "md" | "lg" };
 export type CanonicalOption = { id: string; content: ContentBlock };
 export type CanonicalResponse =
   | { type: "single_choice" }
+  | { type: "image_choice" }
   | { type: "multiple_choice"; minSelections?: number; maxSelections?: number }
   | { type: "ranking"; rankCount?: number }
   | { type: "numeric" }

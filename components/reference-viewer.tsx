@@ -13,6 +13,10 @@ type ReferenceViewerProps = {
   eyebrowLabel?: string;
 };
 
+function referenceAssetSrc(assetRef: string) {
+  return `/question-assets/${assetRef.includes(".") ? assetRef : `${assetRef}.webp`}`;
+}
+
 export default function ReferenceViewer({ materials, initialIndex = 0, compact = false, text, textLabel, eyebrowLabel = "Reference" }: ReferenceViewerProps) {
   const [page, setPage] = useState(Math.min(initialIndex, Math.max(materials.length - 1, 0)));
   const [zoom, setZoom] = useState(100);
@@ -27,7 +31,7 @@ export default function ReferenceViewer({ materials, initialIndex = 0, compact =
     <div className="reference-toolbar"><div className="reference-heading"><span className="eyebrow">{eyebrowLabel}</span><span className="reference-label">{displayLabel}</span></div><div className="reference-zoom"><button type="button" onClick={zoomOut} disabled={zoom <= 60}>−</button><button type="button" onClick={() => setZoom(100)} className="reference-zoom-value">{zoom}%</button><button type="button" onClick={zoomIn} disabled={zoom >= 180}>+</button></div></div>
     {materials.length > 1 && <div className="reference-tabs" role="tablist">{materials.map((m,i)=><button key={m.id} type="button" role="tab" aria-selected={i===page} onClick={()=>setPage(i)} className={i===page?"active":""}>{m.label}</button>)}</div>}
     <div className="reference-stage"><div className="reference-canvas">
-      {hasText ? <div className="reference-text-content" style={{ width: `${zoom}%` }}>{text}</div> : <img src={`/question-assets/${current.assetRef}.webp`} alt={current.label} style={{ width:`${zoom}%` }} />}
+      {hasText ? <div className="reference-text-content" style={{ width: `${zoom}%` }}>{text}</div> : <img src={referenceAssetSrc(current.assetRef)} alt={current.label} style={{ width:`${zoom}%` }} />}
     </div></div>
   </section>;
 }

@@ -27,6 +27,7 @@ export default function TestPage() {
   const [startedAt, setStartedAt] = useState("");
   const [bookmarked, setBookmarked] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [screenshotZoom, setScreenshotZoom] = useState(100);
 
   useEffect(() => {
     const saved = getAttempt(testId);
@@ -36,6 +37,7 @@ export default function TestPage() {
   }, [testId]);
   const q = qs[idx];
   useEffect(() => { if (q) setBookmarked(getBookmarks().includes(q.id)); }, [q?.id]);
+  useEffect(() => { if (isScreenshotTest) setScreenshotZoom(100); }, [q?.id, isScreenshotTest]);
   const questionImageRefs = useMemo(() => {
     if (!q?.prompt?.blocks) return [] as string[];
     const refs: string[] = [];
@@ -64,13 +66,24 @@ export default function TestPage() {
   const isAnswered = (value: unknown) => value !== undefined && value !== "" && !(Array.isArray(value) && value.length === 0);
   const updateAnswer = (value: unknown) => { const next = { ...answers, [q.id]: value }; setAnswers(next); const old = getAttempt(testId); saveAttempt({ id: attemptId, testId, startedAt: old?.startedAt || startedAt || new Date().toISOString(), updatedAt: new Date().toISOString(), answers: next }); };
   const finish = async () => { const wrong = qs.filter(x => answers[x.id] !== undefined && !answersMatch(x, answers[x.id])).map(x => x.id); setWrongQuestions([...new Set([...getWrongQuestions(), ...wrong])]); const seconds = Math.max(0, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000)); completeAttempt(attemptId, answers, seconds); const session = await supabase?.auth.getSession(); const uid = session?.data.session?.user?.id; if (uid) recordPracticeDay(uid, new Date()); router.push(`/tests/${testId}/result`); };
+  const changeScreenshotZoom = (delta: number) => setScreenshotZoom((value) => Math.min(200, Math.max(60, value + delta)));
 
   return <div className={`app-page quiz-page ${hasPassage ? "passage-test" : ""} ${isScreenshotTest ? "screenshot-test" : ""}`}>
     <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
       <section className="quiz-reference-pane passage-material-pane">
-        {isScreenshotTest ? <div className="source-question-image"><img src={`/question-assets/TEST_030_Q${String(q.number).padStart(2, "0")}.webp`} alt={`Deductive Reasoning Test 1 — Question ${q.number}`} /></div> : isImageChoice ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : textOnlyPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : hasPassage ? <div className="visual-passage-panel">
+        {isScreenshotTest ? <div className="source-question-image">
+          <div className="screenshot-zoom-toolbar" aria-label="Question image zoom controls">
+            <button type="button" onClick={() => changeScreenshotZoom(-10)} disabled={screenshotZoom <= 60} aria-label="Zoom out">−</button>
+            <span>{screenshotZoom}%</span>
+            <button type="button" onClick={() => changeScreenshotZoom(10)} disabled={screenshotZoom >= 200} aria-label="Zoom in">+</button>
+            <button type="button" onClick={() => setScreenshotZoom(100)} disabled={screenshotZoom === 100}>Reset</button>
+          </div>
+          <div className="source-question-image-stage" style={{ width: `${Math.max(100, screenshotZoom)}%` }}>
+            <img src={`/question-assets/TEST_030_Q${String(q.number).padStart(2, "0")}.webp`} alt={`Deductive Reasoning Test 1 — Question ${q.number}`} />
+          </div>
+        </div> : isImageChoice ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : textOnlyPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : hasPassage ? <div className="visual-passage-panel">
           <div className="visual-passage-copy"><span className="eyebrow">Passage</span><span className="visual-passage-label">Information for {label}</span><p>{q.context}</p></div>
           <div className="passage-reference-wrap"><ReferenceViewer materials={visualMaterials} initialIndex={0} compact /></div>
         </div> : hasVisualPanel ? <ReferenceViewer materials={visualMaterials} initialIndex={0} /> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference image is attached to this question.</p></div>}
@@ -88,8 +101,14 @@ export default function TestPage() {
     <style jsx>{`
       .passage-test .quiz-reference-pane{grid-column:1;grid-row:1;min-height:0}
       .passage-test .quiz-question-pane{grid-column:2;grid-row:1;min-height:0}
-      .source-question-image{height:100%;min-height:0;overflow:auto;padding:24px;display:flex;align-items:flex-start;justify-content:center;background:#fff}
-      .source-question-image img{display:block;width:100%;max-width:760px;height:auto;object-fit:contain}
+      .source-question-image{height:100%;min-height:0;overflow:auto;padding:24px;background:#fff;position:relative}
+      .screenshot-zoom-toolbar{position:sticky;top:0;z-index:5;width:max-content;margin:0 auto 16px;display:flex;align-items:center;gap:4px;padding:5px;border:1px solid #e7e5de;border-radius:10px;background:rgba(255,255,255,.96);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+      .screenshot-zoom-toolbar button{height:30px;min-width:30px;border:0;border-radius:7px;background:transparent;color:#4f4c47;font-size:14px;cursor:pointer;padding:0 8px}
+      .screenshot-zoom-toolbar button:hover:not(:disabled){background:#f4f2eb}
+      .screenshot-zoom-toolbar button:disabled{opacity:.35;cursor:default}
+      .screenshot-zoom-toolbar span{min-width:48px;text-align:center;font-size:12px;font-weight:700;color:#6d6962}
+      .source-question-image-stage{min-width:100%;margin:0 auto}
+      .source-question-image-stage img{display:block;width:100%;height:auto;max-width:none}
       .visual-choice-material{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:28px}
       .visual-choice-material :global(.visual-crop){margin:18px auto 0}
       .reference-text-content{max-width:720px;margin:0 auto;padding:34px 38px;color:#5f5d58;font-size:14px;line-height:1.8;white-space:pre-line;align-self:center;text-align:left}

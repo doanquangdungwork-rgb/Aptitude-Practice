@@ -73,15 +73,20 @@ export default function TestPage() {
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
       <section className="quiz-reference-pane passage-material-pane">
-        {isScreenshotTest ? <div className="source-question-image">
-          <div className="screenshot-zoom-toolbar" aria-label="Question image zoom controls">
-            <button type="button" onClick={() => changeScreenshotZoom(-10)} disabled={screenshotZoom <= 60} aria-label="Zoom out">−</button>
-            <span>{screenshotZoom}%</span>
-            <button type="button" onClick={() => changeScreenshotZoom(10)} disabled={screenshotZoom >= 200} aria-label="Zoom in">+</button>
-            <button type="button" onClick={() => setScreenshotZoom(100)} disabled={screenshotZoom === 100}>Reset</button>
+        {isScreenshotTest ? <div className="source-question-frame">
+          <div className="source-question-header">
+            <span className="eyebrow">Question {q.number}</span>
+            <div className="screenshot-zoom-toolbar" aria-label="Question image zoom controls">
+              <button type="button" onClick={() => changeScreenshotZoom(-10)} disabled={screenshotZoom <= 60} aria-label="Zoom out">−</button>
+              <span>{screenshotZoom}%</span>
+              <button type="button" onClick={() => changeScreenshotZoom(10)} disabled={screenshotZoom >= 200} aria-label="Zoom in">+</button>
+              <button type="button" onClick={() => setScreenshotZoom(100)} disabled={screenshotZoom === 100}>Reset</button>
+            </div>
           </div>
-          <div className="source-question-image-stage" style={{ width: `${Math.max(100, screenshotZoom)}%` }}>
-            <img src={`/question-assets/TEST_030_Q${String(q.number).padStart(2, "0")}.webp`} alt={`Deductive Reasoning Test 1 — Question ${q.number}`} />
+          <div className="source-question-image">
+            <div className="source-question-image-stage" style={{ width: `${Math.max(100, screenshotZoom)}%` }}>
+              <img src={`/question-assets/TEST_030_Q${String(q.number).padStart(2, "0")}.webp`} alt={`Deductive Reasoning Test 1 — Question ${q.number}`} />
+            </div>
           </div>
         </div> : isImageChoice ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : textOnlyPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : hasPassage ? <div className="visual-passage-panel">
           <div className="visual-passage-copy"><span className="eyebrow">Passage</span><span className="visual-passage-label">Information for {label}</span><p>{q.context}</p></div>
@@ -101,12 +106,18 @@ export default function TestPage() {
     <style jsx>{`
       .passage-test .quiz-reference-pane{grid-column:1;grid-row:1;min-height:0}
       .passage-test .quiz-question-pane{grid-column:2;grid-row:1;min-height:0}
-      .source-question-image{height:100%;min-height:0;overflow:auto;padding:24px;background:#fff;position:relative}
-      .screenshot-zoom-toolbar{position:sticky;top:0;z-index:5;width:max-content;margin:0 auto 16px;display:flex;align-items:center;gap:4px;padding:5px;border:1px solid #e7e5de;border-radius:10px;background:rgba(255,255,255,.96);box-shadow:0 2px 8px rgba(0,0,0,.06)}
-      .screenshot-zoom-toolbar button{height:30px;min-width:30px;border:0;border-radius:7px;background:transparent;color:#4f4c47;font-size:14px;cursor:pointer;padding:0 8px}
-      .screenshot-zoom-toolbar button:hover:not(:disabled){background:#f4f2eb}
+      .screenshot-test .quiz-reference-pane{min-height:0}
+      .screenshot-test .quiz-question-pane{min-height:0}
+      .screenshot-test .question-navigator{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+      .screenshot-test .quiz-question-card{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+      .source-question-frame{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+      .source-question-header{flex:0 0 auto;min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 14px;border-bottom:1px solid var(--line);background:#fff}
+      .source-question-image{flex:1 1 0;min-height:0;overflow:auto;padding:20px;background:#fff}
+      .screenshot-zoom-toolbar{display:flex;align-items:center;gap:3px;padding:3px;border:1px solid #e7e5de;border-radius:9px;background:#faf9f5}
+      .screenshot-zoom-toolbar button{height:30px;min-width:30px;border:0;border-radius:6px;background:transparent;color:#4f4c47;font-size:14px;cursor:pointer;padding:0 7px}
+      .screenshot-zoom-toolbar button:hover:not(:disabled){background:#f0eee7}
       .screenshot-zoom-toolbar button:disabled{opacity:.35;cursor:default}
-      .screenshot-zoom-toolbar span{min-width:48px;text-align:center;font-size:12px;font-weight:700;color:#6d6962}
+      .screenshot-zoom-toolbar span{min-width:46px;text-align:center;font-size:12px;font-weight:700;color:#6d6962}
       .source-question-image-stage{min-width:100%;margin:0 auto}
       .source-question-image-stage img{display:block;width:100%;height:auto;max-width:none}
       .visual-choice-material{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:28px}
@@ -119,7 +130,7 @@ export default function TestPage() {
       .passage-reference-wrap{flex:1 1 0;min-height:240px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
       .passage-reference-wrap :global(.reference-viewer){height:100%;min-height:0;border:0;border-radius:0;box-shadow:none}
       .passage-reference-wrap :global(.reference-stage){min-height:0}
-      @media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.source-question-image{min-height:320px;padding:16px}.visual-choice-material{min-height:320px;padding:20px}.reference-text-content{padding:24px}.passage-reference-wrap{min-height:360px}}
+      @media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.source-question-frame{min-height:320px}.source-question-header{padding:10px}.source-question-image{min-height:280px;padding:16px}.visual-choice-material{min-height:320px;padding:20px}.reference-text-content{padding:24px}.passage-reference-wrap{min-height:360px}}
     `}</style>
   </div>;
 }

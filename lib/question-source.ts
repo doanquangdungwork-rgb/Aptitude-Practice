@@ -102,9 +102,9 @@ const canonicalOverrides = new Map<string, CanonicalTest>();
 const test001 = normalizeCanonicalTest(canonicalTest001); if (test001) canonicalOverrides.set(test001.id, test001);
 const deductiveLogicalLstTest = normalizeCanonicalTest(deductiveLogicalLst1); if (deductiveLogicalLstTest) canonicalOverrides.set("TEST_004", deductiveLogicalLstTest);
 const deductiveTest: CanonicalTest = { id: "TEST_030", title: "DeductiveTest1", taxonomy: { pillar: "deductive", subtype: "deductive_reasoning" }, timing: { mode: "none" }, questions: (deductiveTest1 as DeductiveSourceQuestion[]).map(deductiveQuestion) }; canonicalOverrides.set("TEST_030", deductiveTest);
-canonicalOverrides.set("TEST_031", compactDeductiveTest("TEST_031", "DeductiveTest2", deductiveTest2Contexts, deductiveTest2Questions));
-canonicalOverrides.set("TEST_032", compactDeductiveTest("TEST_032", "DeductiveTest3", deductiveTest3Contexts, deductiveTest3Questions));
-canonicalOverrides.set("TEST_033", compactDeductiveTest("TEST_033", "DeductiveTest4", deductiveTest4Contexts, deductiveTest4Questions));
+canonicalOverrides.set("TEST_031", compactDeductiveTest("TEST_031", "DeductiveTest2", deductiveTest2Contexts, deductiveTest2Questions as CompactDeductiveQuestion[]));
+canonicalOverrides.set("TEST_032", compactDeductiveTest("TEST_032", "DeductiveTest3", deductiveTest3Contexts, deductiveTest3Questions as CompactDeductiveQuestion[]));
+canonicalOverrides.set("TEST_033", compactDeductiveTest("TEST_033", "DeductiveTest4", deductiveTest4Contexts, deductiveTest4Questions as CompactDeductiveQuestion[]));
 
 const grouped = new Map<string, LegacyQuestion[]>();
 for (const rawQuestion of allQuestions as LegacyQuestion[]) { const id = String(rawQuestion.testId ?? rawQuestion.id.split("_")[0]); const list = grouped.get(id) ?? []; list.push(rawQuestion); grouped.set(id, list); }

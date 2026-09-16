@@ -19,6 +19,7 @@ export default function TestPage() {
   const qs = useMemo(() => questionsForEngine(testId), [testId]);
   const actualQuestionCount = qs.length;
   const referenceMaterials = useMemo(() => referenceMaterialsForTest(testId), [testId]);
+  const isScreenshotTest = testId === "TEST_030";
   const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -64,12 +65,12 @@ export default function TestPage() {
   const updateAnswer = (value: unknown) => { const next = { ...answers, [q.id]: value }; setAnswers(next); const old = getAttempt(testId); saveAttempt({ id: attemptId, testId, startedAt: old?.startedAt || startedAt || new Date().toISOString(), updatedAt: new Date().toISOString(), answers: next }); };
   const finish = async () => { const wrong = qs.filter(x => answers[x.id] !== undefined && !answersMatch(x, answers[x.id])).map(x => x.id); setWrongQuestions([...new Set([...getWrongQuestions(), ...wrong])]); const seconds = Math.max(0, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000)); completeAttempt(attemptId, answers, seconds); const session = await supabase?.auth.getSession(); const uid = session?.data.session?.user?.id; if (uid) recordPracticeDay(uid, new Date()); router.push(`/tests/${testId}/result`); };
 
-  return <div className={`app-page quiz-page ${hasPassage ? "passage-test" : ""}`}>
+  return <div className={`app-page quiz-page ${hasPassage ? "passage-test" : ""} ${isScreenshotTest ? "screenshot-test" : ""}`}>
     <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
       <section className="quiz-reference-pane passage-material-pane">
-        {isImageChoice ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : textOnlyPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : hasPassage ? <div className="visual-passage-panel">
+        {isScreenshotTest ? <div className="source-question-image"><img src={`/question-assets/TEST_030_Q${String(q.number).padStart(2, "0")}.webp`} alt={`Deductive Reasoning Test 1 — Question ${q.number}`} /></div> : isImageChoice ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : textOnlyPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : hasPassage ? <div className="visual-passage-panel">
           <div className="visual-passage-copy"><span className="eyebrow">Passage</span><span className="visual-passage-label">Information for {label}</span><p>{q.context}</p></div>
           <div className="passage-reference-wrap"><ReferenceViewer materials={visualMaterials} initialIndex={0} compact /></div>
         </div> : hasVisualPanel ? <ReferenceViewer materials={visualMaterials} initialIndex={0} /> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference image is attached to this question.</p></div>}
@@ -77,9 +78,9 @@ export default function TestPage() {
       <section className="quiz-question-pane answer-pane">
         <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
         <article className="quiz-card quiz-question-card" id={`question-${q.number}`}>
-          <div className="quiz-question-head"><div><p className="eyebrow">{label}</p><div className="quiz-question mt-3">{isImageChoice ? <QuestionPrompt blocks={questionTextBlocks as any} /> : <QuestionPrompt blocks={q.prompt.blocks} hideImages={hasPassage || hasVisualPanel} />}</div></div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
+          <div className="quiz-question-head"><div className="flex-1"><p className="eyebrow">{label}</p>{!isScreenshotTest && <div className="quiz-question mt-3">{isImageChoice ? <QuestionPrompt blocks={questionTextBlocks as any} /> : <QuestionPrompt blocks={q.prompt.blocks} hideImages={hasPassage || hasVisualPanel} />}</div>}</div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
           <div className="quiz-answer-label">Choose your answer</div>
-          <QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} />
+          <QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} screenshotMode={isScreenshotTest} />
         </article>
         <div className="quiz-nav"><button disabled={!idx} onClick={() => setIdx(idx - 1)} className="outline-action disabled:opacity-30">← Previous</button>{idx < actualQuestionCount - 1 ? <button onClick={() => setIdx(idx + 1)} className="yellow-button">Next →</button> : <button onClick={finish} className="yellow-button">Finish test</button>}</div>
       </section>
@@ -87,6 +88,8 @@ export default function TestPage() {
     <style jsx>{`
       .passage-test .quiz-reference-pane{grid-column:1;grid-row:1;min-height:0}
       .passage-test .quiz-question-pane{grid-column:2;grid-row:1;min-height:0}
+      .source-question-image{height:100%;min-height:0;overflow:auto;padding:24px;display:flex;align-items:flex-start;justify-content:center;background:#fff}
+      .source-question-image img{display:block;width:100%;max-width:760px;height:auto;object-fit:contain}
       .visual-choice-material{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:28px}
       .visual-choice-material :global(.visual-crop){margin:18px auto 0}
       .reference-text-content{max-width:720px;margin:0 auto;padding:34px 38px;color:#5f5d58;font-size:14px;line-height:1.8;white-space:pre-line;align-self:center;text-align:left}
@@ -97,7 +100,7 @@ export default function TestPage() {
       .passage-reference-wrap{flex:1 1 0;min-height:240px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
       .passage-reference-wrap :global(.reference-viewer){height:100%;min-height:0;border:0;border-radius:0;box-shadow:none}
       .passage-reference-wrap :global(.reference-stage){min-height:0}
-      @media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.visual-choice-material{min-height:320px;padding:20px}.reference-text-content{padding:24px}.passage-reference-wrap{min-height:360px}}
+      @media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.source-question-image{min-height:320px;padding:16px}.visual-choice-material{min-height:320px;padding:20px}.reference-text-content{padding:24px}.passage-reference-wrap{min-height:360px}}
     `}</style>
   </div>;
 }

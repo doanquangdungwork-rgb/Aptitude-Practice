@@ -1,0 +1,48 @@
+name: restore-deductive-snapshots
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    if: ${{ !contains(github.event.head_commit.message, 'restore: deductive source snapshots') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract the original asset archive from Git history
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/deductive-assets
+          git show 31247d7cbfd55c814592279e1a101e1bf77151c4:Aptitude-question-assets-final.zip > /tmp/deductive-assets/source.zip
+          unzip -q /tmp/deductive-assets/source.zip -d /tmp/deductive-assets/unpacked
+
+          mkdir -p public/question-assets
+          find /tmp/deductive-assets/unpacked -type f \
+            \( -name 'TEST_030_Q*.webp' -o -name 'TEST_031_Q*.webp' -o -name 'TEST_032_Q*.webp' -o -name 'TEST_033_Q*.webp' \) \
+            -exec cp {} public/question-assets/ \;
+
+          count=$(find public/question-assets -maxdepth 1 -type f -name 'TEST_03[0-3]_Q*.webp' | wc -l | tr -d ' ')
+          echo "Restored deductive snapshot files: $count"
+          test "$count" -gt 0
+
+      - name: Commit restored snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/question-assets/TEST_03*_Q*.webp
+          if git diff --cached --quiet; then
+            echo "No new deductive snapshot assets to commit."
+            exit 0
+          fi
+          git commit -m "restore: deductive source snapshots"
+          git push

@@ -30,9 +30,8 @@ export default function TestPage() {
   useEffect(() => {
     const saved = getAttempt(testId);
     const done = getCompletedAttempt(testId);
-    if (saved) {
-      setStarted(true); setAnswers(saved.answers); setAttemptId(saved.id); setStartedAt(saved.startedAt);
-    } else if (done) setCompleted(true);
+    if (saved) { setStarted(true); setAnswers(saved.answers); setAttemptId(saved.id); setStartedAt(saved.startedAt); }
+    else if (done) setCompleted(true);
   }, [testId]);
 
   const q = qs[idx];
@@ -49,10 +48,12 @@ export default function TestPage() {
     return [...new Set(refs)];
   }, [q?.id]);
 
+  const currentReferenceMaterials = useMemo(() => referenceMaterialsForQuestion(testId, q?.number ?? idx + 1), [testId, q?.number, idx]);
   const visualMaterials = useMemo(() => {
     if (referenceMaterials.length) return referenceMaterials;
+    if (currentReferenceMaterials.length) return currentReferenceMaterials;
     return questionImageRefs.map((assetRef, i) => ({ id: `${testId}-question-image-${i}`, assetRef, label: `Question ${q?.number ?? idx + 1}` }));
-  }, [referenceMaterials, questionImageRefs, testId, q?.number, idx]);
+  }, [referenceMaterials, currentReferenceMaterials, questionImageRefs, testId, q?.number, idx]);
   const hasVisualPanel = visualMaterials.length > 0;
 
   if (!test) return <div className="app-page"><div className="pastel-peach rounded-[16px] p-8"><h1 className="section-title">Test not found</h1><button onClick={() => router.push("/tests")} className="yellow-button mt-6">Back to tests</button></div></div>;
@@ -66,32 +67,12 @@ export default function TestPage() {
   const label = q.subquestion ? `Question ${q.number}${q.subquestion}` : `Question ${q.number}`;
   const progress = ((idx + 1) / actualQuestionCount) * 100;
   const isAnswered = (value: unknown) => value !== undefined && value !== "" && !(Array.isArray(value) && value.length === 0);
-  const updateAnswer = (value: unknown) => {
-    const next = { ...answers, [q.id]: value }; setAnswers(next);
-    const old = getAttempt(testId);
-    saveAttempt({ id: attemptId, testId, startedAt: old?.startedAt || startedAt || new Date().toISOString(), updatedAt: new Date().toISOString(), answers: next });
-  };
-  const finish = async () => {
-    const wrong = qs.filter(x => answers[x.id] !== undefined && !answersMatch(x, answers[x.id])).map(x => x.id);
-    setWrongQuestions([...new Set([...getWrongQuestions(), ...wrong])]);
-    const seconds = Math.max(0, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000));
-    completeAttempt(attemptId, answers, seconds);
-    const session = await supabase?.auth.getSession(); const uid = session?.data.session?.user?.id;
-    if (uid) recordPracticeDay(uid, new Date());
-    router.push(`/tests/${testId}/result`);
-  };
-
-  const referenceIndex = referenceMaterials.length
-    ? referenceMaterials.findIndex(m => m.id === referenceMaterialsForQuestion(testId, q.number)[0]?.id)
-    : 0;
+  const updateAnswer = (value: unknown) => { const next = { ...answers, [q.id]: value }; setAnswers(next); const old = getAttempt(testId); saveAttempt({ id: attemptId, testId, startedAt: old?.startedAt || startedAt || new Date().toISOString(), updatedAt: new Date().toISOString(), answers: next }); };
+  const finish = async () => { const wrong = qs.filter(x => answers[x.id] !== undefined && !answersMatch(x, answers[x.id])).map(x => x.id); setWrongQuestions([...new Set([...getWrongQuestions(), ...wrong])]); const seconds = Math.max(0, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000)); completeAttempt(attemptId, answers, seconds); const session = await supabase?.auth.getSession(); const uid = session?.data.session?.user?.id; if (uid) recordPracticeDay(uid, new Date()); router.push(`/tests/${testId}/result`); };
 
   return <div className="app-page quiz-page">
-    <div className="quiz-top">
-      <div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div>
-      <div className="flex items-center gap-2"><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div>
-    </div>
+    <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
-
     <div className="quiz-workspace">
       <section className="quiz-question-pane">
         <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
@@ -102,9 +83,8 @@ export default function TestPage() {
         </article>
         <div className="quiz-nav"><button disabled={!idx} onClick={() => setIdx(idx - 1)} className="outline-action disabled:opacity-30">← Previous</button>{idx < actualQuestionCount - 1 ? <button onClick={() => setIdx(idx + 1)} className="yellow-button">Next →</button> : <button onClick={finish} className="yellow-button">Finish test</button>}</div>
       </section>
-
       <section className="quiz-reference-pane">
-        {hasVisualPanel ? <ReferenceViewer materials={visualMaterials} initialIndex={referenceIndex >= 0 ? referenceIndex : 0} /> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference image is attached to this question.</p></div>}
+        {hasVisualPanel ? <ReferenceViewer materials={visualMaterials} initialIndex={0} /> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference image is attached to this question.</p></div>}
       </section>
     </div>
   </div>;

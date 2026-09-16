@@ -65,15 +65,7 @@ export default function TestPage() {
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
       <section className="quiz-reference-pane passage-material-pane">
-        {textOnlyPassage ? <div className="text-only-passage-panel">
-          <article className="text-only-passage-card">
-            <div className="passage-head">
-              <span className="eyebrow">Passage</span>
-              <span className="reference-label">Information for {label}</span>
-            </div>
-            <p className="passage-copy">{q.context}</p>
-          </article>
-        </div> : hasPassage ? <div className="visual-passage-panel">
+        {textOnlyPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : hasPassage ? <div className="visual-passage-panel">
           <div className="visual-passage-copy"><span className="eyebrow">Passage</span><span className="visual-passage-label">Information for {label}</span><p>{q.context}</p></div>
           <div className="passage-reference-wrap"><ReferenceViewer materials={visualMaterials} initialIndex={0} compact /></div>
         </div> : hasVisualPanel ? <ReferenceViewer materials={visualMaterials} initialIndex={0} /> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference image is attached to this question.</p></div>}
@@ -91,11 +83,7 @@ export default function TestPage() {
     <style jsx>{`
       .passage-test .quiz-reference-pane{grid-column:1;grid-row:1;min-height:0}
       .passage-test .quiz-question-pane{grid-column:2;grid-row:1;min-height:0}
-      .text-only-passage-panel{height:100%;min-height:0;display:flex;align-items:center;justify-content:center;padding:28px 24px;overflow:auto}
-      .text-only-passage-card{width:min(100%,720px);background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px 32px;box-shadow:0 8px 24px rgba(35,34,30,.035)}
-      .passage-head{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)}
-      .passage-head .reference-label{font-size:13px;font-weight:600;color:#77736c}
-      .passage-copy{margin:0;white-space:pre-line;font-size:14px;line-height:1.8;color:#5f5d58}
+      .reference-text-content{max-width:720px;margin:0 auto;padding:34px 38px;color:#5f5d58;font-size:14px;line-height:1.8;white-space:pre-line;align-self:center;text-align:left}
       .visual-passage-panel{height:100%;min-height:0;display:flex;flex-direction:column;gap:16px;overflow:hidden}
       .visual-passage-copy{flex:0 0 auto;padding:2px 0 0;display:flex;flex-direction:column;gap:4px}
       .visual-passage-label{font-size:13px;color:#77736c;font-weight:600}
@@ -103,7 +91,7 @@ export default function TestPage() {
       .passage-reference-wrap{flex:1 1 0;min-height:240px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
       .passage-reference-wrap :global(.reference-viewer){height:100%;min-height:0;border:0;border-radius:0;box-shadow:none}
       .passage-reference-wrap :global(.reference-stage){min-height:0}
-      @media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.text-only-passage-panel{align-items:flex-start;padding:20px 12px}.text-only-passage-card{padding:24px}.passage-reference-wrap{min-height:360px}}
+      @media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.reference-text-content{padding:24px}.passage-reference-wrap{min-height:360px}}
     `}</style>
   </div>;
 }

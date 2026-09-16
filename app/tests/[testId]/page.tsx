@@ -19,6 +19,7 @@ export default function TestPage() {
   const qs = useMemo(() => questionsForEngine(testId), [testId]);
   const actualQuestionCount = qs.length;
   const referenceMaterials = useMemo(() => referenceMaterialsForTest(testId), [testId]);
+  const isDeductiveTest1 = testId === "TEST_030";
   const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -70,7 +71,7 @@ export default function TestPage() {
   const updateAnswer = (value: unknown) => { const next = { ...answers, [q.id]: value }; setAnswers(next); const old = getAttempt(testId); saveAttempt({ id: attemptId, testId, startedAt: old?.startedAt || startedAt || new Date().toISOString(), updatedAt: new Date().toISOString(), answers: next }); };
   const finish = async () => { const wrong = qs.filter(x => answers[x.id] !== undefined && !answersMatch(x, answers[x.id])).map(x => x.id); setWrongQuestions([...new Set([...getWrongQuestions(), ...wrong])]); const seconds = Math.max(0, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000)); completeAttempt(attemptId, answers, seconds); const session = await supabase?.auth.getSession(); const uid = session?.data.session?.user?.id; if (uid) recordPracticeDay(uid, new Date()); router.push(`/tests/${testId}/result`); };
 
-  return <div className="app-page quiz-page">
+  return <div className={`app-page quiz-page ${isDeductiveTest1 ? "deductive-test" : ""}`}>
     <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
@@ -84,7 +85,7 @@ export default function TestPage() {
         <div className="quiz-nav"><button disabled={!idx} onClick={() => setIdx(idx - 1)} className="outline-action disabled:opacity-30">← Previous</button>{idx < actualQuestionCount - 1 ? <button onClick={() => setIdx(idx + 1)} className="yellow-button">Next →</button> : <button onClick={finish} className="yellow-button">Finish test</button>}</div>
       </section>
       <section className="quiz-reference-pane">
-        {hasVisualPanel ? <ReferenceViewer materials={visualMaterials} initialIndex={0} /> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference image is attached to this question.</p></div>}
+        {isDeductiveTest1 ? <div className="deductive-passage-panel"><div className="reference-toolbar"><div className="reference-heading"><span className="eyebrow">Passage</span><span className="reference-label">Read the information before answering</span></div></div><div className="deductive-passage-scroll"><p className="deductive-passage">{q.context || "Read the information provided for this question."}</p></div></div> : hasVisualPanel ? <ReferenceViewer materials={visualMaterials} initialIndex={0} /> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference image is attached to this question.</p></div>}
       </section>
     </div>
   </div>;

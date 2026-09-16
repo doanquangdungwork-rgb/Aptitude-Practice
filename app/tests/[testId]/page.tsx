@@ -44,6 +44,7 @@ export default function TestPage() {
   const answer = q ? answers[q.id] : undefined;
   const label = q ? (q.subquestion ? `Question ${q.number}${q.subquestion}` : `Question ${q.number}`) : "";
   const progress = actualQuestionCount ? ((idx + 1) / actualQuestionCount) * 100 : 0;
+  const deductiveSnapshotSrc = q ? `/question-assets/${testId}_Q${String(q.number).padStart(2, "0")}.webp` : "";
 
   useEffect(() => { if (q) setBookmarked(getBookmarks().includes(q.id)); }, [q?.id]);
 
@@ -100,7 +101,17 @@ export default function TestPage() {
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
       <section className={`quiz-reference-pane ${isDeductiveTest ? "deductive-snapshot-pane" : "passage-material-pane"}`}>
-        {isDeductiveTest ? <QuestionSnapshot question={q} materials={currentReferenceMaterials} /> : currentReferenceMaterials.length ? <ReferenceViewer materials={currentReferenceMaterials} initialIndex={0} /> : hasPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : questionImageBlocks.length ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference material is attached to this question.</p></div>}
+        {isDeductiveTest ? (
+          <QuestionSnapshot questionNumber={q.number} src={deductiveSnapshotSrc} />
+        ) : currentReferenceMaterials.length ? (
+          <ReferenceViewer materials={currentReferenceMaterials} initialIndex={0} />
+        ) : hasPassage ? (
+          <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" />
+        ) : questionImageBlocks.length ? (
+          <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div>
+        ) : (
+          <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference material is attached to this question.</p></div>
+        )}
       </section>
       <section className="quiz-question-pane answer-pane">
         <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
@@ -123,8 +134,7 @@ export default function TestPage() {
       .test-countdown{min-width:72px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.02em;text-align:center;color:#4f4c47}
       .test-countdown.urgent{color:#b55a4d;border-color:#e6c4bd;background:#fff8f6}
       .visual-choice-material{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:28px}
-      .reference-text-content{max-width:720px;margin:0 auto;padding:34px 38px;color:#5f5d58;font-size:14px;line-height:1.8;white-space:pre-line;align-self:center;text-align:left}
-      @media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.visual-choice-material{min-height:320px;padding:20px}.reference-text-content{padding:24px}}
+      @media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.visual-choice-material{min-height:320px;padding:20px}}
     `}</style>
   </div>;
 }

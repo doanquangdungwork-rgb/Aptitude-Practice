@@ -11,6 +11,7 @@ import { QuestionPrompt } from "../../../components/question-content";
 import QuestionResponse from "../../../components/question-response";
 import QuestionNavigator from "../../../components/question-navigator";
 import ReferenceViewer from "../../../components/reference-viewer";
+import QuestionSnapshot from "../../../components/question-snapshot";
 
 export default function TestPage() {
   const { testId } = useParams<{ testId: string }>();
@@ -18,6 +19,7 @@ export default function TestPage() {
   const test = appCatalog.tests.find((x: any) => x.test_id === testId);
   const qs = useMemo(() => questionsForEngine(testId), [testId]);
   const actualQuestionCount = qs.length;
+  const isDeductiveTest = ["TEST_030", "TEST_031", "TEST_032", "TEST_033"].includes(testId);
   const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -91,21 +93,19 @@ export default function TestPage() {
   if (!started) return <div className="app-page"><div className="quiz-card pastel-lavender"><p className="eyebrow">{pillarMap[test.pillar]} · TEST {testId.replace("TEST_", "")}</p><h1 className="mt-4 text-5xl font-medium tracking-[-.055em]">{test.title.replaceAll("_", " ")}</h1><div className="mt-6 flex flex-wrap gap-2 text-xs font-bold text-[#7d7972]"><span className="rounded-full bg-white px-4 py-2">{actualQuestionCount} questions</span><span className="rounded-full bg-white px-4 py-2">{actualQuestionCount} minute{actualQuestionCount === 1 ? "" : "s"}</span></div><button disabled={!actualQuestionCount} onClick={() => { const id = crypto.randomUUID(); const now = new Date().toISOString(); setAttemptId(id); setStartedAt(now); setStarted(true); setIdx(0); setAnswers({}); setRemainingSeconds(testDurationSeconds); saveAttempt({ id, testId, startedAt: now, updatedAt: now, answers: {} }); }} className="yellow-button mt-8 disabled:opacity-40">{actualQuestionCount ? "Start test →" : "No questions loaded"}</button></div></div>;
   if (!q) return null;
 
-  const hasReference = currentReferenceMaterials.length > 0;
   const questionImageBlocks = (q.prompt?.blocks ?? []).filter((block: any) => block?.type === "image");
-  const questionTextBlocks = (q.prompt?.blocks ?? []).filter((block: any) => block?.type === "text");
 
   return <div className={`app-page quiz-page ${hasPassage ? "passage-test" : ""}`}>
     <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><div className={`test-countdown ${remainingSeconds <= 60 ? "urgent" : ""}`} aria-label="Time remaining">{formatCountdown(remainingSeconds)}</div><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
-      <section className="quiz-reference-pane passage-material-pane">
-        {hasReference ? <ReferenceViewer materials={currentReferenceMaterials} initialIndex={0} /> : hasPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : questionImageBlocks.length ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference material is attached to this question.</p></div>}
+      <section className={`quiz-reference-pane ${isDeductiveTest ? "deductive-snapshot-pane" : "passage-material-pane"}`}>
+        {isDeductiveTest ? <QuestionSnapshot question={q} materials={currentReferenceMaterials} /> : currentReferenceMaterials.length ? <ReferenceViewer materials={currentReferenceMaterials} initialIndex={0} /> : hasPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : questionImageBlocks.length ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference material is attached to this question.</p></div>}
       </section>
       <section className="quiz-question-pane answer-pane">
         <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
         <article className="quiz-card quiz-question-card" id={`question-${q.number}`}>
-          <div className="quiz-question-head"><div className="flex-1"><p className="eyebrow">{label}</p><div className="quiz-question mt-3">{questionTextBlocks.length ? <QuestionPrompt blocks={questionTextBlocks as any} /> : <QuestionPrompt blocks={q.prompt.blocks} hideImages={hasReference || hasPassage} />}</div></div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
+          <div className="quiz-question-head"><div className="flex-1"><p className="eyebrow">{isDeductiveTest ? "Answer" : label}</p>{!isDeductiveTest && <div className="quiz-question mt-3"><QuestionPrompt blocks={q.prompt.blocks} hideImages={Boolean(currentReferenceMaterials.length || hasPassage)} /></div>}</div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
           <div className="quiz-answer-label">Choose your answer</div>
           <QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} />
         </article>
@@ -117,6 +117,8 @@ export default function TestPage() {
       .passage-test .quiz-question-pane{grid-column:2;grid-row:1;min-height:0}
       .quiz-reference-pane{min-height:0}
       .quiz-question-pane{min-height:0}
+      .deductive-snapshot-pane{grid-column:1;grid-row:1;min-height:0}
+      .deductive-snapshot-pane .question-snapshot-shell{height:100%;min-height:0}
       .quiz-question-card{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.02)}
       .test-countdown{min-width:72px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.02em;text-align:center;color:#4f4c47}
       .test-countdown.urgent{color:#b55a4d;border-color:#e6c4bd;background:#fff8f6}

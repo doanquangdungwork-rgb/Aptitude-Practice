@@ -1,0 +1,45 @@
+name: Sync Deductive Test Assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-deductive-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Download LogicVista source images
+        run: |
+          mkdir -p /tmp/logicvista public/question-assets
+          curl -L --fail --retry 3 -o /tmp/LogicVista_images.zip 'https://huggingface.co/datasets/RavenInJuly/CFPO_Datasets/resolve/main/LogicVista_images.zip?download=true'
+          unzip -j -o /tmp/LogicVista_images.zip '*/LogicVista_v1_287.png' '*/LogicVista_v1_288.png' '*/LogicVista_v1_289.png' '*/LogicVista_v1_290.png' '*/LogicVista_v1_291.png' '*/LogicVista_v1_292.png' '*/LogicVista_v1_293.png' '*/LogicVista_v1_294.png' '*/LogicVista_v1_295.png' '*/LogicVista_v1_296.png' '*/LogicVista_v1_297.png' '*/LogicVista_v1_298.png' '*/LogicVista_v1_299.png' '*/LogicVista_v1_300.png' '*/LogicVista_v1_301.png' '*/LogicVista_v1_302.png' '*/LogicVista_v1_303.png' '*/LogicVista_v1_304.png' '*/LogicVista_v1_305.png' '*/LogicVista_v1_306.png' '*/LogicVista_v1_307.png' '*/LogicVista_v1_308.png' -d /tmp/logicvista
+
+      - name: Convert to webp assets used by the test runner
+        run: |
+          rm -f public/question-assets/TEST_030_Q*.webp
+          for n in $(seq -w 1 22); do
+            convert "/tmp/logicvista/LogicVista_v1_$((10#$n + 286)).png" -strip -quality 88 "public/question-assets/TEST_030_Q${n}.webp"
+          done
+
+      - name: Commit generated assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/question-assets/TEST_030_Q*.webp
+          if git diff --cached --quiet; then
+            echo 'No asset changes.'
+            exit 0
+          fi
+          git commit -m 'fix: add Deductive Test 1 source images'
+          git push

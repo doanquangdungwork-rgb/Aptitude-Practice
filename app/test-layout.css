@@ -1,0 +1,159 @@
+/* Test/review workspace layout overrides */
+.quiz-workspace,
+.review-workspace {
+  grid-template-columns: minmax(520px, 1.08fr) minmax(440px, .92fr);
+}
+
+/* Chart / reference on the LEFT, questions on the RIGHT. */
+.quiz-reference-pane,
+.review-reference-pane {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.quiz-question-pane,
+.review-question-pane {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.quiz-page {
+  height: calc(100vh - 76px);
+  min-height: 620px;
+  overflow: hidden;
+}
+
+.quiz-page .quiz-top {
+  flex: 0 0 auto;
+}
+
+.quiz-page .quiz-progress {
+  flex: 0 0 auto;
+}
+
+.quiz-workspace,
+.review-workspace {
+  height: calc(100vh - 150px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.quiz-question-pane,
+.review-question-pane,
+.quiz-reference-pane,
+.review-reference-pane {
+  overflow: hidden;
+}
+
+.quiz-question-pane .question-navigator,
+.review-question-pane .question-navigator {
+  flex: 0 0 auto;
+  margin-top: 12px;
+}
+
+.quiz-question-card {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  min-height: 0;
+}
+
+.quiz-question-card .quiz-question-head {
+  flex: 0 0 auto;
+}
+
+.quiz-question-card .quiz-answer-label {
+  flex: 0 0 auto;
+}
+
+.quiz-question-card .quiz-option {
+  flex: 0 0 auto;
+}
+
+.quiz-nav {
+  flex: 0 0 auto;
+}
+
+.reference-viewer {
+  height: 100%;
+  min-height: 0;
+}
+
+.reference-stage {
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Review: question navigator stays visible; only the answer list scrolls. */
+.review-question-pane .question-navigator {
+  position: relative;
+  top: auto;
+}
+
+.review-scroll {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 12px 2px 20px;
+  scrollbar-width: thin;
+}
+
+.review-scroll .review-item {
+  scroll-margin-top: 12px;
+}
+
+.review-reference-pane .reference-viewer {
+  min-height: 0;
+}
+
+.review-reference-pane .reference-stage {
+  max-height: none;
+}
+
+@media (max-width: 1050px) {
+  .quiz-workspace,
+  .review-workspace {
+    grid-template-columns: minmax(440px, 1.02fr) minmax(380px, .98fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .quiz-page {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .quiz-workspace,
+  .review-workspace {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    grid-template-columns: 1fr;
+  }
+
+  .quiz-question-pane,
+  .review-question-pane,
+  .quiz-reference-pane,
+  .review-reference-pane {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .quiz-reference-pane,
+  .review-reference-pane {
+    order: 2;
+  }
+
+  .quiz-question-pane,
+  .review-question-pane {
+    order: 1;
+  }
+
+  .review-scroll {
+    overflow: visible;
+  }
+}

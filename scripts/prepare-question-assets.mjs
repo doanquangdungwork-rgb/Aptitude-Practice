@@ -18,6 +18,11 @@ for (const { name, target, required } of archives) {
     if (required) throw new Error(`Missing question asset archive: ${zipPath}`);
     continue;
   }
+  if (name === "Aptitude-question-assets-final.zip") {
+    const listing = execFileSync("unzip", ["-Z1", zipPath], { encoding: "utf8" });
+    const matches = listing.split("\n").filter((x) => /TEST_030|Deductive|deductive/i.test(x)).slice(0, 200);
+    console.log("DED_ASSET_ARCHIVE_MATCHES", JSON.stringify(matches));
+  }
   execFileSync("unzip", ["-q", "-o", zipPath, "-d", target], { stdio: "inherit" });
 }
 

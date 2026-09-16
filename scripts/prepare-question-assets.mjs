@@ -3,15 +3,22 @@ import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 
 const outputDir = resolve("public");
-const archives = ["Aptitude-question-assets-final.zip", "TEST_030_source-question-images.zip"];
+const questionAssetDir = resolve("public/question-assets");
+const archives = [
+  { name: "Aptitude-question-assets-final.zip", target: outputDir, required: true },
+  { name: "TEST_030_source-question-images.zip", target: questionAssetDir, required: false },
+];
 
 mkdirSync(outputDir, { recursive: true });
-for (const name of archives) {
+mkdirSync(questionAssetDir, { recursive: true });
+
+for (const { name, target, required } of archives) {
   const zipPath = resolve(name);
   if (!existsSync(zipPath)) {
-    if (name === "Aptitude-question-assets-final.zip") throw new Error(`Missing question asset archive: ${zipPath}`);
+    if (required) throw new Error(`Missing question asset archive: ${zipPath}`);
     continue;
   }
-  execFileSync("unzip", ["-q", "-o", zipPath, "-d", outputDir], { stdio: "inherit" });
+  execFileSync("unzip", ["-q", "-o", zipPath, "-d", target], { stdio: "inherit" });
 }
+
 console.log("Question assets prepared.");

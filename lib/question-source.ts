@@ -27,16 +27,16 @@ const DEDUCTIVE_REFERENCES: Record<string, ReferenceMaterial[]> = {
     { id: "DED1_CONTRACTS", assetRef: "TEST_030_CONTRACTS.svg", label: "Salaries & contracts" },
   ],
   TEST_031: [
-    { id: "DED2_CANALS", assetRef: "TEST_031_CANALS.svg", label: "Canals and Rivertrips" },
-    { id: "DED2_JULIA", assetRef: "TEST_031_JULIA.svg", label: "Julia’s Requirements" },
+    { id: "DED2_CANALS", assetRef: "TEST_031_CANALS_v2.svg", label: "Canals and Rivertrips" },
+    { id: "DED2_JULIA", assetRef: "TEST_031_JULIA_v2.svg", label: "Julia’s Requirements" },
   ],
   TEST_032: [
-    { id: "DED3_FLIGHTS", assetRef: "TEST_032_FLIGHTS.svg", label: "Flights" },
-    { id: "DED3_TAX", assetRef: "TEST_032_TAX.svg", label: "Council Tax Bands" },
+    { id: "DED3_FLIGHTS", assetRef: "TEST_032_FLIGHTS_v2.svg", label: "Flights" },
+    { id: "DED3_TAX", assetRef: "TEST_032_TAX_v2.svg", label: "Council Tax Bands" },
   ],
   TEST_033: [
-    { id: "DED4_LIBRARY", assetRef: "TEST_033_LIBRARY.svg", label: "Alphabetic Library" },
-    { id: "DED4_FURNITURE", assetRef: "TEST_033_FURNITURE.svg", label: "Shops" },
+    { id: "DED4_LIBRARY", assetRef: "TEST_033_LIBRARY_v2.svg", label: "Alphabetic Library" },
+    { id: "DED4_FURNITURE", assetRef: "TEST_033_SHOPS_v2.svg", label: "Shops" },
   ],
 };
 

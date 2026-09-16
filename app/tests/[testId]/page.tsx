@@ -44,7 +44,7 @@ export default function TestPage() {
   const answer = q ? answers[q.id] : undefined;
   const label = q ? (q.subquestion ? `Question ${q.number}${q.subquestion}` : `Question ${q.number}`) : "";
   const progress = actualQuestionCount ? ((idx + 1) / actualQuestionCount) * 100 : 0;
-  const deductiveSnapshotSrc = q ? `/question-assets/${testId}_Q${String(q.number).padStart(2, "0")}.webp` : "";
+  const deductiveSnapshotSrc = q ? `/question-assets/${testId}_Q${String(q.number).padStart(2, "0")}.png` : "";
 
   useEffect(() => { if (q) setBookmarked(getBookmarks().includes(q.id)); }, [q?.id]);
 

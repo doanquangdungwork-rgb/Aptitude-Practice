@@ -1,5 +1,10 @@
 {
-  "tests": [],
+  "tests": [
+    {"test_id":"TEST_030","title":"Deductive Test 1","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
+    {"test_id":"TEST_031","title":"Deductive Test 2","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
+    {"test_id":"TEST_032","title":"Deductive Test 3","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
+    {"test_id":"TEST_033","title":"Deductive Test 4","pillar":"deductive","subtype":"deductive_reasoning","question_count":22}
+  ],
   "pillars": [
     {"id":"deductive","name":"Deductive Reasoning","description":"Draw conclusions from rules, conditions and given information."},
     {"id":"logical","name":"Logical Reasoning","description":"Solve patterns, sequences and relationships using structured logic."},
@@ -8,6 +13,8 @@
     {"id":"verbal","name":"Verbal Reasoning","description":"Understand written information and evaluate statements."},
     {"id":"situational_judgement","name":"Situational Judgement","description":"Choose the most effective response to workplace situations."}
   ],
-  "subtypes": {},
-  "stats": {"question_count":0,"test_count":0,"answered_source_count":0}
+  "subtypes": {
+    "deductive": ["deductive_reasoning"]
+  },
+  "stats": {"question_count":88,"test_count":4,"answered_source_count":4}
 }

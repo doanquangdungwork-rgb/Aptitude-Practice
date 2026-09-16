@@ -14,7 +14,6 @@ export default function RootLayout({children}:{children:React.ReactNode}){
           <span className="brand-sub">with Derek</span>
         </Link>
         <nav className="main-nav" aria-label="Primary navigation">
-          <Link href="/tests">Practice Tests</Link>
           <Link href="/practice">Practice by Type</Link>
           <Link href="/dashboard">Progression Dashboard</Link>
           <Link href="/bookmarks">Bookmark</Link>

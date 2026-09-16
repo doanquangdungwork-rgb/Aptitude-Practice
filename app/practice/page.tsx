@@ -17,7 +17,7 @@ export default function Practice(){
  const selected=appCatalog.pillars.find((p:any)=>p.id===pillar);
  const tests=pillar?appCatalog.tests.filter((t:any)=>testPillar(t)===pillar):[];
  return <div className="app-page">
-  <div className="section-head"><div><p className="eyebrow">Section 2 · Practice by type</p><h1 className="section-title">Choose a reasoning pillar.</h1><p className="mt-3 text-sm text-[#99968f]">Focus on one reasoning style when you want a targeted session.</p></div></div>
+  <div className="section-head"><div><p className="eyebrow">Practice by type</p><h1 className="section-title">Choose a reasoning pillar.</h1><p className="mt-3 text-sm text-[#99968f]">Focus on one reasoning style when you want a targeted session.</p></div></div>
 
   <div className="practice-grid">
    {appCatalog.pillars.map((p:any,i:number)=>{const isOpen=pillar===p.id;return <button key={p.id} onClick={()=>open(p.id)} aria-expanded={isOpen} className={`practice-card ${tones[i%tones.length]} text-left ${isOpen?"ring-1 ring-[#222321]/15":""}`}>

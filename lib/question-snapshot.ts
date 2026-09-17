@@ -15,6 +15,9 @@ export function questionSnapshotSrc(testId: string, sourceFile: unknown, questio
   const file = String(sourceFile ?? "").trim().split("/").pop() ?? "";
   if (!file || !manifest.assets[file]) return "";
 
-  const template = manifest.assets[file];
+  let template = manifest.assets[file];
+  if (file === "NumericalReasoningTest18-Questions.pdf") {
+    template = "/question-snapshots/source_pdfs_Numerical_Reasoning_NumericalReasoningTest18_Questions/Q{number}.png";
+  }
   return template.replace("{number}", String(questionNumber).padStart(2, "0"));
 }

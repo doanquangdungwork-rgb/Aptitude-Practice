@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {useEffect,useState} from "react";
 import {appCatalog,questionsForTest} from "../lib/data";
-import ProgressDashboard from "../components/progress-dashboard";
 
 const tones=["tone-pink","tone-lavender","tone-lime","tone-mint","tone-sky","tone-peach"];
 const testPillar=(t:any)=>t.subtype==="deductive_logical"?"deductive":t.pillar;
@@ -133,7 +132,6 @@ export default function Home(){
       <TestFamilySection/>
     </div>
 
-    <section className="mt-14"><ProgressDashboard compact/></section>
     <footer className="mt-14 border-t border-[#e7e5de] pt-6 text-xs text-[#aaa7a0]">
       <b className="text-[#44433f]">{appCatalog.stats.test_count}</b> curated tests
       <span className="ml-5"><b className="text-[#44433f]">{appCatalog.stats.question_count.toLocaleString()}</b> questions indexed</span>

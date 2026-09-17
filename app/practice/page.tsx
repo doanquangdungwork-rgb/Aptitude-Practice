@@ -2,94 +2,140 @@
 
 import Link from "next/link";
 import {Suspense,useEffect,useMemo,useState} from "react";
-import {useSearchParams} from "next/navigation";
+import {useRouter,useSearchParams} from "next/navigation";
 import {appCatalog,questionsForTest} from "../../lib/data";
 import {getAttempts,getStarredTests,toggleStarredTest} from "../../lib/progress";
 
-const categories=[
-  {id:"",name:"All"},
-  ...appCatalog.pillars.map((p:any)=>({id:p.id,name:p.name}))
-];
+const tones=["tone-pink","tone-lavender","tone-lime","tone-mint","tone-sky","tone-peach"];
 const testPillar=(t:any)=>t.subtype==="deductive_logical"?"deductive":t.pillar;
+const pretty=(v:string)=>v.replaceAll("_"," ").replace(/\b\w/g,m=>m.toUpperCase());
+const categorySymbols=["◎","▥","○","△","≡","◯"];
 
 function PracticeContent(){
   const searchParams=useSearchParams();
-  const [pillar,setPillar]=useState(searchParams.get("pillar")||"");
+  const router=useRouter();
+  const pillar=searchParams.get("pillar")||"";
   const [query,setQuery]=useState("");
   const [page,setPage]=useState(1);
-  const [stars,setStars]=useState<string[]>([]);
   const [attempts,setAttempts]=useState<any[]>([]);
-  const perPage=10;
+  const [stars,setStars]=useState<string[]>([]);
+  const pageSize=10;
 
-  useEffect(()=>{setPillar(searchParams.get("pillar")||"");setPage(1)},[searchParams]);
-  useEffect(()=>{setStars(getStarredTests());setAttempts(getAttempts())},[]);
+  useEffect(()=>{
+    setPage(1);
+    setAttempts(getAttempts());
+    setStars(getStarredTests());
+  },[pillar]);
+
+  useEffect(()=>setPage(1),[query]);
 
   const selected=appCatalog.pillars.find((p:any)=>p.id===pillar);
-  const filtered=useMemo(()=>appCatalog.tests.filter((t:any)=>{
-    const matchesPillar=!pillar || testPillar(t)===pillar;
+  const allTests=appCatalog.tests;
+  const baseTests=pillar?allTests.filter((t:any)=>testPillar(t)===pillar):allTests;
+  const tests=useMemo(()=>{
     const q=query.trim().toLowerCase();
-    const matchesSearch=!q || `${t.title} ${t.test_id} ${t.subtype||""}`.toLowerCase().includes(q);
-    return matchesPillar&&matchesSearch;
-  }),[pillar,query]);
-  const pageCount=Math.max(1,Math.ceil(filtered.length/perPage));
-  const currentPage=Math.min(page,pageCount);
-  const visible=filtered.slice((currentPage-1)*perPage,currentPage*perPage);
-  const start=filtered.length?(currentPage-1)*perPage+1:0;
-  const end=Math.min(currentPage*perPage,filtered.length);
+    if(!q) return baseTests;
+    return baseTests.filter((t:any)=>`${t.title} ${t.test_id} ${t.subtype||""}`.toLowerCase().includes(q));
+  },[baseTests,query]);
+  const totalPages=Math.max(1,Math.ceil(tests.length/pageSize));
+  const safePage=Math.min(page,totalPages);
+  const visibleTests=tests.slice((safePage-1)*pageSize,safePage*pageSize);
+  const questionCount=baseTests.reduce((sum:number,t:any)=>sum+questionsForTest(t.test_id).length,0);
+
+  const choosePillar=(id:string)=>{
+    setQuery("");
+    router.push(id?`/practice?pillar=${id}`:"/practice");
+  };
+
   const latest=(id:string)=>attempts.filter(a=>a.testId===id).sort((a,b)=>new Date(b.updatedAt).getTime()-new Date(a.updatedAt).getTime())[0];
 
-  const selectCategory=(id:string)=>{setPillar(id);setPage(1);window.history.replaceState(null,"",id?`/practice?pillar=${id}`:"/practice")};
-
   return <div className="app-page practice-library-page">
-    <div className="practice-toolbar">
-      <nav className="category-nav" aria-label="Practice categories">
-        {categories.map((c:any)=><button key={c.id||"all"} type="button" onClick={()=>selectCategory(c.id)} className={pillar===c.id?"active":""}>{c.name}</button>)}
-      </nav>
-      <label className="practice-search"><span>⌕</span><input value={query} onChange={e=>{setQuery(e.target.value);setPage(1)}} placeholder="Search practice sets" aria-label="Search practice sets" /></label>
+    <div className="category-nav practice-category-nav">
+      <div className="category-buttons">
+        <button type="button" className={!pillar?"active":""} onClick={()=>choosePillar("")}>All</button>
+        {appCatalog.pillars.map((p:any)=><button key={p.id} type="button" className={pillar===p.id?"active":""} onClick={()=>choosePillar(p.id)}>{p.name}</button>)}
+      </div>
+      <label className="search-wrap">
+        <span aria-hidden="true">⌕</span>
+        <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search practice sets..." aria-label="Search practice sets" />
+        {query&&<button type="button" className="search-clear" onClick={()=>setQuery("")} aria-label="Clear search">×</button>}
+      </label>
     </div>
 
-    <section className="library-heading">
-      <div><p className="eyebrow">Practice</p><h1>{selected?.name||"Practice library"}</h1><p>{selected?.description||"Six reasoning categories. Real questions. Clear solutions."}</p></div>
-      <div className="library-total"><strong>{filtered.length}</strong><span>Total {filtered.length===1?"test":"tests"}</span></div>
-    </section>
+    <header className="practice-library-header">
+      <div>
+        <p className="eyebrow">Practice</p>
+        <h1>{selected?.name||"Practice library"}</h1>
+        <p className="practice-library-description">{selected?.description||"Explore every reasoning category and choose a focused practice session."}</p>
+      </div>
+      <div className="library-count"><strong>{pillar?baseTests.length:allTests.length}</strong><span>Total tests</span></div>
+    </header>
 
-    <section className="test-list" aria-label="Practice tests">
-      {visible.map((t:any,index:number)=>{
+    <div className="library-summary">
+      <span>{questionCount.toLocaleString()} questions indexed</span>
+      {query&&<span>Showing results for “{query}”</span>}
+    </div>
+
+    {visibleTests.length?<div className="test-library-grid">
+      {visibleTests.map((t:any,index:number)=>{
         const qs=questionsForTest(t.test_id);
-        const attempt=latest(t.test_id);
+        const a=latest(t.test_id);
         const starred=stars.includes(t.test_id);
-        const number=(currentPage-1)*perPage+index+1;
-        return <article key={t.test_id} className="test-row">
-          <span className="test-number">{String(number).padStart(2,"0")}</span>
-          <div className="test-info"><h2>{t.title.replaceAll("_"," ")}</h2><p>{qs.length} questions <i>·</i> {qs.length} min{attempt?.completedAt?<><i>·</i> Latest attempt saved</>:attempt?<><i>·</i> In progress</>:null}</p></div>
-          <div className="test-actions"><button type="button" onClick={()=>{toggleStarredTest(t.test_id);setStars(getStarredTests())}} className="star-button" aria-label={starred?"Unstar test":"Star test"}>{starred?"★":"☆"}</button><Link href={`/tests/${t.test_id}`} className="start-button">Start →</Link></div>
+        const absoluteIndex=(safePage-1)*pageSize+index;
+        const tone=tones[absoluteIndex%tones.length];
+        return <article key={t.test_id} className={`test-library-card ${tone}`}>
+          <div className="test-card-art"><span>{categorySymbols[absoluteIndex%categorySymbols.length]}</span><small>{String(absoluteIndex+1).padStart(2,"0")}</small></div>
+          <div className="test-card-body">
+            <div className="test-card-topline">
+              <span className="practice-index">TEST {t.test_id.replace("TEST_","")}</span>
+              <button type="button" className={`test-star ${starred?"starred":""}`} onClick={()=>{toggleStarredTest(t.test_id);setStars(getStarredTests())}} aria-label={starred?"Remove bookmark":"Bookmark test"}>{starred?"★":"☆"}</button>
+            </div>
+            <h2>{t.title.replaceAll("_"," ")}</h2>
+            <p className="test-card-meta">{qs.length} questions <span>·</span> {qs.length} min</p>
+            <p className="test-card-status">{a?.completedAt?"Completed":a?"In progress":"Not started"}</p>
+            <Link href={`/tests/${t.test_id}`} className="test-start">Start <span>→</span></Link>
+          </div>
         </article>
       })}
-      {!visible.length&&<div className="empty-state">No practice sets match this search.</div>}
-    </section>
+    </div>:<div className="empty-library"><p className="eyebrow">No matching tests</p><p>Try another search or choose a different reasoning category.</p></div>}
 
-    {filtered.length>0&&<div className="library-pagination">
-      <span>Showing {start}–{end} of {filtered.length} tests</span>
-      <div className="page-controls">
-        <button type="button" disabled={currentPage===1} onClick={()=>setPage(p=>Math.max(1,p-1))}>←</button>
-        {Array.from({length:pageCount},(_,i)=>i+1).slice(0,7).map(n=><button key={n} type="button" onClick={()=>setPage(n)} className={currentPage===n?"active":""}>{n}</button>)}
-        {pageCount>7&&<span>…</span>}
-        <button type="button" disabled={currentPage===pageCount} onClick={()=>setPage(p=>Math.min(pageCount,p+1))}>→</button>
-      </div>
-    </div>}
+    <div className="library-pagination">
+      <span>Showing {tests.length?((safePage-1)*pageSize+1):0}–{Math.min(safePage*pageSize,tests.length)} of {tests.length} tests</span>
+      {totalPages>1&&<div className="page-controls">
+        <button type="button" onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={safePage===1} aria-label="Previous page">‹</button>
+        {Array.from({length:totalPages},(_,i)=>i+1).map(n=><button key={n} type="button" className={n===safePage?"current":""} onClick={()=>setPage(n)}>{n}</button>)}
+        <button type="button" onClick={()=>setPage(p=>Math.min(totalPages,p+1))} disabled={safePage===totalPages} aria-label="Next page">›</button>
+      </div>}
+    </div>
 
     <style jsx>{`
-      .practice-library-page{padding-top:2px;padding-bottom:28px}
-      .practice-toolbar{display:flex;align-items:center;justify-content:space-between;gap:24px;border-bottom:1px solid #e7e5de;padding:0 0 14px}
-      .category-nav{display:flex;align-items:center;gap:18px;overflow-x:auto;scrollbar-width:none;white-space:nowrap}.category-nav::-webkit-scrollbar{display:none}
-      .category-nav button{border:0;background:none;padding:4px 0;color:#a09c94;font-size:10px;cursor:pointer}.category-nav button.active{color:#292824;font-weight:700}
-      .practice-search{display:flex;align-items:center;gap:8px;min-width:205px;padding:8px 11px;border:1px solid #e4e1d9;border-radius:999px;background:#fffdfa}.practice-search span{font-size:15px;color:#99958d}.practice-search input{width:100%;border:0;outline:0;background:transparent;font-size:11px;color:#35332f}.practice-search input::placeholder{color:#aaa69e}
-      .library-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;padding:38px 0 24px}.library-heading h1{margin-top:5px;font-size:clamp(34px,5vw,56px);font-weight:500;line-height:1;letter-spacing:-.055em;color:#272622}.library-heading p:not(.eyebrow){max-width:560px;margin-top:10px;font-size:12px;line-height:1.5;color:#99958e}.library-total{display:flex;align-items:baseline;gap:9px;padding-bottom:4px;white-space:nowrap}.library-total strong{font-size:26px;font-weight:500;letter-spacing:-.04em}.library-total span{font-size:10px;color:#99958e}
-      .test-list{border-top:1px solid #dcd9d1}.test-row{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:18px;min-height:82px;border-bottom:1px solid #e7e5de}.test-number{font-size:10px;letter-spacing:.12em;color:#aaa69e}.test-info h2{font-size:15px;font-weight:500;letter-spacing:-.025em;color:#34322e}.test-info p{margin-top:5px;font-size:10px;color:#aaa69e}.test-info i{font-style:normal;padding:0 5px;color:#c4c0b8}.test-actions{display:flex;align-items:center;gap:12px}.star-button{width:30px;height:30px;border:0;background:transparent;color:#817d75;font-size:19px;cursor:pointer}.start-button{display:flex;align-items:center;justify-content:center;min-width:72px;padding:8px 13px;border-radius:999px;background:#f2d86d;color:#312f29;font-size:10px;font-weight:700;text-decoration:none}.empty-state{padding:60px 20px;text-align:center;font-size:12px;color:#aaa69e}
-      .library-pagination{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:18px;font-size:10px;color:#aaa69e}.page-controls{display:flex;align-items:center;gap:4px}.page-controls button{min-width:27px;height:27px;border:0;border-radius:50%;background:transparent;color:#858078;font-size:10px;cursor:pointer}.page-controls button.active{background:#f2efe8;color:#272521;font-weight:700}.page-controls button:disabled{opacity:.3;cursor:default}.page-controls span{padding:0 3px}
-      @media(max-width:760px){.practice-toolbar{display:block}.category-nav{padding-bottom:11px}.practice-search{min-width:0}.library-heading{padding:28px 0 20px}.library-heading h1{font-size:38px}.library-total{display:none}.test-row{grid-template-columns:34px minmax(0,1fr) auto;gap:10px;min-height:76px}.test-actions{gap:4px}.star-button{width:25px}.start-button{min-width:62px;padding:8px 10px}.library-pagination{display:block}.page-controls{margin-top:12px}}
+      .practice-library-page{padding-top:20px;padding-bottom:70px}
+      .practice-category-nav{padding:0 0 11px;border-bottom:1px solid var(--line)}
+      .practice-category-nav .category-buttons{gap:25px}
+      .practice-library-header{display:flex;align-items:end;justify-content:space-between;gap:30px;padding:48px 0 26px;border-bottom:1px solid var(--line)}
+      .practice-library-header h1{margin-top:7px;font-size:clamp(40px,5vw,64px);line-height:.96;letter-spacing:-.065em;font-weight:500}
+      .practice-library-description{max-width:540px;margin-top:10px;font-size:13px;line-height:1.6;color:var(--muted)}
+      .library-count{text-align:right;flex:0 0 auto}.library-count strong{display:block;font-size:40px;line-height:.9;font-weight:500;letter-spacing:-.06em}.library-count span{display:block;margin-top:8px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+      .library-summary{display:flex;justify-content:space-between;gap:20px;padding:12px 0 16px;font-size:10px;color:#aaa7a0}
+      .test-library-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+      .test-library-card{min-width:0;border:1px solid #ddd9d1;background:#fff;display:flex;flex-direction:column;overflow:hidden;min-height:305px}
+      .test-card-art{height:78px;position:relative;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(34,35,33,.12);overflow:hidden}
+      .test-card-art:before,.test-card-art:after{content:"";position:absolute;border:1px solid rgba(34,35,33,.45);border-radius:50%}.test-card-art:before{width:38px;height:38px}.test-card-art:after{width:38px;height:38px;transform:translateX(17px)}
+      .test-card-art span{position:relative;z-index:2;font-size:25px;font-weight:300;line-height:1}.test-card-art small{position:absolute;left:10px;top:10px;font-size:9px;letter-spacing:.1em;color:rgba(34,35,33,.55)}
+      .tone-lavender .test-card-art:before,.tone-lavender .test-card-art:after{border-radius:4px}.tone-lime .test-card-art:before{border-radius:50%}.tone-mint .test-card-art:before{border-radius:0}.tone-sky .test-card-art:before{transform:rotate(45deg)}.tone-peach .test-card-art:after{border-radius:5px}
+      .tone-pink .test-card-art{background:var(--pink)}.tone-lavender .test-card-art{background:var(--lav)}.tone-lime .test-card-art{background:#e8ef9d}.tone-mint .test-card-art{background:var(--mint)}.tone-sky .test-card-art{background:var(--sky)}.tone-peach .test-card-art{background:var(--peach)}
+      .test-card-body{position:relative;display:flex;flex:1;flex-direction:column;padding:11px 11px 10px;background:rgba(255,255,255,.86)}
+      .test-card-topline{display:flex;justify-content:space-between;align-items:center}.test-star{border:0;background:transparent;padding:0;font-size:17px;line-height:1;color:#8f8b83}.test-star.starred{color:#3f3e39}
+      .test-card-body h2{margin-top:17px;min-height:38px;font-size:14px;line-height:1.2;font-weight:500;letter-spacing:-.025em}.test-card-meta{margin-top:9px;font-size:9.5px;color:#89857d}.test-card-meta span{padding:0 3px}.test-card-status{margin-top:5px;font-size:9px;color:#aaa7a0}
+      .test-start{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:auto;padding:8px 10px;background:#222321;color:#fff;font-size:10px;font-weight:600}.test-start span{font-size:14px;line-height:0}
+      .library-pagination{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:17px;padding-top:13px;border-top:1px solid var(--line);font-size:10px;color:#aaa7a0}.page-controls{display:flex;gap:4px}.page-controls button{width:27px;height:27px;border:1px solid #ddd9d1;background:#fff;color:#55524d;font-size:10px}.page-controls button.current{background:#222321;color:#fff;border-color:#222321}.page-controls button:disabled{opacity:.35;cursor:default}
+      @media(max-width:1100px){.test-library-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+      @media(max-width:900px){.practice-library-page{padding-top:20px}.practice-library-header{padding-top:34px}.test-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.library-count strong{font-size:32px}}
+      @media(max-width:560px){.practice-library-header{display:block}.library-count{text-align:left;margin-top:18px}.library-summary{display:block}.library-summary span+span{display:block;margin-top:5px}.test-library-grid{grid-template-columns:1fr}.test-library-card{min-height:300px}.library-pagination{align-items:flex-start;flex-direction:column}.practice-category-nav .category-buttons{gap:20px}}
     `}</style>
-  </div>;
+  </div>
 }
 
-export default function Practice(){return <Suspense fallback={<div className="app-page"><p className="eyebrow">Practice</p><h1 className="section-title">Loading library…</h1></div>}><PracticeContent/></Suspense>}
+export default function Practice(){
+  return <Suspense fallback={<div className="app-page"><div className="practice-library-header"><div><p className="eyebrow">Practice</p><h1>Practice library</h1></div></div></div>}><PracticeContent/></Suspense>;
+}

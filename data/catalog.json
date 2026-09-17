@@ -33,7 +33,7 @@
     {"test_id":"TEST_031","title":"Deductive Test 2","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
     {"test_id":"TEST_032","title":"Deductive Test 3","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
     {"test_id":"TEST_033","title":"Deductive Test 4","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
-    {"test_id":"TEST_034","title":"Diagrammatic Reasoning Test 1","pillar":"diagrammatic","subtype":"diagrammatic_reasoning","question_count":0},
+    {"test_id":"TEST_034","title":"Deductive Test 4","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
     {"test_id":"TEST_035","title":"Diagrammatic Reasoning Test 1","pillar":"diagrammatic","subtype":"diagrammatic_reasoning","question_count":0},
     {"test_id":"TEST_036","title":"Diagrammatic Reasoning Test 2","pillar":"diagrammatic","subtype":"diagrammatic_reasoning","question_count":0},
     {"test_id":"TEST_037","title":"Diagrammatic Reasoning Test 3","pillar":"diagrammatic","subtype":"diagrammatic_reasoning","question_count":0},
@@ -129,7 +129,7 @@
     {"test_id":"TEST_128","title":"Verbal Reasoning Test 8","pillar":"verbal","subtype":"verbal_reasoning","question_count":0},
     {"test_id":"TEST_129","title":"Verbal Reasoning Test 9","pillar":"verbal","subtype":"verbal_reasoning","question_count":0}
   ],
-  "pillars": [
+  "pillars":[
     {"id":"deductive","name":"Deductive Reasoning","description":"Draw conclusions from rules, conditions and given information."},
     {"id":"logical","name":"Logical Reasoning","description":"Solve patterns, sequences and relationships using structured logic."},
     {"id":"diagrammatic","name":"Diagrammatic Reasoning","description":"Solve visual patterns, sequences and diagram relationships."},
@@ -137,13 +137,6 @@
     {"id":"verbal","name":"Verbal Reasoning","description":"Understand written information and evaluate statements."},
     {"id":"situational_judgement","name":"Situational Judgement","description":"Choose the most effective response to workplace situations."}
   ],
-  "subtypes": {
-    "deductive":["deductive_reasoning"],
-    "logical":["logical_reasoning"],
-    "diagrammatic":["diagrammatic_reasoning"],
-    "numerical":["capp","cute","tgb","tp","advanced_numerical","critical_numerical","numerical_reasoning"],
-    "verbal":["talentq","tp","verbal_comprehension","verbal_reasoning"],
-    "situational_judgement":["sjt"]
-  },
+  "subtypes":{"deductive":["deductive_reasoning"],"logical":["logical_reasoning"],"diagrammatic":["diagrammatic_reasoning"],"numerical":["capp","cute","tgb","tp","advanced_numerical","critical_numerical","numerical_reasoning"],"verbal":["talentq","tp","verbal_comprehension","verbal_reasoning"],"situational_judgement":["sjt"]},
   "stats":{"question_count":2668,"test_count":128,"answered_source_count":128}
 }

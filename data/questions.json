@@ -1,1 +1,1 @@
-PLACEHOLDER
+[{"id":"TEST_001_Q1","testId":"TEST_001","number":1,"subquestion":null,"p":"numerical","s":"capp","t":"Rank the three departments included in the graph from HIGHEST to\nLOWEST by their average salaries.","o":[],"a":"1st = Accounts - £32,666 2nd = Engineering = £30,000 3rd = Banking - £27,333","explanation":null,"sourcePage":2,"sourceFile":"Capp_Numerical_4-Questions.pdf","responseType":"ranking"}]

@@ -138,26 +138,30 @@ export default function Home(){
     </footer>
 
     <style jsx>{`
-      .home-page{padding-top:0;padding-bottom:28px}
-      .home-page .editorial-hero{min-height:340px;padding:42px 0 30px;gap:30px}
-      .home-page .hero-lede{margin-top:18px}
-      .home-page .hero-actions{margin-top:20px}
-      .home-page .section-head{margin:14px 0 12px}
-      .home-page .practice-card{min-height:158px;padding:16px 18px 14px}
-      .home-page .practice-card h3{margin-top:15px}
-      .home-page .practice-arrow{right:18px;bottom:12px;width:31px;height:31px}
-      .home-page .home-footer{margin-top:28px}
+      .home-page{padding-top:0;padding-bottom:20px}
+      .home-page .editorial-hero{min-height:315px;padding:34px 0 24px;gap:28px}
+      .home-page .hero-lede{margin-top:15px}
+      .home-page .hero-actions{margin-top:17px}
+      .home-page .section-head{margin:10px 0 10px}
+      .home-page .practice-grid{gap:11px}
+      .home-page .practice-card{min-height:122px;padding:13px 16px 12px}
+      .home-page .practice-card h3{margin-top:11px;font-size:18px}
+      .home-page .practice-card p{margin-top:5px;line-height:1.4}
+      .home-page .practice-arrow{right:15px;bottom:10px;width:29px;height:29px}
+      .home-page .home-footer{margin-top:20px;padding-top:12px}
       @media(max-height:760px) and (min-width:901px){
-        .home-page{padding-bottom:18px}
-        .home-page .editorial-hero{min-height:300px;padding:32px 0 24px}
-        .home-page .hero-title{font-size:clamp(54px,5.5vw,78px)}
-        .home-page .hero-lede{margin-top:14px}
-        .home-page .hero-actions{margin-top:16px}
-        .home-page .section-head{margin-top:10px;margin-bottom:9px}
-        .home-page .practice-card{min-height:140px}
-        .home-page .practice-card h3{margin-top:12px}
-        .home-page .practice-card p{line-height:1.4}
-        .home-page .home-footer{margin-top:20px;padding-top:12px}
+        .home-page{padding-bottom:12px}
+        .home-page .editorial-hero{min-height:285px;padding:27px 0 20px;gap:24px}
+        .home-page .hero-title{font-size:clamp(52px,5.3vw,74px)}
+        .home-page .hero-lede{margin-top:12px}
+        .home-page .hero-actions{margin-top:14px}
+        .home-page .section-head{margin-top:7px;margin-bottom:7px}
+        .home-page .practice-grid{gap:9px}
+        .home-page .practice-card{min-height:108px;padding:11px 14px 10px}
+        .home-page .practice-card h3{margin-top:8px;font-size:17px}
+        .home-page .practice-card p{margin-top:4px;line-height:1.32}
+        .home-page .practice-arrow{right:13px;bottom:8px;width:27px;height:27px}
+        .home-page .home-footer{margin-top:14px;padding-top:9px}
       }
     `}</style>
   </div>

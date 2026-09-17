@@ -10,7 +10,7 @@ const pretty=(v:string)=>v.replaceAll("_"," ").replace(/\b\w/g,m=>m.toUpperCase(
 
 function getAttempts(){
   if(typeof window==="undefined") return [];
-  try{return JSON.parse(localStorage.getItem("aptitude_attempts")||"[]")}catch{return []}
+  try{return JSON.parse(localStorage.getItem("aptitude_attempts")||"[]")}catch{return[]}
 }
 
 function TestFamilyDropdown({pillarId}:{pillarId:string}){
@@ -139,27 +139,19 @@ export default function Home(){
 
     <style jsx>{`
       .home-page{padding-top:0;padding-bottom:12px}
-      .home-page .editorial-hero{transform:scale(.9);transform-origin:top center;margin-bottom:-5vh}
-      .home-page .hero-copy{max-width:92%}
-      .home-page .hero-label{font-size:12px}
-      .home-page .hero-title{font-size:clamp(42px,5.4vw,72px);line-height:.94}
-      .home-page .hero-lede{margin-top:12px;font-size:13px;line-height:1.45}
-      .home-page .hero-actions{margin-top:18px}
-      .home-page .section-head{transform:scale(.92);transform-origin:top left;margin-bottom:-1.5rem}
+      .home-page .editorial-hero{transform:scale(.94);transform-origin:top center;margin-bottom:-44px}
+      .home-page .hero-copy{margin-top:-18px;margin-bottom:-14px}
+      .home-page #practice-by-test{transform:scale(.94);transform-origin:top center;margin-bottom:-20px}
+      .home-page .home-footer{transform:scale(.94);transform-origin:top left}
+      .home-page .section-head{margin-bottom:14px}
       .home-page .practice-grid{gap:10px}
       .home-page .practice-card{min-height:88px;height:88px;padding:8px 14px 7px}
-      .home-page .practice-card h3{margin-top:6px;font-size:16px}
-      .home-page .practice-card p{margin-top:3px;font-size:11px;line-height:1.25}
+      .home-page .practice-card h3{margin-top:6px;font-size:17px}
+      .home-page .practice-card p{margin-top:3px;line-height:1.22}
       .home-page .practice-arrow{right:13px;bottom:7px;width:25px;height:25px}
-      .home-page .home-footer{padding-top:12px;font-size:11px}
-      @media(max-height:760px) and (min-width:901px){
-        .home-page .editorial-hero{transform:scale(.84);margin-bottom:-8vh}
-        .home-page .section-head{transform:scale(.88);margin-bottom:-2rem}
-        .home-page .practice-card{min-height:82px;height:82px;padding:7px 13px 6px}
-        .home-page .practice-card h3{margin-top:5px;font-size:15px}
-        .home-page .practice-card p{margin-top:2px;font-size:10px;line-height:1.2}
-        .home-page .practice-arrow{right:12px;bottom:6px;width:23px;height:23px}
-      }
+      .home-page .home-footer{padding-top:14px!important}
+      @media(max-width:900px){.home-page .editorial-hero,.home-page #practice-by-test,.home-page .home-footer{transform:none;margin-bottom:0}.home-page .hero-copy{margin-top:-10px;margin-bottom:-10px}.home-page .practice-card{min-height:92px;height:92px}.home-page .home-footer{padding-top:14px!important}}
+      @media(max-height:760px) and (min-width:901px){.home-page .editorial-hero{transform:scale(.9);margin-bottom:-58px}.home-page .hero-copy{margin-top:-18px;margin-bottom:-14px}.home-page #practice-by-test{transform:scale(.9);margin-bottom:-28px}.home-page .practice-card{min-height:84px;height:84px}}
     `}</style>
   </div>
 }

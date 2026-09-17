@@ -117,7 +117,7 @@ function TestFamilySection(){
 }
 
 export default function Home(){
-  return <div className="app-page">
+  return <div className="app-page home-page">
     <section className="editorial-hero">
       <div className="hero-copy">
         <p className="hero-label">Let's practice</p>
@@ -132,9 +132,33 @@ export default function Home(){
       <TestFamilySection/>
     </div>
 
-    <footer className="mt-14 border-t border-[#e7e5de] pt-6 text-xs text-[#aaa7a0]">
+    <footer className="home-footer border-t border-[#e7e5de] pt-5 text-xs text-[#aaa7a0]">
       <b className="text-[#44433f]">{appCatalog.stats.test_count}</b> curated tests
       <span className="ml-5"><b className="text-[#44433f]">{appCatalog.stats.question_count.toLocaleString()}</b> questions indexed</span>
     </footer>
+
+    <style jsx>{`
+      .home-page{padding-top:0;padding-bottom:28px}
+      .home-page .editorial-hero{min-height:340px;padding:42px 0 30px;gap:30px}
+      .home-page .hero-lede{margin-top:18px}
+      .home-page .hero-actions{margin-top:20px}
+      .home-page .section-head{margin:14px 0 12px}
+      .home-page .practice-card{min-height:158px;padding:16px 18px 14px}
+      .home-page .practice-card h3{margin-top:15px}
+      .home-page .practice-arrow{right:18px;bottom:12px;width:31px;height:31px}
+      .home-page .home-footer{margin-top:28px}
+      @media(max-height:760px) and (min-width:901px){
+        .home-page{padding-bottom:18px}
+        .home-page .editorial-hero{min-height:300px;padding:32px 0 24px}
+        .home-page .hero-title{font-size:clamp(54px,5.5vw,78px)}
+        .home-page .hero-lede{margin-top:14px}
+        .home-page .hero-actions{margin-top:16px}
+        .home-page .section-head{margin-top:10px;margin-bottom:9px}
+        .home-page .practice-card{min-height:140px}
+        .home-page .practice-card h3{margin-top:12px}
+        .home-page .practice-card p{line-height:1.4}
+        .home-page .home-footer{margin-top:20px;padding-top:12px}
+      }
+    `}</style>
   </div>
 }

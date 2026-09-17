@@ -91,23 +91,23 @@ function PracticeContent(){
   </div>}
 
   <style jsx>{`
-   .test-overview-backdrop{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(35,33,29,.32);backdrop-filter:blur(7px)}
-   .test-overview-modal{position:relative;width:min(560px,100%);max-height:min(760px,calc(100vh - 48px));overflow:auto;border:1px solid rgba(35,33,29,.10);border-radius:24px;background:#fffdfa;padding:32px;box-shadow:0 24px 80px rgba(35,33,29,.18)}
-   .test-overview-close{position:absolute;right:18px;top:16px;width:34px;height:34px;border:0;border-radius:50%;background:#f3f0e9;color:#65615a;font-size:22px;line-height:1;cursor:pointer}
+   .test-overview-backdrop{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(25,23,20,.48)}
+   .test-overview-modal{position:relative;width:min(500px,100%);max-height:min(680px,calc(100vh - 64px));overflow:auto;border:1px solid rgba(35,33,29,.10);border-radius:20px;background:#fffdfa;padding:26px 28px;box-shadow:0 20px 60px rgba(35,33,29,.20)}
+   .test-overview-close{position:absolute;right:16px;top:14px;width:32px;height:32px;border:0;border-radius:50%;background:#f3f0e9;color:#65615a;font-size:21px;line-height:1;cursor:pointer}
    .test-overview-kicker{display:flex;align-items:center;gap:12px}
    .test-overview-number{font-size:10px;font-weight:800;letter-spacing:.12em;color:#aaa7a0}
-   .test-overview-title{margin-top:10px;padding-right:42px;font-size:clamp(30px,5vw,44px);font-weight:500;line-height:1.04;letter-spacing:-.055em;color:#252421}
-   .test-overview-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:26px}
-   .test-overview-stats div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:15px 16px;border:1px solid #e7e5de;border-radius:14px;background:#f8f6f0}
-   .test-overview-stats span{font-size:11px;color:#99968f}
-   .test-overview-stats strong{font-size:19px;letter-spacing:-.03em;color:#34322e}
-   .test-overview-description{margin-top:22px;font-size:14px;line-height:1.65;color:#77736c}
-   .test-overview-tips,.test-overview-history{margin-top:22px;padding-top:20px;border-top:1px solid #e7e5de}
-   .test-overview-tips ul{margin:10px 0 0;padding-left:18px;color:#66625b;font-size:12px;line-height:1.7}
-   .test-overview-tips li+li{margin-top:5px}
-   .test-overview-history p:last-child{margin-top:9px;font-size:12px;line-height:1.6;color:#77736c}
-   .test-overview-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:28px}
-   @media(max-width:600px){.test-overview-backdrop{padding:14px}.test-overview-modal{padding:26px 20px 22px;border-radius:20px}.test-overview-actions{justify-content:stretch}.test-overview-actions>*{flex:1;justify-content:center;text-align:center}.test-overview-stats div{display:block}.test-overview-stats strong{display:block;margin-top:4px}}
+   .test-overview-title{margin-top:8px;padding-right:42px;font-size:clamp(26px,4vw,38px);font-weight:500;line-height:1.06;letter-spacing:-.05em;color:#252421}
+   .test-overview-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+   .test-overview-stats div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid #e7e5de;border-radius:12px;background:#f8f6f0}
+   .test-overview-stats span{font-size:10px;color:#99968f}
+   .test-overview-stats strong{font-size:17px;letter-spacing:-.03em;color:#34322e}
+   .test-overview-description{margin-top:18px;font-size:13px;line-height:1.6;color:#77736c}
+   .test-overview-tips,.test-overview-history{margin-top:18px;padding-top:17px;border-top:1px solid #e7e5de}
+   .test-overview-tips ul{margin:8px 0 0;padding-left:17px;color:#66625b;font-size:11px;line-height:1.65}
+   .test-overview-tips li+li{margin-top:4px}
+   .test-overview-history p:last-child{margin-top:7px;font-size:11px;line-height:1.55;color:#77736c}
+   .test-overview-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}
+   @media(max-width:600px){.test-overview-backdrop{padding:12px}.test-overview-modal{padding:22px 18px 18px;border-radius:18px}.test-overview-actions{justify-content:stretch}.test-overview-actions>*{flex:1;justify-content:center;text-align:center}.test-overview-stats div{display:block}.test-overview-stats strong{display:block;margin-top:3px}}
   `}</style>
  </div>
 }

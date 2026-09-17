@@ -5,6 +5,16 @@ import {appCatalog,questionsForTest} from "../lib/data";
 
 const tones=["tone-pink","tone-lavender","tone-lime","tone-mint","tone-sky","tone-peach"];
 
+function CategoryNav(){
+  return <div className="home-category-nav">
+    <div className="home-category-buttons">
+      <Link href="/practice" className="active">All</Link>
+      {appCatalog.pillars.map((p:any)=><Link key={p.id} href={`/practice?pillar=${p.id}`}>{p.name}</Link>)}
+    </div>
+    <Link href="/practice" className="home-search-link">⌕&nbsp;&nbsp; Search practice sets...</Link>
+  </div>
+}
+
 function TestFamilySection(){
   return <section>
     <div className="section-head">
@@ -53,6 +63,7 @@ export default function Home(){
       </div>
     </section>
 
+    <CategoryNav/>
     <div id="practice-by-test"><TestFamilySection/></div>
 
     <footer className="home-footer border-t border-[#e7e5de] pt-5 text-xs text-[#aaa7a0]">
@@ -61,20 +72,34 @@ export default function Home(){
     </footer>
 
     <style jsx>{`
-      .home-page{padding-top:0;padding-bottom:42px}
-      .home-page .editorial-hero{margin-bottom:2px}
+      .home-page{padding-top:0;padding-bottom:18px}
+      .home-page .editorial-hero{min-height:315px;padding:34px 0 26px;margin-bottom:0}
       .home-page .hero-copy{margin-top:-4px}
-      .home-page .section-head{margin-top:20px;margin-bottom:15px}
-      .home-page .practice-grid{gap:14px}
-      .home-page .practice-card{min-height:190px;height:190px;padding:18px 20px 16px;display:block}
-      .home-page .practice-card h3{margin-top:20px;font-size:20px}
-      .home-page .practice-card p{margin-top:7px;line-height:1.5}
-      .home-page .practice-meta{right:auto;bottom:17px;left:20px;gap:18px}
-      .home-page .practice-arrow{right:20px;bottom:14px}
-      .home-page .home-footer{padding-top:22px!important;margin-top:22px}
+      .home-page .hero-title{font-size:clamp(54px,5.4vw,78px)}
+      .home-page .hero-lede{margin-top:18px}
+      .home-page .hero-actions{margin-top:20px}
+      .home-page .hero-note{right:58px;transform:translateY(-50%) scale(.88)}
+      .home-page .home-category-nav{display:flex;align-items:center;justify-content:space-between;gap:20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 0 8px}
+      .home-category-buttons{display:flex;align-items:center;gap:24px;min-width:0;overflow-x:auto;white-space:nowrap}
+      .home-category-buttons a{font-size:11px;color:#aaa7a0;padding-bottom:2px}
+      .home-category-buttons a.active{color:#3b3935;border-bottom:1px solid #3b3935}
+      .home-search-link{flex:0 0 190px;border:1px solid #dedbd4;background:rgba(255,255,255,.72);padding:7px 11px;font-size:10px;color:#aaa7a0}
+      .home-page .section-head{margin-top:17px;margin-bottom:11px}
+      .home-page .section-title{font-size:25px}
+      .home-page .practice-grid{gap:10px}
+      .home-page .practice-card{min-height:138px;height:138px;padding:13px 16px 12px;border-radius:12px}
+      .home-page .practice-card h3{margin-top:12px;font-size:17px}
+      .home-page .practice-card p{margin-top:4px;font-size:10.5px;line-height:1.4}
+      .home-page .practice-card:after{right:-23px;top:13px;width:68px;height:56px}
+      .home-page .practice-meta{left:16px;bottom:11px;gap:14px;font-size:9px}
+      .home-page .practice-arrow{right:13px;bottom:9px;width:27px;height:27px}
+      .home-page .home-footer{padding-top:10px!important;margin-top:10px}
       @media(max-width:900px){
-        .home-page .editorial-hero{margin-bottom:0}
-        .home-page .practice-card{min-height:175px;height:175px}
+        .home-page .editorial-hero{min-height:auto;padding:42px 0 34px}
+        .home-page .hero-note{position:relative;right:auto;top:auto;transform:scale(.9);margin:4px auto -20px}
+        .home-page .home-category-nav{align-items:stretch;flex-direction:column;gap:9px}
+        .home-search-link{width:100%;flex-basis:auto}
+        .home-page .practice-card{min-height:150px;height:150px}
       }
     `}</style>
   </div>

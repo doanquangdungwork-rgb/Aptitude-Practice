@@ -86,18 +86,18 @@ export default function Home(){return <div className="app-page home-page">
   <footer className="home-footer border-t border-[#e7e5de] pt-5 text-xs text-[#aaa7a0]"><b className="text-[#44433f]">{appCatalog.stats.test_count}</b> curated tests<span className="ml-5"><b className="text-[#44433f]">{appCatalog.stats.question_count.toLocaleString()}</b> questions indexed</span></footer>
   <style jsx>{`
     .home-page{padding-top:0;padding-bottom:12px}
-    .home-page .editorial-hero{transform:scale(.94);transform-origin:top center;margin-bottom:-44px}
+    .home-page .editorial-hero{transform:scale(.89);transform-origin:top center;margin-bottom:-56px}
     .home-page .hero-copy{margin-top:-18px;margin-bottom:-14px}
-    .home-page #practice-by-test{transform:scale(.94);transform-origin:top center;margin-bottom:-20px}
-    .home-page .home-footer{transform:scale(.94);transform-origin:top left}
+    .home-page #practice-by-test{transform:scale(.89);transform-origin:top center;margin-bottom:-24px}
+    .home-page .home-footer{transform:scale(.89);transform-origin:top left}
     .home-page .section-head{margin-bottom:14px}
     .home-page .practice-grid{gap:10px}
-    .home-page .practice-card{min-height:84px;height:84px;padding:7px 13px 6px}
+    .home-page .practice-card{min-height:80px;height:80px;padding:7px 13px 6px}
     .home-page .practice-card h3{margin-top:5px;font-size:16px}
     .home-page .practice-card p{margin-top:3px;line-height:1.18;font-size:10.5px}
     .home-page .practice-arrow{right:12px;bottom:6px;width:24px;height:24px}
     .home-page .home-footer{padding-top:13px!important}
-    @media(max-width:900px){.home-page .editorial-hero,.home-page #practice-by-test,.home-page .home-footer{transform:none;margin-bottom:0}.home-page .hero-copy{margin-top:-10px;margin-bottom:-10px}.home-page .practice-card{min-height:87px;height:87px}.home-page .home-footer{padding-top:13px!important}}
-    @media(max-height:760px) and (min-width:901px){.home-page .editorial-hero{transform:scale(.9);margin-bottom:-58px}.home-page .hero-copy{margin-top:-18px;margin-bottom:-14px}.home-page #practice-by-test{transform:scale(.9);margin-bottom:-28px}.home-page .practice-card{min-height:80px;height:80px}}
+    @media(max-width:900px){.home-page .editorial-hero,.home-page #practice-by-test,.home-page .home-footer{transform:none;margin-bottom:0}.home-page .hero-copy{margin-top:-10px;margin-bottom:-10px}.home-page .practice-card{min-height:83px;height:83px}.home-page .home-footer{padding-top:13px!important}}
+    @media(max-height:760px) and (min-width:901px){.home-page .editorial-hero{transform:scale(.85);margin-bottom:-64px}.home-page .hero-copy{margin-top:-18px;margin-bottom:-14px}.home-page #practice-by-test{transform:scale(.85);margin-bottom:-32px}.home-page .practice-card{min-height:76px;height:76px}}
   `}</style>
 </div>}

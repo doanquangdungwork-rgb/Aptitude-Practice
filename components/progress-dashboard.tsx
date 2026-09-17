@@ -94,7 +94,52 @@ export default function ProgressDashboard({compact=false}:{compact?:boolean}){
     return {...p,answered,correct,accuracy:pct(correct,answered)};
   }),[latest]);
 
-  if(compact)return <section className="soft-card rounded-[2rem] p-7 md:p-8"><div className="flex items-end justify-between gap-4"><div><p className="eyebrow">Your progress</p><h2 className="mt-2 text-2xl font-medium">Keep your momentum</h2></div><Link href="/dashboard" className="action-link">Full dashboard →</Link></div><div className="mt-7 grid gap-3 sm:grid-cols-3"><div className="pastel-rose rounded-xl p-5"><div className="text-2xl font-medium">{completed.length}/{appCatalog.tests.length}</div><div className="mt-1 text-xs text-[#99968f]">Tests completed</div></div><div className="pastel-blue rounded-xl p-5"><div className="text-2xl font-medium">{stats.accuracy}%</div><div className="mt-1 text-xs text-[#99968f]">Accuracy</div></div><div className="pastel-mint rounded-xl p-5"><div className="text-2xl font-medium">{stats.answered}/{appCatalog.stats.question_count}</div><div className="mt-1 text-xs text-[#99968f]">Questions answered</div></div></div></section>;
+  if(compact)return <section className="progress-compact">
+    <div className="progress-compact-head">
+      <div>
+        <p className="eyebrow">Your progress</p>
+        <h2 className="progress-compact-title">Keep your momentum</h2>
+        <p className="progress-compact-copy">A little practice adds up. Keep going and watch your progress build.</p>
+      </div>
+      <Link href="/dashboard" className="progress-compact-link">Full dashboard <span>↗</span></Link>
+    </div>
+    <div className="progress-compact-stats">
+      <div className="progress-compact-stat progress-stat-rose">
+        <span className="progress-stat-label">Tests completed</span>
+        <strong>{completed.length}<small>/{appCatalog.tests.length}</small></strong>
+        <span className="progress-stat-note">tests finished</span>
+      </div>
+      <div className="progress-compact-stat progress-stat-blue">
+        <span className="progress-stat-label">Accuracy</span>
+        <strong>{stats.accuracy}<small>%</small></strong>
+        <span className="progress-stat-note">across answered questions</span>
+      </div>
+      <div className="progress-compact-stat progress-stat-mint">
+        <span className="progress-stat-label">Questions answered</span>
+        <strong>{stats.answered}<small>/{appCatalog.stats.question_count}</small></strong>
+        <span className="progress-stat-note">of the question bank</span>
+      </div>
+    </div>
+    <style jsx>{`
+      .progress-compact{position:relative;overflow:hidden;border:1px solid #e5e1d8;border-radius:28px;background:#fffdfa;padding:34px 36px;box-shadow:0 10px 35px rgba(45,41,34,.045)}
+      .progress-compact:before{content:"";position:absolute;width:220px;height:220px;right:-85px;top:-115px;border-radius:50%;background:rgba(239,218,226,.34);pointer-events:none}
+      .progress-compact-head{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+      .progress-compact-title{margin-top:7px;font-size:30px;line-height:1.05;font-weight:500;letter-spacing:-.045em;color:#292825}
+      .progress-compact-copy{margin-top:10px;max-width:470px;font-size:12px;line-height:1.6;color:#99968f}
+      .progress-compact-link{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-size:11px;color:#65615a;text-decoration:none;border-bottom:1px solid #d8d3ca;padding-bottom:3px;transition:color .15s ease,border-color .15s ease}
+      .progress-compact-link:hover{color:#292825;border-color:#292825}
+      .progress-compact-link span{font-size:14px;line-height:1}
+      .progress-compact-stats{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:28px}
+      .progress-compact-stat{position:relative;min-height:142px;border-radius:18px;padding:20px 21px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+      .progress-compact-stat:after{content:"";position:absolute;width:90px;height:90px;right:-28px;bottom:-35px;border-radius:50%;border:1px solid rgba(255,255,255,.55)}
+      .progress-stat-rose{background:#f5e6eb}.progress-stat-blue{background:#e7edf5}.progress-stat-mint{background:#e6f0ea}
+      .progress-stat-label{font-size:10px;letter-spacing:.04em;color:#77736c}
+      .progress-compact-stat strong{font-size:38px;line-height:1;font-weight:500;letter-spacing:-.055em;color:#302e2a}
+      .progress-compact-stat strong small{font-size:17px;font-weight:400;letter-spacing:-.02em;color:#858078}
+      .progress-stat-note{font-size:10px;color:#99968f}
+      @media(max-width:700px){.progress-compact{padding:27px 22px;border-radius:23px}.progress-compact-head{display:block}.progress-compact-link{margin-top:17px}.progress-compact-stats{grid-template-columns:1fr}.progress-compact-stat{min-height:118px}}
+    `}</style>
+  </section>;
 
   return <div className="editorial-dashboard">
     {userId?<StreakChart userId={userId}/>:<section className="dash-panel dash-panel--streak"><div className="dash-panel-inner"><p className="dash-kicker">01 · Consistency</p><h2 className="dash-title">Build your practice streak.</h2><p className="dash-copy max-w-2xl">Sign in with Google and finish at least one test on a day to start collecting your daily dots and streak.</p><Link href="/auth" className="dash-guest">Sign in →</Link></div></section>}

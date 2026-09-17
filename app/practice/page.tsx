@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import {useState} from "react";
+import {useSearchParams} from "next/navigation";
 import {appCatalog,questionsForTest} from "../../lib/data";
 import {getAttempts,getStarredTests,toggleStarredTest} from "../../lib/progress";
 
@@ -9,7 +10,8 @@ const testPillar=(t:any)=>t.subtype==="deductive_logical"?"deductive":t.pillar;
 const pretty=(v:string)=>v.replaceAll("_"," ").replace(/\b\w/g,m=>m.toUpperCase());
 
 export default function Practice(){
- const [pillar,setPillar]=useState("");
+ const searchParams=useSearchParams();
+ const [pillar,setPillar]=useState(searchParams.get("pillar")||"");
  const [attempts,setAttempts]=useState<any[]>([]);
  const [stars,setStars]=useState<string[]>([]);
  const open=(id:string)=>{setPillar(x=>x===id?"":id);setAttempts(getAttempts());setStars(getStarredTests())};

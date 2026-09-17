@@ -13,7 +13,7 @@ export default function Home(){
         <p className="hero-label">Let's practice</p>
         <h1 className="hero-title"><span className="soft">small practice</span><br/><span className="strong">bigger progress.</span></h1>
         <p className="hero-lede">Short, image-based aptitude tests to build real-world skills.</p>
-        <div className="hero-actions"><Link href="/tests" className="primary-action">Start practicing →</Link><Link href="/practice" className="secondary-action">Explore by type</Link></div>
+        <div className="hero-actions"><Link href="/tests" className="primary-action">Practice by test →</Link><Link href="/practice" className="secondary-action">Explore by type</Link></div>
       </div>
       <div className="hero-note" aria-hidden="true"><div className="hero-hand">Progress<br/>lives here.</div><div className="hero-smiley">☺</div><div className="sticky sticky-one">PRACTICE</div><div className="sticky sticky-two">LEARN</div><div className="sticky sticky-three">GROW</div><div className="hero-arrow">↗</div></div>
     </section>

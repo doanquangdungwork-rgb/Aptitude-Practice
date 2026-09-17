@@ -1,17 +1,22 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState } from "react";
 
 type QuestionSnapshotProps = {
   questionNumber: number;
   src: string;
+  fallback?: ReactNode;
 };
 
-export default function QuestionSnapshot({ questionNumber, src }: QuestionSnapshotProps) {
+export default function QuestionSnapshot({ questionNumber, src, fallback }: QuestionSnapshotProps) {
   const [zoom, setZoom] = useState(100);
+  const [failed, setFailed] = useState(false);
+
+  if (failed || !src) return fallback ? <>{fallback}</> : null;
 
   return (
-    <div className="question-snapshot-shell" aria-label={`Question ${questionNumber} snapshot`}>
+    <div className="question-snapshot-shell" aria-label={`Question ${questionNumber} source snapshot`}>
       <div className="question-snapshot-toolbar">
         <span className="eyebrow">Question {questionNumber}</span>
         <div className="question-snapshot-zoom">
@@ -22,7 +27,12 @@ export default function QuestionSnapshot({ questionNumber, src }: QuestionSnapsh
       </div>
       <div className="question-snapshot-scroll">
         <div className="question-snapshot-stage" style={{ width: `${zoom}%` }}>
-          <img src={src} alt={`Deductive Reasoning Question ${questionNumber}`} className="question-snapshot-image" />
+          <img
+            src={src}
+            alt={`Source Question ${questionNumber}`}
+            className="question-snapshot-image"
+            onError={() => setFailed(true)}
+          />
         </div>
       </div>
       <style jsx>{`
@@ -33,7 +43,7 @@ export default function QuestionSnapshot({ questionNumber, src }: QuestionSnapsh
         .question-snapshot-zoom button:disabled{opacity:.35;cursor:default}
         .question-snapshot-zoom-value{width:52px!important;border-left:1px solid var(--line)!important;border-right:1px solid var(--line)!important;font-size:11px!important;font-weight:700!important}
         .question-snapshot-scroll{flex:1;min-height:0;overflow:auto;padding:24px;background:#f5f2ec}
-        .question-snapshot-stage{width:100%;max-width:none;margin:0 auto;transition:width .15s ease}
+        .question-snapshot-stage{min-width:100%;margin:0 auto;transition:width .15s ease}
         .question-snapshot-image{display:block;width:100%;height:auto;box-shadow:0 8px 28px rgba(50,45,38,.10);background:#fff}
       `}</style>
     </div>

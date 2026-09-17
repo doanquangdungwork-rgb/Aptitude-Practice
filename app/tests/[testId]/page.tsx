@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { appCatalog, pillarMap } from "../../../lib/data";
 import { questionsForEngine, referenceMaterialsForQuestion } from "../../../lib/question-source";
+import { questionSnapshotSrc } from "../../../lib/question-snapshot";
 import { answersMatch } from "../../../lib/canonical-engine";
 import { completeAttempt, getAttempt, getBookmarks, getCompletedAttempt, getWrongQuestions, recordPracticeDay, saveAttempt, setWrongQuestions, toggleBookmark } from "../../../lib/progress";
 import { supabase } from "../../../lib/supabase";
@@ -19,7 +20,6 @@ export default function TestPage() {
   const test = appCatalog.tests.find((x: any) => x.test_id === testId);
   const qs = useMemo(() => questionsForEngine(testId), [testId]);
   const actualQuestionCount = qs.length;
-  const isDeductiveTest = ["TEST_030", "TEST_031", "TEST_032", "TEST_033"].includes(testId);
   const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -52,7 +52,8 @@ export default function TestPage() {
   const answer = q ? answers[q.id] : undefined;
   const label = q ? (q.subquestion ? `Question ${q.number}${q.subquestion}` : `Question ${q.number}`) : "";
   const progress = actualQuestionCount ? ((idx + 1) / actualQuestionCount) * 100 : 0;
-  const deductiveSnapshotSrc = q ? `/question-assets/${testId}_Q${String(q.number).padStart(2, "0")}.png` : "";
+  const snapshotSrc = q ? questionSnapshotSrc(testId, q.source?.sourceFile, q.number) : "";
+  const isSnapshotTest = Boolean(snapshotSrc);
 
   useEffect(() => { if (q) setBookmarked(getBookmarks().includes(q.id)); }, [q?.id]);
 
@@ -103,18 +104,19 @@ export default function TestPage() {
   if (!q) return null;
 
   const questionImageBlocks = (q.prompt?.blocks ?? []).filter((block: any) => block?.type === "image");
+  const referenceFallback = currentReferenceMaterials.length ? <ReferenceViewer materials={currentReferenceMaterials} initialIndex={0} /> : hasPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : questionImageBlocks.length ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference material is attached to this question.</p></div>;
 
   return <div className={`app-page quiz-page ${hasPassage ? "passage-test" : ""}`}>
     <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><div className={`test-countdown ${remainingSeconds <= 60 ? "urgent" : ""}`} aria-label="Time remaining">{formatCountdown(remainingSeconds)}</div><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
-      <section className={`quiz-reference-pane ${isDeductiveTest ? "deductive-snapshot-pane" : "passage-material-pane"}`}>
-        {isDeductiveTest ? <QuestionSnapshot questionNumber={q.number} src={deductiveSnapshotSrc} /> : currentReferenceMaterials.length ? <ReferenceViewer materials={currentReferenceMaterials} initialIndex={0} /> : hasPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : questionImageBlocks.length ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference material is attached to this question.</p></div>}
+      <section className={`quiz-reference-pane ${isSnapshotTest ? "deductive-snapshot-pane" : "passage-material-pane"}`}>
+        {isSnapshotTest ? <QuestionSnapshot questionNumber={q.number} src={snapshotSrc} fallback={referenceFallback} /> : referenceFallback}
       </section>
       <section className="quiz-question-pane answer-pane">
         <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
         <article className="quiz-card quiz-question-card" id={`question-${q.number}`}>
-          <div className="quiz-question-head"><div className="flex-1"><p className="eyebrow">{isDeductiveTest ? "Answer" : label}</p>{!isDeductiveTest && <div className="quiz-question mt-3"><QuestionPrompt blocks={q.prompt.blocks} hideImages={Boolean(currentReferenceMaterials.length || hasPassage)} /></div>}</div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
+          <div className="quiz-question-head"><div className="flex-1"><p className="eyebrow">{isSnapshotTest ? "Answer" : label}</p>{!isSnapshotTest && <div className="quiz-question mt-3"><QuestionPrompt blocks={q.prompt.blocks} hideImages={Boolean(currentReferenceMaterials.length || hasPassage)} /></div>}</div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
           <div className="quiz-answer-label">Choose your answer</div>
           <QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} />
         </article>

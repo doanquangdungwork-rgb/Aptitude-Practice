@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import {useState} from "react";
+import {Suspense,useState} from "react";
 import {useSearchParams} from "next/navigation";
 import {appCatalog,questionsForTest} from "../../lib/data";
 import {getAttempts,getStarredTests,toggleStarredTest} from "../../lib/progress";
@@ -9,7 +9,7 @@ const tones=["tone-pink","tone-lavender","tone-lime","tone-mint","tone-sky","ton
 const testPillar=(t:any)=>t.subtype==="deductive_logical"?"deductive":t.pillar;
 const pretty=(v:string)=>v.replaceAll("_"," ").replace(/\b\w/g,m=>m.toUpperCase());
 
-export default function Practice(){
+function PracticeContent(){
  const searchParams=useSearchParams();
  const [pillar,setPillar]=useState(searchParams.get("pillar")||"");
  const [attempts,setAttempts]=useState<any[]>([]);
@@ -48,4 +48,8 @@ export default function Practice(){
    </div>:<div className="p-8 text-center text-xs text-[#aaa7a0]">No tests are indexed under this pillar yet.</div>}
   </section>}
  </div>
+}
+
+export default function Practice(){
+ return <Suspense fallback={<div className="app-page"><div className="section-head"><div><p className="eyebrow">Practice by type</p><h1 className="section-title">Choose a reasoning pillar.</h1></div></div></div>}><PracticeContent/></Suspense>;
 }

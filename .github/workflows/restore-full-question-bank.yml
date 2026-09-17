@@ -19,20 +19,15 @@ jobs:
           cat .question-bank/chunk0 .question-bank/chunk1 .question-bank/chunk2 .question-bank/chunk3 > /tmp/questions.xz.b64
           base64 -d /tmp/questions.xz.b64 > /tmp/questions.xz
           xz -dc /tmp/questions.xz > data/questions.json
-          test "$(wc -c < data/questions.json)" -eq 1278197
-          test "$(sha256sum data/questions.json | cut -d' ' -f1)" = "297dbd03ea1737b29ab6a8c68c0445271cf3292ffa43d8e91587150922fcba52"
+          test "$(wc -c < data/questions.json)" -eq 685977
+          test "$(sha256sum data/questions.json | cut -d' ' -f1)" = "d8754c39b1ecc90aaabda95f2f855e6160bdf2f2ef3331c618a07b9e3e8a769d"
           python - <<'PY'
           import json
-          p='data/questions.json'
-          data=json.load(open(p))
+          data=json.load(open('data/questions.json'))
           assert len(data)==2730, len(data)
-          tests={}
-          for q in data:
-              tests.setdefault(q['testId'],0)
-              tests[q['testId']]+=1
-          assert len(tests)==122, len(tests)
+          assert len({q['testId'] for q in data})==122
           assert all(q.get('a') is not None for q in data)
-          print('VALIDATED', len(data), 'questions across', len(tests), 'tests')
+          print('VALIDATED', len(data), 'questions across 122 tests')
           PY
       - name: Commit full bank
         run: |

@@ -33,7 +33,6 @@
     {"test_id":"TEST_031","title":"Deductive Test 2","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
     {"test_id":"TEST_032","title":"Deductive Test 3","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
     {"test_id":"TEST_033","title":"Deductive Test 4","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
-    {"test_id":"TEST_034","title":"Deductive Test 4","pillar":"deductive","subtype":"deductive_reasoning","question_count":22},
     {"test_id":"TEST_035","title":"Diagrammatic Reasoning Test 1","pillar":"diagrammatic","subtype":"diagrammatic_reasoning","question_count":0},
     {"test_id":"TEST_036","title":"Diagrammatic Reasoning Test 2","pillar":"diagrammatic","subtype":"diagrammatic_reasoning","question_count":0},
     {"test_id":"TEST_037","title":"Diagrammatic Reasoning Test 3","pillar":"diagrammatic","subtype":"diagrammatic_reasoning","question_count":0},
@@ -138,5 +137,5 @@
     {"id":"situational_judgement","name":"Situational Judgement","description":"Choose the most effective response to workplace situations."}
   ],
   "subtypes":{"deductive":["deductive_reasoning"],"logical":["logical_reasoning"],"diagrammatic":["diagrammatic_reasoning"],"numerical":["capp","cute","tgb","tp","advanced_numerical","critical_numerical","numerical_reasoning"],"verbal":["talentq","tp","verbal_comprehension","verbal_reasoning"],"situational_judgement":["sjt"]},
-  "stats":{"question_count":2668,"test_count":128,"answered_source_count":128}
+  "stats":{"question_count":2668,"test_count":127,"answered_source_count":127}
 }

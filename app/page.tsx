@@ -79,11 +79,11 @@ export default function Home(){
       .home-page .hero-lede{margin-top:18px}
       .home-page .hero-actions{margin-top:20px}
       .home-page .hero-note{right:58px;transform:translateY(-50%) scale(.88)}
-      .home-page .home-category-nav{display:flex;align-items:center;justify-content:space-between;gap:20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 0 8px}
-      .home-category-buttons{display:flex;align-items:center;gap:24px;min-width:0;overflow-x:auto;white-space:nowrap}
-      .home-category-buttons a{font-size:11px;color:#aaa7a0;padding-bottom:2px}
+      .home-page .home-category-nav{display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;width:100%;gap:28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 0 8px;overflow:hidden}
+      .home-category-buttons{display:flex;align-items:center;gap:28px;min-width:0;flex:1;overflow:hidden;white-space:nowrap}
+      .home-category-buttons a{display:block;flex:0 0 auto;font-size:11px;line-height:1.2;color:#aaa7a0;padding-bottom:3px;white-space:nowrap}
       .home-category-buttons a.active{color:#3b3935;border-bottom:1px solid #3b3935}
-      .home-search-link{flex:0 0 190px;border:1px solid #dedbd4;background:rgba(255,255,255,.72);padding:7px 11px;font-size:10px;color:#aaa7a0}
+      .home-search-link{flex:0 0 420px;border:1px solid #dedbd4;border-radius:999px;background:rgba(255,255,255,.72);padding:9px 15px;font-size:10px;color:#aaa7a0;white-space:nowrap}
       .home-page .section-head{margin-top:17px;margin-bottom:11px}
       .home-page .section-title{font-size:25px}
       .home-page .practice-grid{gap:10px}
@@ -94,10 +94,15 @@ export default function Home(){
       .home-page .practice-meta{left:16px;bottom:11px;gap:14px;font-size:9px}
       .home-page .practice-arrow{right:13px;bottom:9px;width:27px;height:27px}
       .home-page .home-footer{padding-top:10px!important;margin-top:10px}
+      @media(max-width:1200px){
+        .home-category-buttons{gap:18px}
+        .home-search-link{flex-basis:260px}
+      }
       @media(max-width:900px){
         .home-page .editorial-hero{min-height:auto;padding:42px 0 34px}
         .home-page .hero-note{position:relative;right:auto;top:auto;transform:scale(.9);margin:4px auto -20px}
-        .home-page .home-category-nav{align-items:stretch;flex-direction:column;gap:9px}
+        .home-page .home-category-nav{align-items:stretch;flex-direction:column;gap:9px;overflow:visible}
+        .home-category-buttons{width:100%;flex:none;overflow-x:auto;overflow-y:hidden;padding-bottom:2px}
         .home-search-link{width:100%;flex-basis:auto}
         .home-page .practice-card{min-height:150px;height:150px}
       }

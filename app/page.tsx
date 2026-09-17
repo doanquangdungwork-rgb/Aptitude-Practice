@@ -37,25 +37,6 @@ export default function Home(){
       </div>
     </section>
 
-    <section className="mt-14">
-      <div className="section-head">
-        <div>
-          <p className="eyebrow">Test by type</p>
-          <h2 className="section-title">Choose a reasoning pillar</h2>
-        </div>
-        <p className="section-note">Focus on one reasoning style when you want a targeted session.<br/>Choose a type to explore its practice tests.</p>
-      </div>
-
-      <div className="practice-grid">
-        {appCatalog.pillars.map((pillar:any,i:number)=><Link key={pillar.id} href={`/practice/${pillar.id}`} className={`practice-card ${tones[i%tones.length]}`}>
-          <span className="practice-index">{String(i+1).padStart(2,"0")}</span>
-          <h3>{pillar.name}</h3>
-          <p>{pillar.description}</p>
-          <span className="practice-arrow">→</span>
-        </Link>)}
-      </div>
-    </section>
-
     <section className="mt-14"><ProgressDashboard compact/></section>
     <footer className="mt-14 border-t border-[#e7e5de] pt-6 text-xs text-[#aaa7a0]">
       <b className="text-[#44433f]">{appCatalog.stats.test_count}</b> curated tests

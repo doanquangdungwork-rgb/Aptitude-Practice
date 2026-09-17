@@ -83,11 +83,13 @@ export default function ResultPage() {
             const isCorrect = !skipped && answersMatch(q, selected);
             const correctValue = q.answer.type === "single" || q.answer.type === "text" || q.answer.type === "numeric" ? q.answer.value : q.answer.type === "multiple" ? q.answer.values : q.answer.parts;
             const itemSnapshotSrc = questionSnapshotSrc(testId, q.source?.sourceFile, q.number);
+            const itemReferenceMaterials = referenceMaterialsForQuestion(testId, q.number);
+            const itemHasPassage = Boolean(q.context && String(q.context).trim());
 
             return <article key={q.id} id={`question-${q.number}`} onClick={() => setSelectedIndex(i)} className={`review-item ${selectedIndex === i ? "review-item-active" : ""} ${skipped ? "skipped" : isCorrect ? "correct" : "wrong"}`}>
               <div className="flex items-start justify-between gap-4"><span className="eyebrow">Question {q.number}{q.subquestion || ""}</span><span className="text-xs font-bold">{skipped ? "Skipped" : isCorrect ? "Correct" : "Incorrect"}</span></div>
 
-              {!itemSnapshotSrc && <div className="mt-4 text-lg font-medium leading-8"><QuestionPrompt blocks={q.prompt.blocks} hideImages={selectedReferenceMaterials.length > 0} /></div>}
+              {!itemSnapshotSrc && <div className="mt-4 text-lg font-medium leading-8"><QuestionPrompt blocks={q.prompt.blocks} hideImages={Boolean(itemReferenceMaterials.length || itemHasPassage)} /></div>}
 
               {q.options.length > 0 && <div className="mt-5 grid gap-2">{q.options.map((o, j) => {
                 const selectedHere = Array.isArray(selected) ? selected.includes(o.id) : String(selected ?? "") === o.id;

@@ -24,8 +24,8 @@ jobs:
           assert len(s) % 4 == 2, len(s)
           with open('/tmp/questions.xz','wb') as out:
               out.write(base64.b64decode(s[:-2]))
-              bridge=s[-2:] + base64.b64encode(c1[:2]).decode()[:2]
-              out.write(base64.b64decode(bridge))
+              last_byte=base64.b64decode(s[-2:] + "==")
+              out.write(last_byte + c1[:2])
               out.write(c1[2:])
               out.write(base64.b64decode(open('.question-bank/chunk2','r',encoding='utf-8').read()))
               out.write(base64.b64decode(open('.question-bank/chunk3','r',encoding='utf-8').read()))

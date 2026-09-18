@@ -19,4 +19,4 @@ import p17 from "./question-bank/part17";
 import p18 from "./question-bank/part18";
 import p19 from "./question-bank/part19";
 
-export const fullQuestions: any[] = [...(p00 as any[]),...(p01 as any[]),...(p02 as any[]),...(p03 as any[]),...(p04 as any[]),...(p05 as any[]),...(p06 as any[]),...(p07 as any[]),...(p08 as any[]),...(p09 as any[]),...(p10 as any[]),...(p11 as any[]),...(p12 as any[]),...(p13 as any[]),...(p14 as any[]),...(p15 as any[]),...(p16 as any[]),...(p17 as any[]),...(p18 as any[]),...(p19 as any[])];
+export const fullQuestions: any[] = [...(p00 as unknown as any[]),...(p01 as unknown as any[]),...(p02 as unknown as any[]),...(p03 as unknown as any[]),...(p04 as unknown as any[]),...(p05 as unknown as any[]),...(p06 as unknown as any[]),...(p07 as unknown as any[]),...(p08 as unknown as any[]),...(p09 as unknown as any[]),...(p10 as unknown as any[]),...(p11 as unknown as any[]),...(p12 as unknown as any[]),...(p13 as unknown as any[]),...(p14 as unknown as any[]),...(p15 as unknown as any[]),...(p16 as unknown as any[]),...(p17 as unknown as any[]),...(p18 as unknown as any[]),...(p19 as unknown as any[])];

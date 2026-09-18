@@ -20,15 +20,15 @@ jobs:
           python - <<'PY'
           import base64
           s=open('.question-bank/chunk0','r',encoding='utf-8').read().strip()
-          c1=open('.question-bank/chunk1','rb').read()
+          c1=base64.b64decode(open('.question-bank/chunk1','r',encoding='utf-8').read())
           assert len(s) % 4 == 2, len(s)
           with open('/tmp/questions.xz','wb') as out:
               out.write(base64.b64decode(s[:-2]))
               bridge=s[-2:] + base64.b64encode(c1[:2]).decode()[:2]
               out.write(base64.b64decode(bridge))
               out.write(c1[2:])
-              out.write(open('.question-bank/chunk2','rb').read())
-              out.write(open('.question-bank/chunk3','rb').read())
+              out.write(base64.b64decode(open('.question-bank/chunk2','r',encoding='utf-8').read()))
+              out.write(base64.b64decode(open('.question-bank/chunk3','r',encoding='utf-8').read()))
           PY
           xz -dc /tmp/questions.xz > data/questions.json
           test "$(wc -c < data/questions.json)" -eq 685977

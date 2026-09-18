@@ -17,7 +17,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Restore and validate
         run: |
-          cat .question-bank/chunk0 .question-bank/chunk1 .question-bank/chunk2 .question-bank/chunk3 > /tmp/questions.xz
+          base64 -d .question-bank/chunk0 > /tmp/questions.xz
+          cat .question-bank/chunk1 .question-bank/chunk2 .question-bank/chunk3 >> /tmp/questions.xz
           xz -dc /tmp/questions.xz > data/questions.json
           test "$(wc -c < data/questions.json)" -eq 685977
           test "$(sha256sum data/questions.json | cut -d' ' -f1)" = "d8754c39b1ecc90aaabda95f2f855e6160bdf2f2ef3331c618a07b9e3e8a769d"

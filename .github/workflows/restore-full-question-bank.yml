@@ -17,8 +17,19 @@ jobs:
       - uses: actions/checkout@v4
       - name: Restore and validate
         run: |
-          base64 -d .question-bank/chunk0 > /tmp/questions.xz
-          cat .question-bank/chunk1 .question-bank/chunk2 .question-bank/chunk3 >> /tmp/questions.xz
+          python - <<'PY'
+          import base64
+          s=open('.question-bank/chunk0','r',encoding='utf-8').read().strip()
+          c1=open('.question-bank/chunk1','rb').read()
+          assert len(s) % 4 == 2, len(s)
+          with open('/tmp/questions.xz','wb') as out:
+              out.write(base64.b64decode(s[:-2]))
+              bridge=s[-2:] + base64.b64encode(c1[:2]).decode()[:2]
+              out.write(base64.b64decode(bridge))
+              out.write(c1[2:])
+              out.write(open('.question-bank/chunk2','rb').read())
+              out.write(open('.question-bank/chunk3','rb').read())
+          PY
           xz -dc /tmp/questions.xz > data/questions.json
           test "$(wc -c < data/questions.json)" -eq 685977
           test "$(sha256sum data/questions.json | cut -d' ' -f1)" = "d8754c39b1ecc90aaabda95f2f855e6160bdf2f2ef3331c618a07b9e3e8a769d"

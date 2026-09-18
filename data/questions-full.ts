@@ -1,0 +1,22 @@
+import p00 from "./question-bank/part00";
+import p01 from "./question-bank/part01";
+import p02 from "./question-bank/part02";
+import p03 from "./question-bank/part03";
+import p04 from "./question-bank/part04";
+import p05 from "./question-bank/part05";
+import p06 from "./question-bank/part06";
+import p07 from "./question-bank/part07";
+import p08 from "./question-bank/part08";
+import p09 from "./question-bank/part09";
+import p10 from "./question-bank/part10";
+import p11 from "./question-bank/part11";
+import p12 from "./question-bank/part12";
+import p13 from "./question-bank/part13";
+import p14 from "./question-bank/part14";
+import p15 from "./question-bank/part15";
+import p16 from "./question-bank/part16";
+import p17 from "./question-bank/part17";
+import p18 from "./question-bank/part18";
+import p19 from "./question-bank/part19";
+
+export const fullQuestions = [...p00,...p01,...p02,...p03,...p04,...p05,...p06,...p07,...p08,...p09,...p10,...p11,...p12,...p13,...p14,...p15,...p16,...p17,...p18,...p19];

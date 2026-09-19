@@ -5,7 +5,7 @@ import {QuestionPrompt} from "./question-content";
 export default function QuestionResponse({response,options,answer,value,onChange,screenshotMode=false}:{response:CanonicalResponse;options:CanonicalOption[];answer?:CanonicalAnswer;value:unknown;onChange:(value:unknown)=>void;screenshotMode?:boolean}){
  const selected=Array.isArray(value)?value.map(String):[];
  const optionLabel=(i:number)=>String.fromCharCode(65+i);
- const isFigureOption=(o:CanonicalOption)=>o.content.type==="text" && /^Figure \\d+$/i.test(o.content.value.trim());
+ const isFigureOption=(o:CanonicalOption)=>o.content.type==="text" && /^Figure \d+$/i.test(o.content.value.trim());
  const labelContent=(o:CanonicalOption,i:number)=>screenshotMode ? (isFigureOption(o) ? <span>{o.content.value}</span> : <span>{optionLabel(i)}</span>) : <QuestionPrompt blocks={[o.content]}/>;
  const requiredSelections=response.type==="multiple_choice" && answer?.type==="multiple" ? answer.values.length : undefined;
 

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { appCatalog, pillarMap } from "../../../../lib/data";
 import { questionsForEngine, referenceMaterialsForQuestion } from "../../../../lib/question-source";
-import { questionSnapshotSrc } from "../../../../lib/question-snapshot";
+import { questionSnapshotSrc, solutionSnapshotSrc } from "../../../../lib/question-snapshot";
 import { answersMatch, normalizeChoice } from "../../../../lib/canonical-engine";
 import { getCompletedAttempt, getWrongQuestions, setWrongQuestions } from "../../../../lib/progress";
 import ShareCard from "../../../../components/share-card";
@@ -40,6 +40,9 @@ export default function ResultPage() {
   const selectedSnapshotSrc = selectedQuestion
     ? questionSnapshotSrc(testId, selectedQuestion.source?.sourceFile, selectedQuestion.number)
     : "";
+  const selectedSolutionSrc = selectedQuestion
+    ? solutionSnapshotSrc(testId, selectedQuestion.source?.sourceFile, selectedQuestion.number)
+    : "";
   const selectedReferenceMaterials = selectedQuestion
     ? referenceMaterialsForQuestion(testId, selectedQuestion.number)
     : [];
@@ -61,7 +64,13 @@ export default function ResultPage() {
     <div className="review-workspace">
       <section className="review-reference-pane">
         {selectedSnapshotSrc
-          ? <QuestionSnapshot questionNumber={selectedQuestion.number} src={selectedSnapshotSrc} fallback={selectedReferenceFallback} />
+          ? <QuestionSnapshot
+            questionNumber={selectedQuestion.number}
+            src={selectedSnapshotSrc}
+            solutionSrc={selectedSolutionSrc}
+            showSolution={Boolean(selectedSolutionSrc)}
+            fallback={selectedReferenceFallback}
+          />
           : selectedReferenceFallback}
       </section>
 

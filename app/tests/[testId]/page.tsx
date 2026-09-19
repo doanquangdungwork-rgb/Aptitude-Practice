@@ -48,13 +48,7 @@ export default function TestPage() {
   const testDurationSeconds = Math.max(0, actualQuestionCount * 60);
   const currentReferenceMaterials = useMemo(() => referenceMaterialsForQuestion(testId, q?.number ?? idx + 1), [testId, q?.number, idx]);
   const hasPassage = Boolean(q?.context && String(q.context).trim());
-  const isAnswered = (question: any, value: unknown) => {
-    if (value === undefined || value === "" || (Array.isArray(value) && value.length === 0)) return false;
-    if (question?.response?.type === "multiple_choice" && question.response.minSelections) {
-      return Array.isArray(value) && value.length >= question.response.minSelections;
-    }
-    return true;
-  };
+  const isAnswered = (value: unknown) => value !== undefined && value !== "" && !(Array.isArray(value) && value.length === 0);
   const answer = q ? answers[q.id] : undefined;
   const label = q ? (q.subquestion ? `Question ${q.number}${q.subquestion}` : `Question ${q.number}`) : "";
   const progress = actualQuestionCount ? ((idx + 1) / actualQuestionCount) * 100 : 0;
@@ -69,11 +63,6 @@ export default function TestPage() {
     setAnswers(next);
     const old = getAttempt(testId);
     saveAttempt({ id: attemptId, testId, startedAt: old?.startedAt || startedAt || new Date().toISOString(), updatedAt: new Date().toISOString(), answers: next });
-  };
-
-  const returnToPractice = () => {
-    const pillar = test?.pillar ? "?pillar=" + encodeURIComponent(test.pillar) : "";
-    router.push("/practice" + pillar);
   };
 
   const finish = async () => {
@@ -118,25 +107,24 @@ export default function TestPage() {
   const referenceFallback = currentReferenceMaterials.length ? <ReferenceViewer materials={currentReferenceMaterials} initialIndex={0} /> : hasPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : questionImageBlocks.length ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference material is attached to this question.</p></div>;
 
   return <div className={`app-page quiz-page ${hasPassage ? "passage-test" : ""}`}>
-    <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><div className={`test-countdown ${remainingSeconds <= 60 ? "urgent" : ""}`} aria-label="Time remaining">{formatCountdown(remainingSeconds)}</div><button onClick={returnToPractice} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
+    <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><div className={`test-countdown ${remainingSeconds <= 60 ? "urgent" : ""}`} aria-label="Time remaining">{formatCountdown(remainingSeconds)}</div><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
       <section className={`quiz-reference-pane ${isSnapshotTest ? "deductive-snapshot-pane" : "passage-material-pane"}`}>
         {isSnapshotTest ? <QuestionSnapshot questionNumber={q.number} src={snapshotSrc} fallback={referenceFallback} /> : referenceFallback}
       </section>
       <section className="quiz-question-pane answer-pane">
-        <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(qs[i], answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
+        <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
         <article className="quiz-card quiz-question-card" id={`question-${q.number}`}>
           <div className="quiz-question-head"><div className="flex-1"><p className="eyebrow">{isSnapshotTest ? "Answer" : label}</p>{!isSnapshotTest && <div className="quiz-question mt-3"><QuestionPrompt blocks={q.prompt.blocks} hideImages={Boolean(currentReferenceMaterials.length || hasPassage)} /></div>}</div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
           <div className="quiz-answer-label">Choose your answer</div>
-          {isSnapshotTest && q.options.length === 9 ? <div className="answer-mapping-note"><strong>Answer mapping:</strong> A = top-left · B = top-middle · C = top-right · D = middle-left · E = centre · F = middle-right · G = bottom-left · H = bottom-middle · I = bottom-right.</div> : null}
           <QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} screenshotMode={isSnapshotTest} />
         </article>
         <div className="quiz-nav"><button disabled={!idx} onClick={() => setIdx(idx - 1)} className="outline-action disabled:opacity-30">← Previous</button>{idx < actualQuestionCount - 1 ? <button onClick={() => setIdx(idx + 1)} className="yellow-button">Next →</button> : <button onClick={finish} className="yellow-button">Finish test</button>}</div>
       </section>
     </div>
     <style jsx>{`
-      .passage-test .quiz-reference-pane{grid-column:1;grid-row:1;min-height:0}.passage-test .quiz-question-pane{grid-column:2;grid-row:1;min-height:0}.quiz-reference-pane{min-height:0}.quiz-question-pane{min-height:0}.deductive-snapshot-pane{grid-column:1;grid-row:1;min-height:0}.deductive-snapshot-pane .question-snapshot-shell{height:100%;min-height:0}.quiz-question-card{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.02)}.answer-mapping-note{margin:10px 0 0;padding:10px 12px;border:1px solid #e7e5de;border-radius:10px;background:#fbfaf6;color:#77756e;font-size:11px;line-height:1.55}.answer-mapping-note strong{color:#4f4c47}.test-countdown{min-width:72px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.02em;text-align:center;color:#4f4c47}.test-countdown.urgent{color:#b55a4d;border-color:#e6c4bd;background:#fff8f6}.visual-choice-material{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:28px}@media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.visual-choice-material{min-height:320px;padding:20px}}
+      .passage-test .quiz-reference-pane{grid-column:1;grid-row:1;min-height:0}.passage-test .quiz-question-pane{grid-column:2;grid-row:1;min-height:0}.quiz-reference-pane{min-height:0}.quiz-question-pane{min-height:0}.deductive-snapshot-pane{grid-column:1;grid-row:1;min-height:0}.deductive-snapshot-pane .question-snapshot-shell{height:100%;min-height:0}.quiz-question-card{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.02)}.test-countdown{min-width:72px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.02em;text-align:center;color:#4f4c47}.test-countdown.urgent{color:#b55a4d;border-color:#e6c4bd;background:#fff8f6}.visual-choice-material{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:28px}@media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.visual-choice-material{min-height:320px;padding:20px}}
     `}</style>
   </div>;
 }

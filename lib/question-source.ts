@@ -117,7 +117,8 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const count=override?.optionCount ?? generatedOptionCount(q);
  const response: CanonicalQuestion["response"] = override?.responseType === "multiple_choice" || override?.figureChoice ? {type:"multiple_choice"} : override?.optionCount && override.optionCount > 0 ? {type:"single_choice"} : baseResponse;
  const optionTexts=override?.figureChoice ? Array.from({length: override.optionCount ?? 4}, (_,i)=>`Figure ${i+1}`) : isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
- const options=optionTexts.length ? optionTexts.map((value,index)=>({id:String.fromCharCode(65+index),content:legacyBlock(value)})) : generatedOptionIds(count).map(id=>({id,content:legacyBlock(id)}));
+ const optionIds=override?.optionIds?.length ? override.optionIds : generatedOptionIds(count);
+ const options=optionTexts.length ? optionTexts.map((value,index)=>({id:optionIds[index] ?? String.fromCharCode(65+index),content:legacyBlock(value)})) : optionIds.map(id=>({id,content:legacyBlock(id)}));
  let answer: CanonicalQuestion["answer"];
  if (override) answer = Array.isArray(override.answer) ? {type:"multiple",values:override.answer} : {type:"single",value:override.answer};
  else answer=inferAnswer(q,response,options);

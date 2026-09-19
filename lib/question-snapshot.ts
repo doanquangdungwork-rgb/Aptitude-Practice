@@ -6,11 +6,14 @@ type SnapshotManifest = {
 };
 
 const manifest = snapshotManifest as SnapshotManifest;
-const snapshotBaseUrl = (process.env.NEXT_PUBLIC_SNAPSHOT_BASE_URL ?? "").replace(/\/$/, "");
+
+// Snapshots are now stored directly in the Next.js public folder,
+// so no Vercel/CDN environment variable is required.
+const snapshotBaseUrl = (process.env.NEXT_PUBLIC_SNAPSHOT_BASE_URL ?? "/question-assets").replace(/\/$/, "");
 
 export function questionSnapshotSrc(testId: string, sourceFile: unknown, questionNumber: number): string {
   const file = String(sourceFile ?? "").trim().split("/").pop() ?? "";
-  if (!file || !Number.isFinite(questionNumber) || questionNumber < 1 || !snapshotBaseUrl) return "";
+  if (!file || !Number.isFinite(questionNumber) || questionNumber < 1) return "";
 
   // The generated asset pack is flat: PREFIX_Q001.webp, PREFIX_Q002.webp, ...
   // The manifest keeps the authoritative source-PDF -> prefix relationship.

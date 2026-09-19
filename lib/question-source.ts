@@ -8,7 +8,7 @@ import { contexts as deductiveTest4Contexts, questions as deductiveTest4Question
 import deductiveLogicalLst1 from "../data/deductive-logical-lst-1.json";
 
 type LegacyOption = string | { id?: string; text?: string; label?: string; option?: string };
-type LegacyQuestion = { id: string; testId?: string; number?: number; subquestion?: string | null; p?: string; s?: string; t?: string; o?: LegacyOption[]; a?: unknown; explanation?: string; sourceFile?: string; sourcePage?: number };
+type LegacyQuestion = { id: string; testId?: string; number?: number; subquestion?: string | null; p?: string; s?: string; t?: string; o?: LegacyOption[]; a?: unknown; explanation?: string; sourceFile?: string; sourcePage?: number; responseType?: string; optionCount?: number; sjt?: boolean };
 type ReferenceMaterial = { id: string; assetRef: string; label: string };
 type DeductiveSourceQuestion = { id: string; testId: string; number: number; p: string; s: string; context: string; t: string; o: string[]; a: string; sourcePage: number; sourceFile: string };
 type CompactDeductiveQuestion = [number, string, string[], string, number];
@@ -70,10 +70,65 @@ function legacyBlocks(value: unknown): ContentBlock[] { const text = String(valu
 function legacyBlock(value: unknown): ContentBlock { return { type: "text", value: String(value ?? "").trim() }; }
 function optionText(option: LegacyOption): string { return String(typeof option === "string" ? option : option.text ?? option.label ?? option.option ?? option.id ?? "").trim(); }
 function isTrueFalseCannotSay(text: string) { return /\btrue\s+false\s+cannot\s+say\b/i.test(text); }
-function inferResponse(q: LegacyQuestion): CanonicalQuestion["response"] { const options = Array.isArray(q.o) ? q.o : []; const text = String(q.t ?? ""); if (isTrueFalseCannotSay(text)) return { type: "single_choice" }; if (/enter the answer|calculate|how many|what percentage|what was the total|how much would/i.test(text) && !options.length) return { type: "numeric" }; return options.length ? { type: "single_choice" } : { type: "text" }; }
-function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"], options: { id: string; content: ContentBlock }[]): CanonicalQuestion["answer"] { const rawAnswer = String(q.a ?? "").trim(); const text = String(q.t ?? ""); if (response.type === "numeric") return { type: "numeric", value: rawAnswer }; if (isTrueFalseCannotSay(text)) { const answerMatch = String(q.explanation ?? "").match(/correct answer is\s+(true|false|cannot say)/i); return { type: "single", value: (answerMatch?.[1] ?? rawAnswer).trim().toLowerCase() }; } if (response.type === "text") return { type: "text", value: rawAnswer }; if (response.type === "multiple_choice") { const values = Array.isArray(q.a) ? q.a.map(String) : rawAnswer.split(/[,|]/).map(v => v.trim()).filter(Boolean); return { type: "multiple", values }; } const matchedOption = options.find(option => option.id.toLowerCase() === rawAnswer.toLowerCase()); return { type: "single", value: matchedOption?.id ?? rawAnswer }; }
-function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion { const rawOptions = Array.isArray(q.o) ? q.o : []; const response = inferResponse(q); const optionTexts = isTrueFalseCannotSay(String(q.t ?? "")) ? ["True", "False", "Cannot Say"] : rawOptions.map(optionText); const options = optionTexts.map((value, index) => ({ id: String.fromCharCode(65 + index), content: legacyBlock(value) })); const answer = inferAnswer(q, response, options); const mappedAnswer = response.type === "single_choice" ? (() => { const value = String(answer.type === "single" ? answer.value : "").trim().toLowerCase(); const match = options.find(option => option.content.type === "text" && option.content.value.trim().toLowerCase() === value); return match ? { type: "single" as const, value: match.id } : answer; })() : answer; return { id: `${testId}_${q.id}`, number: Number(q.number ?? 0), subquestion: q.subquestion ?? null, prompt: { blocks: legacyBlocks(q.t) }, options, response, answer: mappedAnswer, explanation: q.explanation ? { blocks: legacyBlocks(q.explanation) } : null, taxonomy: { pillar: q.p, subtype: q.s }, source: { legacyId: q.id, sourceFile: q.sourceFile, sourcePage: q.sourcePage, referenceMaterialIds: referenceMaterialsForQuestion(testId, Number(q.number ?? 0)).map(x => x.id) } }; }
-
+function inferResponse(q: LegacyQuestion): CanonicalQuestion["response"] {
+ const rt=String(q.responseType ?? "").trim().toLowerCase();
+ if(rt==="ranking") return {type:"ranking",rankCount:q.optionCount};
+ if(rt==="numeric") return {type:"numeric"};
+ if(rt==="text") return {type:"text"};
+ if(rt==="multiple_choice") return {type:"multiple_choice"};
+ if(rt==="composite" || q.sjt) return {type:"composite",parts:[{id:"most",type:"single_choice"},{id:"least",type:"single_choice"}]};
+ const options=Array.isArray(q.o)?q.o:[];
+ const text=String(q.t ?? "");
+ if(isTrueFalseCannotSay(text)) return {type:"single_choice"};
+ if(/enter the answer|calculate|how many|what percentage|what was the total|how much would/i.test(text) && !options.length && !q.optionCount) return {type:"numeric"};
+ return {type:"single_choice"};
+}
+function generatedOptionCount(q: LegacyQuestion): number {
+ if(Array.isArray(q.o) && q.o.length) return q.o.length;
+ return Number.isFinite(q.optionCount) ? Math.max(0,Number(q.optionCount)) : 0;
+}
+function generatedOptionIds(count:number){ return Array.from({length:count},(_,i)=>String.fromCharCode(65+i)); }
+function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"], options: { id: string; content: ContentBlock }[]): CanonicalQuestion["answer"] {
+ const raw=q.a;
+ const rawAnswer=String(raw ?? "").trim();
+ const text=String(q.t ?? "");
+ if(response.type==="numeric") return {type:"numeric",value:rawAnswer};
+ if(response.type==="text") return {type:"text",value:rawAnswer};
+ if(response.type==="composite"){
+   const parts=raw && typeof raw==="object" && !Array.isArray(raw) ? raw as Record<string,unknown> : {};
+   return {type:"composite",parts};
+ }
+ if(response.type==="multiple_choice"){
+   const values=Array.isArray(raw)?raw.map(String):rawAnswer.split(/[,|]/).map(v=>v.trim()).filter(Boolean);
+   return {type:"multiple",values};
+ }
+ if(isTrueFalseCannotSay(text)){
+   const answerMatch=String(q.explanation ?? "").match(/correct answer is\s+(true|false|cannot say)/i);
+   return {type:"single",value:(answerMatch?.[1] ?? rawAnswer).trim().toLowerCase()};
+ }
+ const matchedOption=options.find(option=>option.id.toLowerCase()===rawAnswer.toLowerCase());
+ return {type:"single",value:matchedOption?.id ?? rawAnswer};
+}
+function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
+ const rawOptions=Array.isArray(q.o)?q.o:[];
+ const response=inferResponse(q);
+ const count=generatedOptionCount(q);
+ const optionTexts=isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
+ const options=optionTexts.length ? optionTexts.map((value,index)=>({id:String.fromCharCode(65+index),content:legacyBlock(value)})) : generatedOptionIds(count).map(id=>({id,content:legacyBlock(id)}));
+ const answer=inferAnswer(q,response,options);
+ return {
+   id:`${testId}_${q.id}`,
+   number:Number(q.number ?? 0),
+   subquestion:q.subquestion ?? null,
+   prompt:{blocks:legacyBlocks(q.t)},
+   options,
+   response,
+   answer,
+   explanation:q.explanation?{blocks:legacyBlocks(q.explanation)}:null,
+   taxonomy:{pillar:q.p,subtype:q.s},
+   source:{legacyId:q.id,sourceFile:q.sourceFile,sourcePage:q.sourcePage,referenceMaterialIds:referenceMaterialsForQuestion(testId,Number(q.number ?? 0)).map(x=>x.id)}
+ };
+}
 function deductiveQuestion(q: DeductiveSourceQuestion): CanonicalQuestion { const options = q.o.map((value, index) => ({ id: String.fromCharCode(65 + index), content: legacyBlock(value) })); const sourceAnswer = q.number === 12 ? "The deal between the syndicate and William was to fund his parliament." : q.a; const answer = options.find(o => o.content.type === "text" && o.content.value === sourceAnswer)?.id ?? sourceAnswer; return { id: q.id, number: q.number, context: q.context, prompt: { blocks: legacyBlocks(q.t) }, options, response: { type: "single_choice" }, answer: { type: "single", value: answer }, taxonomy: { pillar: q.p, subtype: q.s }, source: { sourceFile: q.sourceFile, sourcePage: q.sourcePage, referenceMaterialIds: referenceMaterialsForQuestion("TEST_030", q.number).map(x => x.id), answerAudit: q.number === 12 ? "Corrected from source solution key after checking the stated premises; option B is the only demonstrably false statement." : undefined } }; }
 
 function compactDeductiveTest(id: string, title: string, contexts: string[], rows: CompactDeductiveQuestion[]): CanonicalTest {

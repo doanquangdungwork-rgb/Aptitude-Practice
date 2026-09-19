@@ -1,0 +1,22 @@
+import p00 from "./question-bank/part00";
+import p01 from "./question-bank/part01";
+import p02 from "./question-bank/part02";
+import p03 from "./question-bank/part03";
+import p04 from "./question-bank/part04";
+import p05 from "./question-bank/part05";
+import p06 from "./question-bank/part06";
+import p07 from "./question-bank/part07";
+import p08 from "./question-bank/part08";
+import p09 from "./question-bank/part09";
+import p10 from "./question-bank/part10";
+import p11 from "./question-bank/part11";
+import p12 from "./question-bank/part12";
+import p13 from "./question-bank/part13";
+import p14 from "./question-bank/part14";
+import p15 from "./question-bank/part15";
+import p16 from "./question-bank/part16";
+import p17 from "./question-bank/part17";
+import p18 from "./question-bank/part18";
+import p19 from "./question-bank/part19";
+
+export const fullQuestions: any[] = [...(p00 as unknown as any[]),...(p01 as unknown as any[]),...(p02 as unknown as any[]),...(p03 as unknown as any[]),...(p04 as unknown as any[]),...(p05 as unknown as any[]),...(p06 as unknown as any[]),...(p07 as unknown as any[]),...(p08 as unknown as any[]),...(p09 as unknown as any[]),...(p10 as unknown as any[]),...(p11 as unknown as any[]),...(p12 as unknown as any[]),...(p13 as unknown as any[]),...(p14 as unknown as any[]),...(p15 as unknown as any[]),...(p16 as unknown as any[]),...(p17 as unknown as any[]),...(p18 as unknown as any[]),...(p19 as unknown as any[])];

@@ -115,7 +115,7 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const rawOptions=Array.isArray(q.o)?q.o:[];
  const baseResponse=inferResponse(q);
  const count=override?.optionCount ?? generatedOptionCount(q);
- const response: CanonicalQuestion["response"] = override?.responseType === "multiple_choice" || override?.figureChoice ? {type:"multiple_choice"} : override?.optionCount && override.optionCount > 0 ? {type:"single_choice"} : baseResponse;
+ const response: CanonicalQuestion["response"] = override?.responseType === "multiple_choice" || override?.figureChoice ? {type:"multiple_choice", minSelections:Array.isArray(override.answer) ? override.answer.length : undefined, maxSelections:Array.isArray(override.answer) ? override.answer.length : undefined} : override?.optionCount && override.optionCount > 0 ? {type:"single_choice"} : baseResponse;
  const optionTexts=override?.figureChoice ? Array.from({length: override.optionCount ?? 4}, (_,i)=>`Figure ${i+1}`) : isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
  const optionIds=override?.optionIds?.length ? override.optionIds : generatedOptionIds(count);
  const options=optionTexts.length ? optionTexts.map((value,index)=>({id:optionIds[index] ?? String.fromCharCode(65+index),content:legacyBlock(value)})) : optionIds.map(id=>({id,content:legacyBlock(id)}));

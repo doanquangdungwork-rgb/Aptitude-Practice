@@ -5,6 +5,7 @@ import deductiveTest1 from "../data/deductive-test1.json";
 import { contexts as deductiveTest2Contexts, questions as deductiveTest2Questions } from "../data/deductive-test2";
 import { contexts as deductiveTest3Contexts, questions as deductiveTest3Questions } from "../data/deductive-test3";
 import { contexts as deductiveTest4Contexts, questions as deductiveTest4Questions } from "../data/deductive-test4";
+import { answerOverrideFor } from "./answer-overrides";
 import deductiveLogicalLst1 from "../data/deductive-logical-lst-1.json";
 
 type LegacyOption = string | { id?: string; text?: string; label?: string; option?: string };
@@ -110,20 +111,20 @@ function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"],
  return {type:"single",value:matchedOption?.id ?? rawAnswer};
 }
 function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
+ const override = answerOverrideFor(q.id);
  const rawOptions=Array.isArray(q.o)?q.o:[];
- const response=inferResponse(q);
- const count=generatedOptionCount(q);
- const optionTexts=isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
+ const baseResponse=inferResponse(q);
+ const count=override?.optionCount ?? generatedOptionCount(q);
+ const response: CanonicalQuestion["response"] = override?.responseType === "multiple_choice" || override?.figureChoice ? {type:"multiple_choice"} : override?.optionCount && override.optionCount > 0 ? {type:"single_choice"} : baseResponse;
+ const optionTexts=override?.figureChoice ? Array.from({length: override.optionCount ?? 4}, (_,i)=>`Figure ${i+1}`) : isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
  const options=optionTexts.length ? optionTexts.map((value,index)=>({id:String.fromCharCode(65+index),content:legacyBlock(value)})) : generatedOptionIds(count).map(id=>({id,content:legacyBlock(id)}));
- const answer=inferAnswer(q,response,options);
+ let answer: CanonicalQuestion["answer"];
+ if (override) answer = Array.isArray(override.answer) ? {type:"multiple",values:override.answer} : {type:"single",value:override.answer};
+ else answer=inferAnswer(q,response,options);
  return {
    id:`${testId}_${q.id}`,
-   number:Number(q.number ?? 0),
-   subquestion:q.subquestion ?? null,
-   prompt:{blocks:legacyBlocks(q.t)},
-   options,
-   response,
-   answer,
+   number:Number(q.number ?? 0), subquestion:q.subquestion ?? null,
+   prompt:{blocks:legacyBlocks(q.t)}, options, response, answer,
    explanation:q.explanation?{blocks:legacyBlocks(q.explanation)}:null,
    taxonomy:{pillar:q.p,subtype:q.s},
    source:{legacyId:q.id,sourceFile:q.sourceFile,sourcePage:q.sourcePage,referenceMaterialIds:referenceMaterialsForQuestion(testId,Number(q.number ?? 0)).map(x=>x.id)}

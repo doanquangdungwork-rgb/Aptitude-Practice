@@ -5,6 +5,8 @@ import {QuestionPrompt} from "./question-content";
 export default function QuestionResponse({response,options,answer,value,onChange,screenshotMode=false}:{response:CanonicalResponse;options:CanonicalOption[];answer?:CanonicalAnswer;value:unknown;onChange:(value:unknown)=>void;screenshotMode?:boolean}){
  const selected=Array.isArray(value)?value.map(String):[];
  const optionLabel=(i:number)=>String.fromCharCode(65+i);
+ const isFigureOption=(o:CanonicalOption)=>o.content.type==="text" && /^Figure \d+$/i.test(o.content.value.trim());
+ const optionDisplay=(o:CanonicalOption,i:number)=>isFigureOption(o)?o.content.value:o.id;
  const labelContent=(o:CanonicalOption,i:number)=>screenshotMode?<span>{optionLabel(i)}</span>:<QuestionPrompt blocks={[o.content]}/>;
 
  if(response.type==="ranking"){
@@ -22,6 +24,6 @@ export default function QuestionResponse({response,options,answer,value,onChange
    {["most","least"].map(part=><div key={part}><div className="mb-2 text-sm font-bold capitalize">{part} likely</div><div className="grid gap-3">{options.map((o,i)=><button key={o.id} type="button" aria-pressed={String(current[part]??"")===o.id} onClick={()=>setPart(part,o.id)} className={`quiz-option text-left ${String(current[part]??"")===o.id?"selected":""}`}><span className="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f2f1eb] text-xs font-bold">{optionLabel(i)}</span>{labelContent(o,i)}</button>)}</div></div>)}
   </div>;
  }
- if(response.type==="multiple_choice") return <div className="mt-8 grid gap-3">{options.map((o,i)=>{const active=selected.includes(o.id);return <button key={o.id} type="button" aria-pressed={active} onClick={()=>onChange(active?selected.filter(x=>x!==o.id):[...selected,o.id])} className={`quiz-option text-left ${active?"selected":""}`}><span className="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f2f1eb] text-xs font-bold">{optionLabel(i)}</span>{labelContent(o,i)}</button>})}</div>;
+ if(response.type==="multiple_choice") return <div className="mt-8 grid gap-3">{options.map((o,i)=>{const active=selected.includes(o.id);return <button key={o.id} type="button" aria-pressed={active} onClick={()=>onChange(active?selected.filter(x=>x!==o.id):[...selected,o.id])} className={`quiz-option text-left ${active?"selected":""}`}><span className="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f2f1eb] text-xs font-bold">{optionDisplay(o,i)}</span>{labelContent(o,i)}</button>})}</div>;
  return <div className="mt-8 grid gap-3">{options.map((o,i)=>{const active=String(value??"")===o.id;return <button key={o.id} type="button" aria-pressed={active} onClick={()=>onChange(o.id)} className={`quiz-option text-left ${active?"selected":""}`}><span className="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f2f1eb] text-xs font-bold">{optionLabel(i)}</span>{labelContent(o,i)}</button>})}</div>;
 }

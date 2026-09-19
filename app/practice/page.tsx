@@ -20,12 +20,17 @@ function PracticeContent(){
   const [stars,setStars]=useState<string[]>([]);
   const [launchTest,setLaunchTest]=useState<any>(null);
   const pageSize=10;
+  const pageStorageKey=`aptitude-practice-page:${pillar||"all"}`;
 
   useEffect(()=>{
-    setPage(1);
+    const saved=Number(window.localStorage.getItem(pageStorageKey));
+    setPage(Number.isFinite(saved) && saved>0 ? saved : 1);
     setAttempts(getAttempts());
     setStars(getStarredTests());
-  },[pillar]);
+  },[pageStorageKey]);
+  useEffect(()=>{
+    if (safePage) window.localStorage.setItem(pageStorageKey,String(safePage));
+  },[pageStorageKey,safePage]);
   useEffect(()=>setPage(1),[query]);
   useEffect(()=>{
     const close=(e:KeyboardEvent)=>e.key==="Escape"&&setLaunchTest(null);
@@ -91,7 +96,7 @@ function PracticeContent(){
         <h2 id="launch-title">{launchTest.title.replaceAll("_"," ")}</h2>
         <div className="launch-meta"><span>{questionsForTest(launchTest.test_id).length} questions</span><span>{questionsForTest(launchTest.test_id).length} minutes</span><span>Timed</span></div>
         <p className="launch-copy">Ready to begin? Your answers and progress will be saved as you work through the test.</p>
-        <div className="launch-actions"><button type="button" className="outline-action" onClick={()=>setLaunchTest(null)}>Not yet</button><button type="button" className="yellow-button" onClick={()=>router.push(`/tests/${launchTest.test_id}`)}>Start test →</button></div>
+        <div className="launch-actions"><button type="button" className="outline-action" onClick={()=>setLaunchTest(null)}>Not yet</button><button type="button" className="yellow-button" onClick={()=>{window.localStorage.setItem(pageStorageKey,String(safePage));router.push(`/tests/${launchTest.test_id}`)}}>Start test →</button></div>
       </div>
     </div>}
 

@@ -48,7 +48,13 @@ export default function TestPage() {
   const testDurationSeconds = Math.max(0, actualQuestionCount * 60);
   const currentReferenceMaterials = useMemo(() => referenceMaterialsForQuestion(testId, q?.number ?? idx + 1), [testId, q?.number, idx]);
   const hasPassage = Boolean(q?.context && String(q.context).trim());
-  const isAnswered = (value: unknown) => value !== undefined && value !== "" && !(Array.isArray(value) && value.length === 0);
+  const isAnswered = (question: any, value: unknown) => {
+    if (value === undefined || value === "" || (Array.isArray(value) && value.length === 0)) return false;
+    if (question?.response?.type === "multiple_choice" && question.response.minSelections) {
+      return Array.isArray(value) && value.length >= question.response.minSelections;
+    }
+    return true;
+  };
   const answer = q ? answers[q.id] : undefined;
   const label = q ? (q.subquestion ? `Question ${q.number}${q.subquestion}` : `Question ${q.number}`) : "";
   const progress = actualQuestionCount ? ((idx + 1) / actualQuestionCount) * 100 : 0;
@@ -63,6 +69,11 @@ export default function TestPage() {
     setAnswers(next);
     const old = getAttempt(testId);
     saveAttempt({ id: attemptId, testId, startedAt: old?.startedAt || startedAt || new Date().toISOString(), updatedAt: new Date().toISOString(), answers: next });
+  };
+
+  const returnToPractice = () => {
+    const pillar = test?.pillar ? "?pillar=" + encodeURIComponent(test.pillar) : "";
+    router.push("/practice" + pillar);
   };
 
   const finish = async () => {
@@ -107,14 +118,14 @@ export default function TestPage() {
   const referenceFallback = currentReferenceMaterials.length ? <ReferenceViewer materials={currentReferenceMaterials} initialIndex={0} /> : hasPassage ? <ReferenceViewer materials={[]} text={q.context} textLabel={`Information for ${label}`} eyebrowLabel="Passage" /> : questionImageBlocks.length ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={questionImageBlocks as any} /></div> : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference material is attached to this question.</p></div>;
 
   return <div className={`app-page quiz-page ${hasPassage ? "passage-test" : ""}`}>
-    <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><div className={`test-countdown ${remainingSeconds <= 60 ? "urgent" : ""}`} aria-label="Time remaining">{formatCountdown(remainingSeconds)}</div><button onClick={() => router.push("/tests")} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
+    <div className="quiz-top"><div><div className="text-sm font-bold">{label} <span className="font-normal text-[#aaa7a0]">/ {actualQuestionCount}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex items-center gap-2"><div className={`test-countdown ${remainingSeconds <= 60 ? "urgent" : ""}`} aria-label="Time remaining">{formatCountdown(remainingSeconds)}</div><button onClick={returnToPractice} className="outline-action">Exit</button><button onClick={finish} className="yellow-button">Finish test</button></div></div>
     <div className="quiz-progress"><span style={{ width: `${progress}%` }} /></div>
     <div className="quiz-workspace">
       <section className={`quiz-reference-pane ${isSnapshotTest ? "deductive-snapshot-pane" : "passage-material-pane"}`}>
         {isSnapshotTest ? <QuestionSnapshot questionNumber={q.number} src={snapshotSrc} fallback={referenceFallback} /> : referenceFallback}
       </section>
       <section className="quiz-question-pane answer-pane">
-        <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
+        <QuestionNavigator count={actualQuestionCount} current={idx} getStatus={(i) => i === idx ? "current" : isAnswered(qs[i], answers[qs[i].id]) ? "answered" : "unanswered"} onSelect={setIdx} label="Questions" />
         <article className="quiz-card quiz-question-card" id={`question-${q.number}`}>
           <div className="quiz-question-head"><div className="flex-1"><p className="eyebrow">{isSnapshotTest ? "Answer" : label}</p>{!isSnapshotTest && <div className="quiz-question mt-3"><QuestionPrompt blocks={q.prompt.blocks} hideImages={Boolean(currentReferenceMaterials.length || hasPassage)} /></div>}</div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
           <div className="quiz-answer-label">Choose your answer</div>

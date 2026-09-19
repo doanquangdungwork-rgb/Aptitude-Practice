@@ -89,9 +89,6 @@ function generatedOptionCount(q: LegacyQuestion): number {
  return Number.isFinite(q.optionCount) ? Math.max(0,Number(q.optionCount)) : 0;
 }
 function generatedOptionIds(count:number){ return Array.from({length:count},(_,i)=>String.fromCharCode(65+i)); }
-function isFigurePairTest(testId:string){ return ["TEST_007","TEST_008","TEST_009","TEST_010"].includes(testId); }
-function isDiagrammaticSetTest(testId:string){ return ["TEST_035","TEST_036","TEST_037","TEST_038","TEST_039"].includes(testId); }
-function isTgbNumericalTest(testId:string){ return ["TEST_023","TEST_024","TEST_025","TEST_026","TEST_027","TEST_028","TEST_029"].includes(testId); }
 function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"], options: { id: string; content: ContentBlock }[]): CanonicalQuestion["answer"] {
  const raw=q.a;
  const rawAnswer=String(raw ?? "").trim();
@@ -118,18 +115,12 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const rawOptions=Array.isArray(q.o)?q.o:[];
  const baseResponse=inferResponse(q);
  const count=override?.optionCount ?? generatedOptionCount(q);
- const response: CanonicalQuestion["response"] = override?.responseType === "multiple_choice" || override?.figureChoice ? {type:"multiple_choice", minSelections:Array.isArray(override.answer) ? override.answer.length : undefined, maxSelections:Array.isArray(override.answer) ? override.answer.length : undefined} : override?.optionCount && override.optionCount > 0 ? {type:"single_choice"} : baseResponse;
+ const response: CanonicalQuestion["response"] = override?.responseType === "multiple_choice" || override?.figureChoice ? {type:"multiple_choice"} : override?.optionCount && override.optionCount > 0 ? {type:"single_choice"} : baseResponse;
  const optionTexts=override?.figureChoice ? Array.from({length: override.optionCount ?? 4}, (_,i)=>`Figure ${i+1}`) : isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
- const optionIds=override?.optionIds?.length ? override.optionIds : generatedOptionIds(count);
- const options=optionTexts.length ? optionTexts.map((value,index)=>({id:optionIds[index] ?? String.fromCharCode(65+index),content:legacyBlock(value)})) : optionIds.map(id=>({id,content:legacyBlock(id)}));
- const rawAnswer = String(q.a ?? "").trim();
+ const options=optionTexts.length ? optionTexts.map((value,index)=>({id:String.fromCharCode(65+index),content:legacyBlock(value)})) : generatedOptionIds(count).map(id=>({id,content:legacyBlock(id)}));
  let answer: CanonicalQuestion["answer"];
  if (override) answer = Array.isArray(override.answer) ? {type:"multiple",values:override.answer} : {type:"single",value:override.answer};
- else if (isFigurePairTest(testId)) {
-   const match = rawAnswer.match(/Figures?\s+(\d+)\s+and\s+(\d+)/i);
-   const values = match ? [Number(match[1]), Number(match[2])].map(n => String.fromCharCode(64 + n)) : [];
-   answer = {type:"multiple",values};
- } else answer=inferAnswer(q,response,options);
+ else answer=inferAnswer(q,response,options);
  return {
    id:`${testId}_${q.id}`,
    number:Number(q.number ?? 0), subquestion:q.subquestion ?? null,

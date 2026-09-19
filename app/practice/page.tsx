@@ -29,8 +29,8 @@ function PracticeContent(){
     setStars(getStarredTests());
   },[pageStorageKey]);
   useEffect(()=>{
-    if (safePage) window.localStorage.setItem(pageStorageKey,String(safePage));
-  },[pageStorageKey,safePage]);
+    if (page > 0) window.localStorage.setItem(pageStorageKey,String(page));
+  },[pageStorageKey,page]);
   useEffect(()=>setPage(1),[query]);
   useEffect(()=>{
     const close=(e:KeyboardEvent)=>e.key==="Escape"&&setLaunchTest(null);

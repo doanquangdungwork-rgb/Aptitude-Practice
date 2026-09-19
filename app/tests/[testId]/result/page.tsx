@@ -56,10 +56,8 @@ export default function ResultPage() {
         ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={selectedImageBlocks as any} /></div>
         : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference material is attached to this question.</p></div>;
 
-  const practiceHref = test.pillar ? "/practice?pillar=" + encodeURIComponent(test.pillar) : "/practice";
-
   return <div className="app-page quiz-page review-page">
-    <div className="quiz-top review-top"><div><div className="text-sm font-bold">Test review <span className="font-normal text-[#aaa7a0]">· {correct}/{qs.length}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex flex-wrap gap-2"><ShareCard kind="result" result={{ title: test.title.replaceAll("_", " "), correct, total: qs.length, accuracy, duration: formatTime(attempt.durationSeconds || 0) }} /><Link href={practiceHref} className="outline-action">Back to practice</Link></div></div>
+    <div className="quiz-top review-top"><div><div className="text-sm font-bold">Test review <span className="font-normal text-[#aaa7a0]">· {correct}/{qs.length}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex flex-wrap gap-2"><ShareCard kind="result" result={{ title: test.title.replaceAll("_", " "), correct, total: qs.length, accuracy, duration: formatTime(attempt.durationSeconds || 0) }} /><Link href="/tests" className="outline-action">All tests</Link></div></div>
     <div className="review-summary"><span>{accuracy}% accuracy</span><span>{wrong} wrong</span><span>{unanswered} skipped</span><span>{formatTime(attempt.durationSeconds || 0)} spent</span></div>
     <div className="quiz-progress"><span style={{ width: `${accuracy}%` }} /></div>
 
@@ -105,7 +103,7 @@ export default function ResultPage() {
               {q.options.length > 0 && <div className="mt-5 grid gap-2">{q.options.map((o, j) => {
                 const selectedHere = Array.isArray(selected) ? selected.includes(o.id) : String(selected ?? "") === o.id;
                 const correctHere = q.answer.type === "single" ? normalizeChoice(o.id) === normalizeChoice(q.answer.value) : q.answer.type === "multiple" && q.answer.values.some(v => normalizeChoice(v) === normalizeChoice(o.id));
-                return <div key={o.id} className={`review-option ${correctHere ? "correct-answer" : selectedHere ? "selected-wrong" : ""}`}><span className="mr-2 font-bold">{o.content.type === "text" && /^Figure \d+$/i.test(o.content.value) ? o.content.value : `${o.id}.`}</span><QuestionPrompt blocks={[o.content]}/>{correctHere && <span className="ml-2 text-xs">✓ Correct answer</span>}{selectedHere && !correctHere && <span className="ml-2 text-xs">Your answer</span>}</div>;
+                return <div key={o.id} className={`review-option ${correctHere ? "correct-answer" : selectedHere ? "selected-wrong" : ""}`}><span className="mr-2 font-bold">{String.fromCharCode(65 + j)}.</span><QuestionPrompt blocks={[o.content]}/>{correctHere && <span className="ml-2 text-xs">✓ Correct answer</span>}{selectedHere && !correctHere && <span className="ml-2 text-xs">Your answer</span>}</div>;
               })}</div>}
 
               {skipped && <div className="mt-5 rounded-xl border border-[#e7e5de] bg-[#fbfaf6] p-4 text-sm"><b>Correct answer:</b> {answerLabel(correctValue)}</div>}

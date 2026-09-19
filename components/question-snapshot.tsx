@@ -98,7 +98,7 @@ export default function QuestionSnapshot({
         .question-snapshot-zoom button:disabled{opacity:.35;cursor:default}
         .question-snapshot-zoom-value{width:52px!important;border-left:1px solid var(--line)!important;border-right:1px solid var(--line)!important;font-size:11px!important;font-weight:700!important}
         .question-snapshot-scroll{flex:1;min-height:0;overflow:auto;padding:24px;background:#f5f2ec}
-        .question-snapshot-stage{margin:0 auto;flex:0 0 auto;min-width:0;transition:width .15s ease}
+        .question-snapshot-stage{min-width:100%;margin:0 auto;transition:width .15s ease}
         .question-snapshot-image{display:block;width:100%;height:auto;box-shadow:0 8px 28px rgba(50,45,38,.10);background:#fff}
         @media(max-width:700px){
           .question-snapshot-toolbar{flex-wrap:wrap}

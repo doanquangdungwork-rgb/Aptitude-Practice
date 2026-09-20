@@ -141,7 +141,7 @@ export default function Home(){
           font-size:16px !important;
           line-height:1.45;
         }
-        .home-page .practice-meta{bottom:10px;font-size:12px !important}
+        .home-page .practice-meta{bottom:10px;font-size:13px !important}
         .home-page .practice-arrow{bottom:8px}
       }
       @media(min-width:901px) and (max-height:850px){

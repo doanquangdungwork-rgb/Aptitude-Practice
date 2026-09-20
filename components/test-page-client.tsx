@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { referenceMaterialsForQuestion } from "../../../lib/question-source";
 import { questionSnapshotSrc } from "../../../lib/question-snapshot";
 import { answersMatch } from "../../../lib/canonical-engine";
 import { completeAttempt, getAttempt, getBookmarks, getCompletedAttempt, getWrongQuestions, recordPracticeDay, saveAttempt, setWrongQuestions, toggleBookmark } from "../../../lib/progress";

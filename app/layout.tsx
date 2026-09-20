@@ -4,6 +4,7 @@ import "./test-workspace.css";
 import "./test-layout.css";
 import Link from "next/link";
 import AccountMenu from "../components/account-menu";
+import MainNav from "../components/main-nav";
 
 export default function RootLayout({children}:{children:React.ReactNode}){
   return <html lang="en"><body>
@@ -13,11 +14,7 @@ export default function RootLayout({children}:{children:React.ReactNode}){
           <span className="brand-main">aptitude</span>
           <span className="brand-sub">with Derek</span>
         </Link>
-        <nav className="main-nav" aria-label="Primary navigation">
-          <Link href="/practice">Practice by Type</Link>
-          <Link href="/dashboard">Progression Dashboard</Link>
-          <Link href="/bookmarks">Bookmark</Link>
-        </nav>
+        <MainNav />
         <AccountMenu />
       </div>
     </header>

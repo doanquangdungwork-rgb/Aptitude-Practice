@@ -92,26 +92,44 @@ function generatedOptionIds(count:number){ return Array.from({length:count},(_,i
 function isFigurePairTest(testId:string){ return ["TEST_007","TEST_008","TEST_009","TEST_010"].includes(testId); }
 function isDiagrammaticSetTest(testId:string){ return ["TEST_035","TEST_036","TEST_037","TEST_038","TEST_039"].includes(testId); }
 function isTgbNumericalTest(testId:string){ return ["TEST_023","TEST_024","TEST_025","TEST_026","TEST_027","TEST_028","TEST_029"].includes(testId); }
+function normalizeOptionKey(value: unknown, options: { id: string; content: ContentBlock }[]): string {
+ const raw = String(value ?? "").trim();
+ if (!raw) return raw;
+ const normalized = raw.toLowerCase().replace(/\\s+/g, " ");
+ const direct = options.find(option => option.id.toLowerCase() === normalized);
+ if (direct) return direct.id;
+ const numeric = /^\\d+$/.test(raw) ? Number(raw) : NaN;
+ if (Number.isInteger(numeric) && numeric >= 1 && numeric <= options.length) return options[numeric - 1]?.id ?? raw;
+ const letter = /^([a-z])(?:[.)])?$/i.exec(raw)?.[1]?.toUpperCase();
+ if (letter) {
+   const byLetter = options.find((option, index) => option.id.toUpperCase() === letter || String.fromCharCode(65 + index) === letter);
+   if (byLetter) return byLetter.id;
+ }
+ const byText = options.find(option => {
+   if (option.content.type !== "text") return false;
+   return option.content.value.trim().toLowerCase().replace(/\\s+/g, " ") === normalized;
+ });
+ return byText?.id ?? raw;
+}
 function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"], options: { id: string; content: ContentBlock }[]): CanonicalQuestion["answer"] {
  const raw=q.a;
  const rawAnswer=String(raw ?? "").trim();
- const text=String(q.t ?? "");
  if(response.type==="numeric") return {type:"numeric",value:rawAnswer};
  if(response.type==="text") return {type:"text",value:rawAnswer};
  if(response.type==="composite"){
    const parts=raw && typeof raw==="object" && !Array.isArray(raw) ? raw as Record<string,unknown> : {};
-   return {type:"composite",parts};
+   return {type:"composite",parts:Object.fromEntries(Object.entries(parts).map(([key,value])=>[key,normalizeOptionKey(value,options)]))};
  }
  if(response.type==="multiple_choice"){
-   const values=Array.isArray(raw)?raw.map(String):rawAnswer.split(/[,|]/).map(v=>v.trim()).filter(Boolean);
+   const values=Array.isArray(raw)?raw.map(value=>normalizeOptionKey(value,options)):rawAnswer.split(/[,|]/).map(v=>v.trim()).filter(Boolean).map(value=>normalizeOptionKey(value,options));
    return {type:"multiple",values};
  }
+ const text=String(q.t ?? "");
  if(isTrueFalseCannotSay(text)){
-   const answerMatch=String(q.explanation ?? "").match(/correct answer is\s+(true|false|cannot say)/i);
-   return {type:"single",value:(answerMatch?.[1] ?? rawAnswer).trim().toLowerCase()};
+   const answerMatch=String(q.explanation ?? "").match(/correct answer is\\s+(true|false|cannot say)/i);
+   return {type:"single",value:normalizeOptionKey((answerMatch?.[1] ?? rawAnswer).trim(),options)};
  }
- const matchedOption=options.find(option=>option.id.toLowerCase()===rawAnswer.toLowerCase());
- return {type:"single",value:matchedOption?.id ?? rawAnswer};
+ return {type:"single",value:normalizeOptionKey(rawAnswer,options)};
 }
 function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const override = answerOverrideFor(q.id);
@@ -121,8 +139,9 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const rawAnswer = String(q.a ?? "").trim();
  const sourceLetter = /^[A-J]$/i.test(rawAnswer) ? rawAnswer.toUpperCase() : "";
  const sourceLetterCount = sourceLetter ? sourceLetter.charCodeAt(0) - 64 : 0;
+ const sourceNumericKey = /^(?:[1-9]|1[0-9]|2[0-6])$/.test(rawAnswer) ? Number(rawAnswer) : 0;
  const baseCount = forcedCount ?? override?.optionCount ?? generatedOptionCount(q);
- const count = Math.max(baseCount, baseResponse.type === "single_choice" ? sourceLetterCount : 0);
+ const count = Math.max(baseCount, baseResponse.type === "single_choice" ? Math.max(sourceLetterCount, baseCount > 0 ? sourceNumericKey : 0) : 0);
  const overrideAnswers = Array.isArray(override?.answer) ? override.answer : [];
  const overrideMultipleCount = overrideAnswers.length || undefined;
  const overrideComposite = override?.responseType === "composite" && overrideAnswers.length === 2;
@@ -141,8 +160,10 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const optionIds = override?.optionIds?.length ? override.optionIds : generatedOptionIds(count);
  const options=optionTexts.length ? optionTexts.map((value,index)=>({id:optionIds[index] ?? String.fromCharCode(65+index),content:legacyBlock(value)})) : optionIds.map(id=>({id,content:legacyBlock(id)}));
  let answer: CanonicalQuestion["answer"];
- if (overrideComposite) answer = {type:"composite",parts:{most:String(overrideAnswers[0]),least:String(overrideAnswers[1])}};
- else if (override) answer = Array.isArray(override.answer) ? {type:"multiple",values:override.answer} : {type:"single",value:override.answer};
+ if (overrideComposite) answer = {type:"composite",parts:{most:normalizeOptionKey(overrideAnswers[0],options),least:normalizeOptionKey(overrideAnswers[1],options)}};
+ else if (override) answer = Array.isArray(override.answer)
+   ? {type:"multiple",values:override.answer.map(value=>normalizeOptionKey(value,options))}
+   : {type:"single",value:normalizeOptionKey(override.answer,options)};
  else if (isFigurePairTest(testId)) {
    const match = rawAnswer.match(/Figures?\s+(\d+)\s+and\s+(\d+)/i);
    const values = match ? [Number(match[1]), Number(match[2])].map(n => String.fromCharCode(64 + n)) : [];

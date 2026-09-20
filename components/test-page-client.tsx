@@ -95,8 +95,7 @@ export default function TestPageClient({ testId, test, qs, pillarMap }: { testId
   };
 
   const returnToPractice = () => {
-    const pillar = test?.pillar ? "?pillar=" + encodeURIComponent(test.pillar) : "";
-    router.push("/practice" + pillar);
+    router.push("/practice");
   };
 
   const finish = async () => {

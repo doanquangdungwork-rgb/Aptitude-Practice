@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { appCatalog } from "../../lib/data";
+import { appCatalog, pillarMap } from "../../lib/data";
 import { getAttempts, getStarredTests, toggleStarredTest } from "../../lib/progress";
+
+const STARRED_PER_PAGE = 4;
+const TONES = ["pink", "lavender", "lime", "mint", "sky", "peach"];
 
 export default function Bookmarks() {
   const [attempts, setAttempts] = useState<any[]>([]);
@@ -12,104 +15,107 @@ export default function Bookmarks() {
   const [starredPage, setStarredPage] = useState(0);
 
   useEffect(() => {
-    setAttempts(getAttempts());
-    setStars(getStarredTests());
+    const sync = () => {
+      setAttempts(getAttempts());
+      setStars(getStarredTests());
+    };
+    sync();
+    window.addEventListener("aptitude:progress-updated", sync as EventListener);
+    return () => window.removeEventListener("aptitude:progress-updated", sync as EventListener);
   }, []);
 
   const unfinished = attempts
     .filter((a) => !a.completedAt)
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    );
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
   const starred = appCatalog.tests.filter((t: any) => stars.includes(t.test_id));
-
-  const testName = (id: string) =>
-    appCatalog.tests.find((t: any) => t.test_id === id);
-
-  const refreshStars = () => {
-    setStars(getStarredTests());
-    setStarredPage(0);
-  };
-
-  const STARRED_PER_PAGE = 4;
+  const currentAttempt = unfinished[unfinishedPage];
   const starredPageCount = Math.max(1, Math.ceil(starred.length / STARRED_PER_PAGE));
   const visibleStarred = starred.slice(
     starredPage * STARRED_PER_PAGE,
     starredPage * STARRED_PER_PAGE + STARRED_PER_PAGE
   );
 
+  const testFor = (id: string) => appCatalog.tests.find((t: any) => t.test_id === id);
+
+  const toggleStar = (id: string) => {
+    toggleStarredTest(id);
+    setStars(getStarredTests());
+    setStarredPage((p) => Math.min(p, Math.max(0, Math.ceil((starred.length - 1) / STARRED_PER_PAGE) - 1)));
+  };
+
+  const answeredCount = currentAttempt ? Object.keys(currentAttempt.answers || {}).length : 0;
+  const currentTest: any = currentAttempt ? testFor(currentAttempt.testId) : null;
+  const totalQuestions = Number(currentTest?.question_count || 0);
+  const progress = totalQuestions ? Math.min(100, Math.round((answeredCount / totalQuestions) * 100)) : 0;
+
   return (
     <div className="app-page bookmarks-page">
       <header className="bookmarks-hero">
-        <div>
+        <div className="bookmarks-hero-copy">
           <p className="eyebrow">Your library</p>
           <h1>Things worth coming back to.</h1>
-          <p className="bookmarks-lede">
-            Unfinished sessions and favourite tests, kept together.
-          </p>
+          <p className="bookmarks-lede">Unfinished sessions and favourite tests, kept together.</p>
         </div>
 
-        <Link href="/practice" className="bookmarks-browse">
-          Browse practice →
-        </Link>
+        <div className="bookmarks-summary">
+          <div className="summary-stat">
+            <div className="summary-icon summary-clock">◷</div>
+            <div>
+              <strong>{unfinished.length}</strong>
+              <span>in progress</span>
+            </div>
+          </div>
+          <div className="summary-divider" />
+          <div className="summary-stat">
+            <div className="summary-icon summary-star">★</div>
+            <div>
+              <strong>{starred.length}</strong>
+              <span>starred</span>
+            </div>
+          </div>
+        </div>
       </header>
 
-      <section className="bookmark-section">
+      <section className="bookmark-section bookmark-section-progress">
         <div className="bookmark-section-head">
           <div>
             <p className="eyebrow">01 · Continue</p>
             <h2>In progress</h2>
             <p>Pick up where you left off. Your unfinished tests are saved here.</p>
           </div>
-          <div className="bookmark-count">
-            <strong>{unfinished.length}</strong>
-            <span>in progress</span>
-          </div>
+          <Link href="/practice" className="bookmarks-browse">Browse practice <span>→</span></Link>
         </div>
 
-        {unfinished.length ? (
-          <div className="bookmark-carousel">
-            <div className="bookmark-carousel-track">
-              {unfinished
-                .slice(unfinishedPage, unfinishedPage + 1)
-                .map((a: any) => (
-                  <Link
-                    key={a.id}
-                    href={`/tests/${a.testId}`}
-                    className="bookmark-test-row"
-                  >
-                    <div className="bookmark-icon bookmark-icon-clock">◷</div>
-                    <div className="bookmark-row-copy">
-                      <span className="bookmark-row-kicker">
-                        {testName(a.testId)?.title?.replaceAll("_", " ") || a.testId}
-                      </span>
-                      <strong>Continue where you left off</strong>
-                      <span>Return to your unfinished test and keep your progress.</span>
-                    </div>
-                    <span className="bookmark-row-arrow">→</span>
-                  </Link>
-                ))}
+        {currentAttempt && currentTest ? (
+          <div className="progress-carousel">
+            <div className="progress-card">
+              <div className="progress-card-icon">◷</div>
+              <div className="progress-card-main">
+                <strong>{currentTest.title.replaceAll("_", " ")}</strong>
+                <span>{pillarMap[currentTest.pillar] || currentTest.pillar} · {answeredCount} / {totalQuestions} questions</span>
+                <div className="progress-line">
+                  <i style={{ width: `${progress}%` }} />
+                </div>
+              </div>
+              <b className="progress-percent">{progress}%</b>
+              <Link href={`/tests/${currentAttempt.testId}`} className="progress-open" aria-label="Continue test">→</Link>
             </div>
-            <div className="bookmark-carousel-controls">
+
+            <div className="carousel-controls">
               <button
                 type="button"
                 aria-label="Previous unfinished test"
                 disabled={unfinishedPage === 0}
                 onClick={() => setUnfinishedPage((p) => Math.max(0, p - 1))}
-              >
-                ←
-              </button>
+              >←</button>
               <span>{unfinishedPage + 1} / {unfinished.length}</span>
               <button
                 type="button"
                 aria-label="Next unfinished test"
                 disabled={unfinishedPage >= unfinished.length - 1}
                 onClick={() => setUnfinishedPage((p) => Math.min(unfinished.length - 1, p + 1))}
-              >
-                →
-              </button>
+              >→</button>
             </div>
           </div>
         ) : (
@@ -117,19 +123,14 @@ export default function Bookmarks() {
             <div className="bookmark-icon">◷</div>
             <div className="bookmark-empty-copy">
               <strong>No unfinished tests.</strong>
-              <p>
-                Start one from the practice library and it will appear here so
-                you can continue later.
-              </p>
-              <Link href="/practice" className="yellow-button">
-                Browse tests
-              </Link>
+              <p>Start one from the practice library and it will appear here so you can continue later.</p>
+              <Link href="/practice" className="yellow-button">Browse tests</Link>
             </div>
           </div>
         )}
       </section>
 
-      <section className="bookmark-section">
+      <section className="bookmark-section bookmark-section-starred">
         <div className="bookmark-section-head">
           <div>
             <p className="eyebrow">02 · Favourites</p>
@@ -143,28 +144,13 @@ export default function Bookmarks() {
         </div>
 
         {starred.length ? (
-          <div className="bookmark-carousel">
-            <div className="starred-carousel-track">
+          <div className="starred-carousel">
+            <div className="starred-grid">
               {visibleStarred.map((t: any, i: number) => (
-                <article
-                  key={t.test_id}
-                  className={`starred-card tone-["pink", "lavender", "lime", "mint", "sky", "peach"][((starredPage * STARRED_PER_PAGE) + i) % 6]`}
-                >
-                  <button
-                    type="button"
-                    className="starred-card-star"
-                    aria-label="Remove bookmark"
-                    onClick={() => {
-                      toggleStarredTest(t.test_id);
-                      refreshStars();
-                    }}
-                  >
-                    ★
-                  </button>
+                <article key={t.test_id} className={`starred-card tone-${TONES[((starredPage * STARRED_PER_PAGE) + i) % TONES.length]}`}>
+                  <button type="button" className="starred-card-star" aria-label="Remove bookmark" onClick={() => toggleStar(t.test_id)}>★</button>
                   <Link href={`/tests/${t.test_id}`}>
-                    <span className="practice-index">
-                      {t.test_id.replace("TEST_", "")}
-                    </span>
+                    <span className="practice-index">{t.test_id.replace("TEST_", "")}</span>
                     <h3>{t.title.replaceAll("_", " ")}</h3>
                     <p>{t.question_count} questions</p>
                     <span className="starred-card-arrow">→</span>
@@ -172,24 +158,20 @@ export default function Bookmarks() {
                 </article>
               ))}
             </div>
-            <div className="bookmark-carousel-controls">
+            <div className="carousel-controls starred-controls">
               <button
                 type="button"
                 aria-label="Previous starred tests"
                 disabled={starredPage === 0}
                 onClick={() => setStarredPage((p) => Math.max(0, p - 1))}
-              >
-                ←
-              </button>
+              >←</button>
               <span>{starredPage + 1} / {starredPageCount}</span>
               <button
                 type="button"
                 aria-label="Next starred tests"
                 disabled={starredPage >= starredPageCount - 1}
                 onClick={() => setStarredPage((p) => Math.min(starredPageCount - 1, p + 1))}
-              >
-                →
-              </button>
+              >→</button>
             </div>
           </div>
         ) : (
@@ -198,9 +180,7 @@ export default function Bookmarks() {
             <div className="bookmark-empty-copy">
               <strong>Nothing starred yet.</strong>
               <p>Tap ☆ on any test in the practice library to keep it here.</p>
-              <Link href="/practice" className="yellow-button">
-                Browse tests
-              </Link>
+              <Link href="/practice" className="yellow-button">Browse tests</Link>
             </div>
           </div>
         )}
@@ -210,56 +190,97 @@ export default function Bookmarks() {
         <div className="bookmark-icon bookmark-icon-tip">♧</div>
         <div>
           <span>TIP</span>
-          <p>
-            Star tests you want to revisit later — they’ll appear here for quick
-            access.
-          </p>
+          <p>Star tests you want to revisit later — they’ll appear here for quick access.</p>
         </div>
       </aside>
 
       <style jsx>{`
         .bookmarks-page {
-          width: min(1145px, 100%);
+          width: 100%;
+          max-width: 1320px;
+          margin: 0 auto;
           padding-top: 38px;
-          padding-bottom: 64px;
+          padding-bottom: 42px;
         }
 
         .bookmarks-hero {
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          gap: 30px;
-          padding: 24px 0 24px;
-          border-bottom: 1px solid var(--line);
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 402px;
+          align-items: center;
+          gap: 50px;
+          padding: 8px 0 30px;
         }
 
-        .bookmarks-hero h1 {
+        .bookmarks-hero-copy h1 {
           margin-top: 7px;
-          font-size: clamp(36px, 4vw, 48px);
-          line-height: 1;
-          letter-spacing: -0.055em;
+          font-size: clamp(44px, 4.25vw, 58px);
+          line-height: .98;
+          letter-spacing: -.055em;
           font-weight: 500;
         }
 
         .bookmarks-lede {
-          margin-top: 10px;
-          font-size: 13px;
-          line-height: 1.5;
+          margin-top: 12px;
           color: var(--muted);
+          font-size: 14px;
+          line-height: 1.5;
         }
 
-        .bookmarks-browse {
-          flex: 0 0 auto;
-          padding-bottom: 3px;
-          border-bottom: 1px solid #cfcac0;
-          color: #99968f;
+        .bookmarks-summary {
+          display: flex;
+          align-items: center;
+          min-height: 104px;
+          padding: 16px 20px;
+          border: 1px solid var(--line);
+          border-radius: 16px;
+          background: rgba(255,255,255,.52);
+        }
+
+        .summary-stat {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          flex: 1;
+        }
+
+        .summary-icon {
+          width: 56px;
+          height: 56px;
+          flex: 0 0 56px;
+          display: grid;
+          place-items: center;
+          border-radius: 50%;
+          font-size: 27px;
+          border: 1px solid rgba(0,0,0,.035);
+        }
+
+        .summary-clock { background: #f7f2c8; }
+        .summary-star { background: #eee4f8; font-size: 24px; }
+
+        .summary-stat strong {
+          display: block;
+          font-size: 24px;
+          line-height: 1;
+          font-weight: 500;
+          letter-spacing: -.04em;
+        }
+
+        .summary-stat span {
+          display: block;
+          margin-top: 6px;
+          color: var(--muted);
           font-size: 11px;
-          text-decoration: none;
-          white-space: nowrap;
+        }
+
+        .summary-divider {
+          width: 1px;
+          height: 56px;
+          background: var(--line);
+          margin: 0 19px;
         }
 
         .bookmark-section {
-          padding: 26px 0 28px;
+          padding: 24px 0 26px;
           border-bottom: 1px solid var(--line);
         }
 
@@ -272,9 +293,9 @@ export default function Bookmarks() {
 
         .bookmark-section-head h2 {
           margin-top: 7px;
-          font-size: 29px;
+          font-size: 30px;
           line-height: 1;
-          letter-spacing: -0.045em;
+          letter-spacing: -.045em;
           font-weight: 500;
         }
 
@@ -285,8 +306,18 @@ export default function Bookmarks() {
           line-height: 1.5;
         }
 
+        .bookmarks-browse {
+          margin-bottom: 2px;
+          padding-bottom: 4px;
+          border-bottom: 1px solid #cfcac0;
+          color: #34332f;
+          font-size: 12px;
+          white-space: nowrap;
+        }
+
+        .bookmarks-browse span { margin-left: 7px; font-size: 16px; }
+
         .bookmark-count {
-          flex: 0 0 auto;
           min-width: 48px;
           text-align: right;
           padding-bottom: 2px;
@@ -294,10 +325,10 @@ export default function Bookmarks() {
 
         .bookmark-count strong {
           display: block;
-          font-size: 18px;
+          font-size: 20px;
           line-height: 1;
           font-weight: 500;
-          letter-spacing: -0.04em;
+          letter-spacing: -.04em;
         }
 
         .bookmark-count span {
@@ -307,274 +338,280 @@ export default function Bookmarks() {
           font-size: 9px;
         }
 
+        .progress-carousel {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 170px;
+          align-items: center;
+          gap: 26px;
+          margin-top: 20px;
+          padding: 17px 18px;
+          border: 1px solid var(--line);
+          border-radius: 16px;
+          background: rgba(255,255,255,.45);
+        }
+
+        .progress-card {
+          min-width: 0;
+          min-height: 96px;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          padding: 10px;
+          border: 1px solid var(--line);
+          border-radius: 14px;
+          background: #fff;
+        }
+
+        .progress-card-icon {
+          width: 74px;
+          height: 74px;
+          flex: 0 0 74px;
+          display: grid;
+          place-items: center;
+          border-radius: 50%;
+          background: #fde8ef;
+          font-size: 31px;
+          border: 1px solid #f5d6df;
+        }
+
+        .progress-card-main {
+          min-width: 0;
+          flex: 1;
+        }
+
+        .progress-card-main strong {
+          display: block;
+          font-size: 15px;
+          line-height: 1.2;
+          font-weight: 500;
+        }
+
+        .progress-card-main > span {
+          display: block;
+          margin-top: 7px;
+          color: var(--muted);
+          font-size: 11px;
+        }
+
+        .progress-line {
+          width: min(275px, 100%);
+          height: 8px;
+          margin-top: 12px;
+          overflow: hidden;
+          border-radius: 999px;
+          background: #ece9e2;
+        }
+
+        .progress-line i {
+          display: block;
+          height: 100%;
+          border-radius: inherit;
+          background: #282925;
+        }
+
+        .progress-percent {
+          flex: 0 0 auto;
+          align-self: flex-end;
+          margin-bottom: 11px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .progress-open,
+        .starred-card-arrow {
+          display: grid;
+          place-items: center;
+          border: 1px solid #ddd9d1;
+          border-radius: 50%;
+          background: #fff;
+        }
+
+        .progress-open {
+          width: 42px;
+          height: 42px;
+          flex: 0 0 42px;
+          font-size: 20px;
+        }
+
+        .carousel-controls {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 11px;
+        }
+
+        .carousel-controls button {
+          width: 44px;
+          height: 44px;
+          display: grid;
+          place-items: center;
+          border: 1px solid #dedbd4;
+          border-radius: 50%;
+          background: #fff;
+          color: #4b4944;
+          font-size: 18px;
+          line-height: 1;
+        }
+
+        .carousel-controls button:disabled {
+          opacity: .32;
+          cursor: default;
+        }
+
+        .carousel-controls span {
+          min-width: 40px;
+          text-align: center;
+          font-size: 11px;
+          font-weight: 600;
+          color: #4d4b46;
+        }
+
         .bookmark-empty {
           display: flex;
-          align-items: flex-start;
-          gap: 28px;
-          margin-top: 25px;
-          min-height: 168px;
-          padding: 25px 28px;
+          align-items: center;
+          gap: 24px;
+          margin-top: 20px;
+          min-height: 116px;
+          padding: 20px 22px;
           border: 1px dashed #d8d4cb;
           border-radius: 15px;
-          background: rgba(255, 255, 255, 0.38);
+          background: rgba(255,255,255,.38);
         }
 
         .bookmark-icon {
-          width: 58px;
-          height: 58px;
-          flex: 0 0 58px;
+          width: 56px;
+          height: 56px;
+          flex: 0 0 56px;
           display: grid;
           place-items: center;
           border: 1px solid #e4e0d8;
           border-radius: 50%;
           background: #f7f5ef;
           color: #30312e;
-          font-size: 29px;
-          line-height: 1;
+          font-size: 28px;
         }
 
-        .bookmark-icon-star {
-          font-size: 34px;
-          font-weight: 300;
-        }
-
-        .bookmark-empty-copy {
-          padding-top: 1px;
-          max-width: 580px;
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-        }
-
-        .bookmark-empty-copy strong {
-          display: block;
-          font-size: 15px;
-          line-height: 1.3;
-          font-weight: 500;
-        }
-
+        .bookmark-icon-star { font-size: 32px; }
+        .bookmark-empty-copy strong { font-size: 14px; font-weight: 500; }
         .bookmark-empty-copy p {
-          max-width: 570px;
-          margin: 6px 0 0;
-          color: var(--muted);
-          font-size: 12px;
-          line-height: 1.55;
-        }
-
-        .bookmark-empty-copy .yellow-button {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          align-self: flex-start;
-          flex: 0 0 auto;
-          position: static;
-          margin-top: 17px;
-          text-decoration: none;
-        }
-
-        .bookmark-carousel {
-          position: relative;
-          margin-top: 25px;
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          align-items: center;
-          gap: 18px;
-          min-width: 0;
-        }
-
-        .bookmark-carousel-track {
-          min-width: 0;
-          overflow: hidden;
-        }
-
-        .bookmark-carousel-controls {
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-          gap: 10px;
-          min-width: 108px;
-        }
-
-        .bookmark-carousel-controls button {
-          width: 38px;
-          height: 38px;
-          display: grid;
-          place-items: center;
-          border: 1px solid #ddd9d1;
-          border-radius: 50%;
-          background: #fff;
-          color: #3d3c38;
-          font-size: 16px;
-          line-height: 1;
-        }
-
-        .bookmark-carousel-controls button:disabled {
-          opacity: .32;
-          cursor: default;
-        }
-
-        .bookmark-carousel-controls span {
-          min-width: 42px;
-          text-align: center;
-          color: #77736b;
-          font-size: 10px;
-          font-weight: 600;
-        }
-
-        .bookmark-test-row {
-          display: flex;
-          align-items: center;
-          gap: 18px;
-          min-height: 108px;
-          padding: 16px 20px;
-          border: 1px dashed #d8d4cb;
-          border-radius: 15px;
-          background: rgba(255, 255, 255, 0.38);
-          text-decoration: none;
-          color: inherit;
-          transition: background .18s ease, border-color .18s ease;
-        }
-
-        .bookmark-test-row:hover {
-          background: rgba(255, 255, 255, 0.62);
-          border-color: #cfcac0;
-        }
-
-        .bookmark-test-row .bookmark-icon {
-          width: 48px;
-          height: 48px;
-          flex-basis: 48px;
-          font-size: 24px;
-        }
-
-        .bookmark-row-copy {
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 3px;
-        }
-
-        .bookmark-row-kicker {
-          color: var(--muted);
-          font-size: 10px;
-        }
-
-        .bookmark-row-copy strong {
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .bookmark-row-copy > span:last-child {
+          margin-top: 5px;
           color: var(--muted);
           font-size: 11px;
+          line-height: 1.5;
+        }
+        .bookmark-empty-copy .yellow-button {
+          display: inline-flex;
+          margin-top: 11px;
+          text-decoration: none;
         }
 
-        .bookmark-row-arrow {
-          margin-left: auto;
-          color: #55534e;
-          font-size: 18px;
+        .starred-carousel {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 170px;
+          align-items: center;
+          gap: 26px;
+          margin-top: 20px;
         }
 
-        .starred-carousel-track {
+        .starred-grid {
           min-width: 0;
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 10px;
+          gap: 14px;
         }
 
         .starred-card {
           position: relative;
-          min-height: 178px;
+          min-width: 0;
+          min-height: 134px;
           overflow: hidden;
           border: 1px solid var(--line);
-          border-radius: 15px;
+          border-radius: 14px;
           background: #fff;
         }
 
         .starred-card::after {
           content: "";
           position: absolute;
-          right: -18px;
-          top: 14px;
-          width: 68px;
-          height: 55px;
+          right: -16px;
+          top: 16px;
+          width: 72px;
+          height: 58px;
           border-radius: 50%;
-          opacity: 0.78;
+          opacity: .78;
+          pointer-events: none;
         }
 
-        .starred-card.tone-pink::after { background: var(--pink); }
-        .starred-card.tone-lavender::after { background: var(--lav); }
-        .starred-card.tone-lime::after { background: #e4ef9a; }
-        .starred-card.tone-mint::after { background: var(--mint); }
-        .starred-card.tone-sky::after { background: var(--sky); }
-        .starred-card.tone-peach::after { background: var(--peach); }
+        .tone-pink::after { background: var(--pink); }
+        .tone-lavender::after { background: var(--lav); }
+        .tone-lime::after { background: #e4ef9a; }
+        .tone-mint::after { background: var(--mint); }
+        .tone-sky::after { background: var(--sky); }
+        .tone-peach::after { background: var(--peach); }
 
         .starred-card > a {
           display: block;
           height: 100%;
-          padding: 20px;
-          text-decoration: none;
+          padding: 16px;
           color: inherit;
+          text-decoration: none;
         }
 
         .starred-card h3 {
-          max-width: 210px;
-          margin-top: 17px;
-          font-size: 19px;
-          line-height: 1.08;
-          letter-spacing: -0.035em;
+          max-width: 205px;
+          margin-top: 15px;
+          font-size: 16px;
+          line-height: 1.1;
+          letter-spacing: -.035em;
           font-weight: 500;
         }
 
         .starred-card p {
-          margin-top: 8px;
+          margin-top: 7px;
           color: var(--muted);
-          font-size: 11px;
+          font-size: 10px;
         }
 
         .starred-card-star {
           position: absolute;
           z-index: 2;
-          top: 15px;
-          right: 17px;
+          top: 14px;
+          right: 16px;
           border: 0;
+          padding: 0;
           background: transparent;
-          color: #3f3e39;
+          color: #44433e;
           font-size: 17px;
           cursor: pointer;
         }
 
         .starred-card-arrow {
           position: absolute;
-          right: 16px;
-          bottom: 14px;
-          width: 30px;
-          height: 30px;
-          display: grid;
-          place-items: center;
-          border: 1px solid #ddd9d1;
-          border-radius: 50%;
-          background: #fff;
+          right: 14px;
+          bottom: 12px;
+          width: 32px;
+          height: 32px;
           font-size: 15px;
         }
+
+        .starred-controls { justify-content: flex-end; }
 
         .bookmark-tip {
           display: flex;
           align-items: center;
           gap: 20px;
-          margin-top: 22px;
-          padding: 16px 20px;
+          margin-top: 20px;
+          padding: 12px 18px;
           border: 1px solid var(--line);
           border-radius: 15px;
-          background: rgba(255, 255, 255, 0.46);
+          background: rgba(255,255,255,.46);
         }
 
         .bookmark-tip .bookmark-icon {
-          width: 44px;
-          height: 44px;
-          flex-basis: 44px;
-          font-size: 25px;
+          width: 46px;
+          height: 46px;
+          flex-basis: 46px;
+          font-size: 24px;
         }
 
         .bookmark-tip span {
@@ -582,209 +619,69 @@ export default function Bookmarks() {
           color: #77736b;
           font-size: 9px;
           font-weight: 700;
-          letter-spacing: 0.12em;
+          letter-spacing: .12em;
         }
 
         .bookmark-tip p {
           margin-top: 4px;
           color: #66635d;
-          font-size: 11px;
+          font-size: 10px;
           line-height: 1.45;
         }
 
-
         @media (min-width: 901px) {
           .bookmarks-page {
-            padding-top: 18px;
-            padding-bottom: 18px;
+            padding-top: 28px;
+            padding-bottom: 28px;
           }
-
           .bookmarks-hero {
-            padding: 14px 0 16px;
+            padding-top: 10px;
+            padding-bottom: 27px;
           }
-
-          .bookmarks-hero h1 {
-            margin-top: 5px;
+          .bookmarks-hero-copy h1 {
+            font-size: clamp(46px, 4vw, 56px);
           }
-
-          .bookmarks-lede {
-            margin-top: 7px;
-            font-size: 11px;
-          }
-
           .bookmark-section {
-            padding: 17px 0 18px;
-          }
-
-          .bookmark-section-head h2 {
-            margin-top: 5px;
-            font-size: 25px;
-          }
-
-          .bookmark-section-head > div:first-child > p:last-child {
-            margin-top: 6px;
-            font-size: 10px;
-          }
-
-          .bookmark-empty {
-            margin-top: 16px;
-            min-height: 108px;
-            padding: 16px 20px;
-            gap: 20px;
-          }
-
-          .bookmark-icon {
-            width: 48px;
-            height: 48px;
-            flex-basis: 48px;
-            font-size: 25px;
-          }
-
-          .bookmark-icon-star {
-            font-size: 29px;
-          }
-
-          .bookmark-empty-copy strong {
-            font-size: 14px;
-          }
-
-          .bookmark-empty-copy p {
-            margin-top: 4px;
-            font-size: 10px;
-          }
-
-          .bookmark-empty-copy .yellow-button {
-            margin-top: 10px;
-          }
-
-          .bookmark-empty-copy {
-            gap: 0;
-          }
-
-          .bookmark-carousel {
-            margin-top: 16px;
-          }
-
-          .starred-carousel-track {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-          }
-
-          .bookmark-test-row {
-            min-height: 108px;
-            padding: 16px 20px;
-          }
-
-          .starred-grid {
-            margin-top: 16px;
-          }
-
-          .starred-card {
-            min-height: 130px;
-          }
-
-          .starred-card > a {
-            padding: 15px;
-          }
-
-          .starred-card h3 {
-            margin-top: 12px;
-            font-size: 17px;
-          }
-
-          .starred-card p {
-            margin-top: 5px;
-            font-size: 10px;
-          }
-
-          .bookmark-tip {
-            margin-top: 14px;
-            padding: 10px 14px;
-          }
-
-          .bookmark-tip .bookmark-icon {
-            width: 38px;
-            height: 38px;
-            flex-basis: 38px;
-            font-size: 21px;
-          }
-
-          .bookmark-tip p {
-            font-size: 10px;
+            padding-top: 22px;
+            padding-bottom: 24px;
           }
         }
 
-        @media (max-width: 900px) {
-          .bookmarks-page {
-            padding-top: 20px;
-            padding-bottom: 45px;
-          }
+        @media (max-width: 1100px) {
+          .bookmarks-page { max-width: 100%; }
+          .bookmarks-hero { grid-template-columns: minmax(0,1fr) 350px; gap: 30px; }
+          .starred-card h3 { font-size: 14px; }
+        }
 
-          .bookmarks-hero {
-            align-items: flex-start;
-            flex-direction: column;
-            gap: 18px;
-          }
-
-          .bookmarks-hero h1 {
-            font-size: 36px;
-          }
-
-          .bookmark-section {
-            padding-top: 23px;
-            padding-bottom: 24px;
-          }
-
-          .bookmark-empty {
-            gap: 18px;
-            padding: 20px;
-          }
-
-          .starred-carousel-track {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
+        @media (max-width: 820px) {
+          .bookmarks-page { padding-top: 20px; padding-bottom: 45px; }
+          .bookmarks-hero { grid-template-columns: 1fr; gap: 20px; }
+          .bookmarks-summary { max-width: 430px; }
+          .bookmark-section-head { align-items: flex-start; }
+          .progress-carousel,
+          .starred-carousel { grid-template-columns: 1fr; gap: 14px; }
+          .carousel-controls { justify-content: flex-end; }
+          .starred-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
         }
 
         @media (max-width: 560px) {
-          .bookmarks-page {
-            padding-left: 16px;
-            padding-right: 16px;
-          }
-
-          .bookmarks-hero h1 {
-            font-size: 32px;
-          }
-
-          .bookmark-section-head {
-            align-items: flex-start;
-          }
-
-          .bookmark-section-head h2 {
-            font-size: 26px;
-          }
-
-          .bookmark-count {
-            padding-top: 4px;
-          }
-
-          .bookmark-empty {
-            flex-direction: column;
-            gap: 14px;
-            min-height: 0;
-          }
-
-          .starred-carousel-track {
-            grid-template-columns: 1fr;
-          }
-
-          .bookmark-carousel {
-            grid-template-columns: 1fr;
-          }
-
-          .bookmark-tip {
-            align-items: flex-start;
-          }
+          .bookmarks-page { padding-left: 16px; padding-right: 16px; }
+          .bookmarks-hero-copy h1 { font-size: 34px; }
+          .bookmarks-lede { font-size: 12px; }
+          .bookmarks-summary { min-height: 90px; padding: 12px; }
+          .summary-icon { width: 46px; height: 46px; flex-basis: 46px; font-size: 22px; }
+          .summary-stat strong { font-size: 20px; }
+          .bookmark-section-head h2 { font-size: 27px; }
+          .bookmark-section-head > div:first-child > p:last-child { font-size: 11px; }
+          .progress-card { gap: 11px; padding: 8px; }
+          .progress-card-icon { width: 52px; height: 52px; flex-basis: 52px; font-size: 23px; }
+          .progress-percent { display: none; }
+          .progress-line { width: 100%; }
+          .starred-grid { grid-template-columns: 1fr; }
+          .bookmark-empty { align-items: flex-start; }
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 }

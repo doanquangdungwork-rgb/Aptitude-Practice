@@ -285,6 +285,10 @@ export default function Bookmarks() {
         .bookmark-empty-copy {
           padding-top: 1px;
           max-width: 580px;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
         }
 
         .bookmark-empty-copy strong {
@@ -296,7 +300,7 @@ export default function Bookmarks() {
 
         .bookmark-empty-copy p {
           max-width: 570px;
-          margin-top: 6px;
+          margin: 6px 0 0;
           color: var(--muted);
           font-size: 12px;
           line-height: 1.55;
@@ -306,6 +310,9 @@ export default function Bookmarks() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          align-self: flex-start;
+          flex: 0 0 auto;
+          position: static;
           margin-top: 17px;
           text-decoration: none;
         }
@@ -539,6 +546,10 @@ export default function Bookmarks() {
 
           .bookmark-empty-copy .yellow-button {
             margin-top: 10px;
+          }
+
+          .bookmark-empty-copy {
+            gap: 0;
           }
 
           .bookmark-list {

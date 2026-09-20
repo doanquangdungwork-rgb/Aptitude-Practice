@@ -150,6 +150,6 @@ export default function Home(){
         .home-page .practice-card{min-height:110px;height:110px}
         .home-page .practice-card p{display:block}
       }
-    </style>
+    `}</style>
   </div>
 }

@@ -8,6 +8,8 @@ import { getAttempts, getStarredTests, toggleStarredTest } from "../../lib/progr
 export default function Bookmarks() {
   const [attempts, setAttempts] = useState<any[]>([]);
   const [stars, setStars] = useState<string[]>([]);
+  const [unfinishedPage, setUnfinishedPage] = useState(0);
+  const [starredPage, setStarredPage] = useState(0);
 
   useEffect(() => {
     setAttempts(getAttempts());
@@ -26,7 +28,17 @@ export default function Bookmarks() {
   const testName = (id: string) =>
     appCatalog.tests.find((t: any) => t.test_id === id);
 
-  const refreshStars = () => setStars(getStarredTests());
+  const refreshStars = () => {
+    setStars(getStarredTests());
+    setStarredPage(0);
+  };
+
+  const STARRED_PER_PAGE = 4;
+  const starredPageCount = Math.max(1, Math.ceil(starred.length / STARRED_PER_PAGE));
+  const visibleStarred = starred.slice(
+    starredPage * STARRED_PER_PAGE,
+    starredPage * STARRED_PER_PAGE + STARRED_PER_PAGE
+  );
 
   return (
     <div className="app-page bookmarks-page">
@@ -58,24 +70,47 @@ export default function Bookmarks() {
         </div>
 
         {unfinished.length ? (
-          <div className="bookmark-list">
-            {unfinished.map((a: any) => (
-              <Link
-                key={a.id}
-                href={`/tests/${a.testId}`}
-                className="bookmark-test-row"
+          <div className="bookmark-carousel">
+            <div className="bookmark-carousel-track">
+              {unfinished
+                .slice(unfinishedPage, unfinishedPage + 1)
+                .map((a: any) => (
+                  <Link
+                    key={a.id}
+                    href={`/tests/${a.testId}`}
+                    className="bookmark-test-row"
+                  >
+                    <div className="bookmark-icon bookmark-icon-clock">◷</div>
+                    <div className="bookmark-row-copy">
+                      <span className="bookmark-row-kicker">
+                        {testName(a.testId)?.title?.replaceAll("_", " ") || a.testId}
+                      </span>
+                      <strong>Continue where you left off</strong>
+                      <span>Return to your unfinished test and keep your progress.</span>
+                    </div>
+                    <span className="bookmark-row-arrow">→</span>
+                  </Link>
+                ))}
+            </div>
+            <div className="bookmark-carousel-controls">
+              <button
+                type="button"
+                aria-label="Previous unfinished test"
+                disabled={unfinishedPage === 0}
+                onClick={() => setUnfinishedPage((p) => Math.max(0, p - 1))}
               >
-                <div className="bookmark-icon bookmark-icon-clock">◷</div>
-                <div className="bookmark-row-copy">
-                  <span className="bookmark-row-kicker">
-                    {testName(a.testId)?.title?.replaceAll("_", " ") || a.testId}
-                  </span>
-                  <strong>Continue where you left off</strong>
-                  <span>Return to your unfinished test and keep your progress.</span>
-                </div>
-                <span className="bookmark-row-arrow">→</span>
-              </Link>
-            ))}
+                ←
+              </button>
+              <span>{unfinishedPage + 1} / {unfinished.length}</span>
+              <button
+                type="button"
+                aria-label="Next unfinished test"
+                disabled={unfinishedPage >= unfinished.length - 1}
+                onClick={() => setUnfinishedPage((p) => Math.min(unfinished.length - 1, p + 1))}
+              >
+                →
+              </button>
+            </div>
           </div>
         ) : (
           <div className="bookmark-empty">
@@ -108,33 +143,54 @@ export default function Bookmarks() {
         </div>
 
         {starred.length ? (
-          <div className="starred-grid">
-            {starred.map((t: any, i: number) => (
-              <article
-                key={t.test_id}
-                className={`starred-card tone-${["pink", "lavender", "lime", "mint", "sky", "peach"][i % 6]}`}
-              >
-                <button
-                  type="button"
-                  className="starred-card-star"
-                  aria-label="Remove bookmark"
-                  onClick={() => {
-                    toggleStarredTest(t.test_id);
-                    refreshStars();
-                  }}
+          <div className="bookmark-carousel">
+            <div className="starred-carousel-track">
+              {visibleStarred.map((t: any, i: number) => (
+                <article
+                  key={t.test_id}
+                  className={`starred-card tone-["pink", "lavender", "lime", "mint", "sky", "peach"][((starredPage * STARRED_PER_PAGE) + i) % 6]`}
                 >
-                  ★
-                </button>
-                <Link href={`/tests/${t.test_id}`}>
-                  <span className="practice-index">
-                    {t.test_id.replace("TEST_", "")}
-                  </span>
-                  <h3>{t.title.replaceAll("_", " ")}</h3>
-                  <p>{t.question_count} questions</p>
-                  <span className="starred-card-arrow">→</span>
-                </Link>
-              </article>
-            ))}
+                  <button
+                    type="button"
+                    className="starred-card-star"
+                    aria-label="Remove bookmark"
+                    onClick={() => {
+                      toggleStarredTest(t.test_id);
+                      refreshStars();
+                    }}
+                  >
+                    ★
+                  </button>
+                  <Link href={`/tests/${t.test_id}`}>
+                    <span className="practice-index">
+                      {t.test_id.replace("TEST_", "")}
+                    </span>
+                    <h3>{t.title.replaceAll("_", " ")}</h3>
+                    <p>{t.question_count} questions</p>
+                    <span className="starred-card-arrow">→</span>
+                  </Link>
+                </article>
+              ))}
+            </div>
+            <div className="bookmark-carousel-controls">
+              <button
+                type="button"
+                aria-label="Previous starred tests"
+                disabled={starredPage === 0}
+                onClick={() => setStarredPage((p) => Math.max(0, p - 1))}
+              >
+                ←
+              </button>
+              <span>{starredPage + 1} / {starredPageCount}</span>
+              <button
+                type="button"
+                aria-label="Next starred tests"
+                disabled={starredPage >= starredPageCount - 1}
+                onClick={() => setStarredPage((p) => Math.min(starredPageCount - 1, p + 1))}
+              >
+                →
+              </button>
+            </div>
           </div>
         ) : (
           <div className="bookmark-empty">
@@ -317,10 +373,53 @@ export default function Bookmarks() {
           text-decoration: none;
         }
 
-        .bookmark-list {
-          display: grid;
-          gap: 10px;
+        .bookmark-carousel {
+          position: relative;
           margin-top: 25px;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center;
+          gap: 18px;
+          min-width: 0;
+        }
+
+        .bookmark-carousel-track {
+          min-width: 0;
+          overflow: hidden;
+        }
+
+        .bookmark-carousel-controls {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
+          min-width: 108px;
+        }
+
+        .bookmark-carousel-controls button {
+          width: 38px;
+          height: 38px;
+          display: grid;
+          place-items: center;
+          border: 1px solid #ddd9d1;
+          border-radius: 50%;
+          background: #fff;
+          color: #3d3c38;
+          font-size: 16px;
+          line-height: 1;
+        }
+
+        .bookmark-carousel-controls button:disabled {
+          opacity: .32;
+          cursor: default;
+        }
+
+        .bookmark-carousel-controls span {
+          min-width: 42px;
+          text-align: center;
+          color: #77736b;
+          font-size: 10px;
+          font-weight: 600;
         }
 
         .bookmark-test-row {
@@ -377,11 +476,11 @@ export default function Bookmarks() {
           font-size: 18px;
         }
 
-        .starred-grid {
+        .starred-carousel-track {
+          min-width: 0;
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 10px;
-          margin-top: 25px;
         }
 
         .starred-card {
@@ -562,8 +661,12 @@ export default function Bookmarks() {
             gap: 0;
           }
 
-          .bookmark-list {
+          .bookmark-carousel {
             margin-top: 16px;
+          }
+
+          .starred-carousel-track {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
           }
 
           .bookmark-test-row {
@@ -636,8 +739,8 @@ export default function Bookmarks() {
             padding: 20px;
           }
 
-          .starred-grid {
-            grid-template-columns: 1fr 1fr;
+          .starred-carousel-track {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
 
@@ -669,7 +772,11 @@ export default function Bookmarks() {
             min-height: 0;
           }
 
-          .starred-grid {
+          .starred-carousel-track {
+            grid-template-columns: 1fr;
+          }
+
+          .bookmark-carousel {
             grid-template-columns: 1fr;
           }
 

@@ -140,9 +140,15 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const sourceLetter = /^[A-J]$/i.test(rawAnswer) ? rawAnswer.toUpperCase() : "";
  const sourceLetterCount = sourceLetter ? sourceLetter.charCodeAt(0) - 64 : 0;
  const sourceNumericKey = /^(?:[1-9]|1[0-9]|2[0-6])$/.test(rawAnswer) ? Number(rawAnswer) : 0;
+ const overrideAnswers = Array.isArray(override?.answer) ? override.answer : override?.answer != null ? [override.answer] : [];
+ const overrideKeyCount = overrideAnswers.reduce((max, value) => {
+   const raw = String(value ?? "").trim();
+   const letter = /^[A-J]$/i.test(raw) ? raw.toUpperCase().charCodeAt(0) - 64 : 0;
+   const numeric = /^(?:[1-9]|1[0-9]|2[0-6])$/.test(raw) ? Number(raw) : 0;
+   return Math.max(max, letter, numeric);
+ }, 0);
  const baseCount = forcedCount ?? override?.optionCount ?? generatedOptionCount(q);
- const count = Math.max(baseCount, baseResponse.type === "single_choice" ? Math.max(sourceLetterCount, baseCount > 0 ? sourceNumericKey : 0) : 0);
- const overrideAnswers = Array.isArray(override?.answer) ? override.answer : [];
+ const count = Math.max(baseCount, baseResponse.type === "single_choice" ? Math.max(sourceLetterCount, baseCount > 0 ? sourceNumericKey : 0, overrideKeyCount) : overrideKeyCount);
  const overrideMultipleCount = overrideAnswers.length || undefined;
  const overrideComposite = override?.responseType === "composite" && overrideAnswers.length === 2;
  const response: CanonicalQuestion["response"] = overrideComposite

@@ -140,7 +140,6 @@ function PracticeContent(){
       @media(max-width:1200px){.practice-category-nav .search-wrap{width:260px}.practice-category-nav .category-buttons{gap:18px}.test-library-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
       @media(max-width:900px){.practice-library-page{display:block;padding-top:20px}.practice-library-header{padding-top:34px}.practice-category-nav{display:flex;align-items:stretch;flex-direction:column;gap:9px;overflow:visible}.practice-category-nav .category-buttons{width:100%;flex:none;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;border-bottom:0}.practice-category-nav .search-wrap{width:100%;flex-basis:auto}.test-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.library-count strong{font-size:32px}}
       @media(max-width:560px){.practice-library-header{display:block}.library-count{text-align:left;margin-top:18px}.library-summary{display:block}.library-summary span+span{display:block;margin-top:5px}.test-library-grid{grid-template-columns:1fr}.test-library-card{min-height:300px}.library-pagination{align-items:flex-start;flex-direction:column}.practice-category-nav .category-buttons{gap:20px}.launch-modal{padding:21px}.launch-modal h2{font-size:27px}}
-    `}
       /* Feedback-only pass: reduce unused whitespace; preserve typography scale. */
       @media(min-width:901px){
         /* Practice library header: reclaim the empty space above the title without shrinking type. */

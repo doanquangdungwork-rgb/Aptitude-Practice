@@ -2,15 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { questionSnapshotSrc } from "../../../lib/question-snapshot";
-import { answersMatch } from "../../../lib/canonical-engine";
-import { completeAttempt, getAttempt, getBookmarks, getCompletedAttempt, getWrongQuestions, recordPracticeDay, saveAttempt, setWrongQuestions, toggleBookmark } from "../../../lib/progress";
-import { supabase } from "../../../lib/supabase";
-import { QuestionPrompt } from "../../../components/question-content";
-import QuestionResponse from "../../../components/question-response";
-import QuestionNavigator from "../../../components/question-navigator";
-import ReferenceViewer from "../../../components/reference-viewer";
-import QuestionSnapshot from "../../../components/question-snapshot";
+import { questionSnapshotSrc } from "../lib/question-snapshot";
+import { answersMatch } from "../lib/canonical-engine";
+import { completeAttempt, getAttempt, getBookmarks, getCompletedAttempt, getWrongQuestions, recordPracticeDay, saveAttempt, setWrongQuestions, toggleBookmark } from "../lib/progress";
+import { supabase } from "../lib/supabase";
+import { QuestionPrompt } from "./question-content";
+import QuestionResponse from "./question-response";
+import QuestionNavigator from "./question-navigator";
+import ReferenceViewer from "./reference-viewer";
+import QuestionSnapshot from "./question-snapshot";
 
 type ReferenceMaterial = { id: string; assetRef: string; label: string };
 const CAPP_UNIQUE_CHARTS: ReferenceMaterial[] = [

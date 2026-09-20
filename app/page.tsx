@@ -8,16 +8,19 @@ const tones=["tone-pink","tone-lavender","tone-lime","tone-mint","tone-sky","ton
 
 function CategoryNav(){
   const [query,setQuery]=useState("");
-  return <div className="category-nav home-category-nav">
+  return <div className="library-filter-bar home-library-filter-bar">
+    <div className="library-filter-top">
+      <div className="library-index-count">{appCatalog.stats.question_count.toLocaleString()} questions indexed</div>
+      <label className="search-wrap home-search-wrap">
+        <span aria-hidden="true">⌕</span>
+        <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search practice sets..." aria-label="Search practice sets" />
+        {query&&<button type="button" className="search-clear" onClick={()=>setQuery("")} aria-label="Clear search">×</button>}
+      </label>
+    </div>
     <div className="category-buttons home-category-buttons">
       <Link href="/practice" className="active">All</Link>
       {appCatalog.pillars.map((p:any)=><Link key={p.id} href={`/practice?pillar=${p.id}`}>{p.name}</Link>)}
     </div>
-    <label className="search-wrap home-search-wrap">
-      <span aria-hidden="true">⌕</span>
-      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search practice sets..." aria-label="Search practice sets" />
-      {query&&<button type="button" className="search-clear" onClick={()=>setQuery("")} aria-label="Clear search">×</button>}
-    </label>
   </div>
 }
 

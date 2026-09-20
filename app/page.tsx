@@ -118,6 +118,38 @@ export default function Home(){
         .home-page .home-search-wrap{width:100%;flex-basis:auto}
         .home-page .practice-card{min-height:150px;height:150px}
       }
-    `}</style>
+    `}
+      @media(min-width:901px){
+        /* Keep the original typography scale; only reclaim unused vertical space. */
+        .home-page .editorial-hero{
+          min-height:250px;
+          padding-top:22px;
+          padding-bottom:14px;
+        }
+        .home-page .section-head{margin-top:10px;margin-bottom:7px}
+        .home-page .practice-card{
+          min-height:116px;
+          height:116px;
+          padding:11px 15px 9px;
+        }
+        .home-page .practice-card h3{
+          margin-top:9px;
+          font-size:17px;
+        }
+        .home-page .practice-card p{
+          display:block;
+          margin-top:3px;
+          font-size:10.5px;
+          line-height:1.4;
+        }
+        .home-page .practice-meta{bottom:8px;font-size:9px}
+        .home-page .practice-arrow{bottom:7px}
+      }
+      @media(min-width:901px) and (max-height:850px){
+        .home-page .editorial-hero{min-height:225px;padding-top:18px;padding-bottom:10px}
+        .home-page .practice-card{min-height:110px;height:110px}
+        .home-page .practice-card p{display:block}
+      }
+    </style>
   </div>
 }

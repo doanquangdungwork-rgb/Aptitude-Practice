@@ -318,25 +318,35 @@ export default function Bookmarks() {
         }
 
         .bookmark-list {
+          display: grid;
+          gap: 10px;
           margin-top: 25px;
-          border-top: 1px solid var(--line);
         }
 
         .bookmark-test-row {
           display: flex;
           align-items: center;
           gap: 18px;
-          padding: 17px 4px;
-          border-bottom: 1px solid var(--line);
+          min-height: 108px;
+          padding: 16px 20px;
+          border: 1px dashed #d8d4cb;
+          border-radius: 15px;
+          background: rgba(255, 255, 255, 0.38);
           text-decoration: none;
           color: inherit;
+          transition: background .18s ease, border-color .18s ease;
+        }
+
+        .bookmark-test-row:hover {
+          background: rgba(255, 255, 255, 0.62);
+          border-color: #cfcac0;
         }
 
         .bookmark-test-row .bookmark-icon {
-          width: 44px;
-          height: 44px;
-          flex-basis: 44px;
-          font-size: 22px;
+          width: 48px;
+          height: 48px;
+          flex-basis: 48px;
+          font-size: 24px;
         }
 
         .bookmark-row-copy {
@@ -557,7 +567,8 @@ export default function Bookmarks() {
           }
 
           .bookmark-test-row {
-            padding: 11px 4px;
+            min-height: 108px;
+            padding: 16px 20px;
           }
 
           .starred-grid {

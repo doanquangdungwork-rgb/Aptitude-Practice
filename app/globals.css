@@ -149,3 +149,167 @@
     width:100%;
   }
 }
+
+
+/* Desktop viewport-fit pass: reduce vertical padding/whitespace so the main library views can sit within one screen. */
+@media (min-width:901px){
+  .home-page .editorial-hero{
+    min-height:250px;
+    padding:28px 0 18px;
+  }
+  .home-page .hero-title{
+    font-size:clamp(52px,5vw,70px);
+  }
+  .home-page .hero-lede{margin-top:14px}
+  .home-page .hero-actions{margin-top:16px}
+  .home-page .hero-note{
+    right:48px;
+    transform:translateY(-50%) scale(.76);
+  }
+  .home-page .library-filter-bar{
+    padding-top:14px;
+  }
+  .home-page .library-filter-top{min-height:34px}
+  .home-page .library-filter-bar > .category-buttons{
+    margin-top:2px;
+  }
+  .home-page .library-filter-bar > .category-buttons a{
+    padding-top:9px;
+    padding-bottom:10px;
+  }
+  .home-page .section-head{
+    margin-top:12px;
+    margin-bottom:8px;
+  }
+  .home-page .section-title{font-size:22px}
+  .home-page .section-note{font-size:10px}
+  .home-page .practice-grid{gap:9px}
+  .home-page .practice-card{
+    min-height:126px;
+    height:126px;
+    padding:11px 15px 10px;
+    border-radius:13px;
+  }
+  .home-page .practice-card h3{
+    margin-top:9px;
+    font-size:16px;
+  }
+  .home-page .practice-card p{
+    margin-top:3px;
+    font-size:9.5px;
+    line-height:1.35;
+  }
+  .home-page .practice-meta{
+    left:15px;
+    bottom:9px;
+    gap:13px;
+    font-size:8.5px;
+  }
+  .home-page .practice-arrow{
+    right:12px;
+    bottom:8px;
+    width:26px;
+    height:26px;
+  }
+  .home-page .practice-card:after{
+    right:-20px;
+    top:10px;
+    width:64px;
+    height:52px;
+  }
+  .home-page .home-footer{
+    padding-top:7px!important;
+    margin-top:7px;
+  }
+
+  .practice-library-page{
+    padding-top:10px;
+    padding-bottom:28px;
+  }
+  .practice-library-page .practice-library-header{
+    padding:30px 0 18px;
+  }
+  .practice-library-header h1{
+    font-size:clamp(38px,4.5vw,56px);
+  }
+  .practice-library-description{
+    margin-top:7px;
+    font-size:12px;
+  }
+  .library-count strong{font-size:36px}
+  .library-count span{margin-top:5px;font-size:9px}
+  .practice-library-filter-bar{
+    padding-top:13px;
+  }
+  .practice-library-filter-bar .library-filter-top{min-height:34px}
+  .practice-library-filter-bar > .category-buttons{
+    margin-top:1px;
+  }
+  .practice-library-filter-bar > .category-buttons button{
+    padding-top:8px;
+    padding-bottom:9px;
+  }
+  .practice-library-page .test-library-grid{
+    gap:8px;
+    margin-top:10px;
+  }
+  .practice-library-page .test-library-card{
+    min-height:252px;
+  }
+  .practice-library-page .test-card-art{
+    height:60px;
+  }
+  .practice-library-page .test-card-art:before,
+  .practice-library-page .test-card-art:after{
+    width:31px;
+    height:31px;
+  }
+  .practice-library-page .test-card-art:after{transform:translateX(14px)}
+  .practice-library-page .test-card-art span{font-size:20px}
+  .practice-library-page .test-card-art small{
+    left:8px;
+    top:8px;
+    font-size:8px;
+  }
+  .practice-library-page .test-card-body{
+    padding:8px 9px 8px;
+  }
+  .practice-library-page .test-card-body h2{
+    margin-top:12px;
+    min-height:32px;
+    font-size:12px;
+  }
+  .practice-library-page .test-card-meta{
+    margin-top:6px;
+    font-size:8.5px;
+  }
+  .practice-library-page .test-card-status{
+    margin-top:3px;
+    font-size:8px;
+  }
+  .practice-library-page .test-start{
+    padding:6px 8px;
+    font-size:9px;
+  }
+  .practice-library-page .test-start span{font-size:12px}
+  .practice-library-page .library-pagination{
+    margin-top:10px;
+    padding-top:9px;
+  }
+}
+
+/* On shorter laptop screens, tighten one more step rather than introducing page scroll. */
+@media (min-width:901px) and (max-height:850px){
+  .home-page .editorial-hero{min-height:225px;padding-top:22px;padding-bottom:12px}
+  .home-page .hero-title{font-size:clamp(48px,4.7vw,64px)}
+  .home-page .hero-note{transform:translateY(-50%) scale(.68)}
+  .home-page .practice-card{min-height:116px;height:116px}
+  .home-page .practice-card h3{font-size:15px;margin-top:7px}
+  .home-page .practice-card p{display:none}
+  .home-page .section-head{margin-top:9px;margin-bottom:6px}
+
+  .practice-library-page .practice-library-header{padding-top:22px;padding-bottom:13px}
+  .practice-library-page .practice-library-description{display:none}
+  .practice-library-page .test-library-card{min-height:235px}
+  .practice-library-page .test-card-art{height:54px}
+}

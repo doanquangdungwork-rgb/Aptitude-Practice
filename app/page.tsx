@@ -127,21 +127,21 @@ export default function Home(){
         }
         .home-page .section-head{margin-top:10px;margin-bottom:7px}
         .home-page .practice-card{
-          min-height:160px;
-          height:160px;
+          min-height:168px;
+          height:168px;
           padding:13px 16px 11px;
         }
         .home-page .practice-card h3{
           margin-top:10px;
-          font-size:23px !important;
+          font-size:21px !important;
         }
         .home-page .practice-card p{
           display:block;
           margin-top:4px;
-          font-size:15px !important;
+          font-size:14px !important;
           line-height:1.45;
         }
-        .home-page .practice-meta{bottom:10px;font-size:12px !important}
+        .home-page .practice-meta{bottom:10px;font-size:11px !important}
         .home-page .practice-arrow{bottom:8px}
       }
       @media(min-width:901px) and (max-height:850px){

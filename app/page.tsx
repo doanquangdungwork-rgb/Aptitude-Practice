@@ -133,15 +133,15 @@ export default function Home(){
         }
         .home-page .practice-card h3{
           margin-top:10px;
-          font-size:22px;
+          font-size:23px !important;
         }
         .home-page .practice-card p{
           display:block;
           margin-top:4px;
-          font-size:13.5px;
-          line-height:1.4;
+          font-size:15px !important;
+          line-height:1.45;
         }
-        .home-page .practice-meta{bottom:10px;font-size:11px}
+        .home-page .practice-meta{bottom:10px;font-size:12px !important}
         .home-page .practice-arrow{bottom:8px}
       }
       @media(min-width:901px) and (max-height:850px){

@@ -14,13 +14,24 @@ function PracticeContent(){
   const searchParams=useSearchParams();
   const router=useRouter();
   const pillar=searchParams.get("pillar")||"";
+  const [restoredPillar,setRestoredPillar]=useState("");
   const [query,setQuery]=useState("");
   const [page,setPage]=useState(1);
   const [attempts,setAttempts]=useState<any[]>([]);
   const [stars,setStars]=useState<string[]>([]);
   const [launchTest,setLaunchTest]=useState<any>(null);
   const pageSize=10;
-  const pageStorageKey=`aptitude-practice-page:${pillar||"all"}`;
+  const activePillar=pillar||restoredPillar;
+  const pageStorageKey=`aptitude-practice-page:${activePillar||"all"}`;
+
+  useEffect(()=>{
+    if (!pillar) {
+      const savedPillar=window.localStorage.getItem("aptitude-practice-last-pillar")||"";
+      setRestoredPillar(savedPillar);
+    } else {
+      setRestoredPillar(pillar);
+    }
+  },[pillar]);
 
   useEffect(()=>{
     const urlPage=Number(searchParams.get("page"));
@@ -40,9 +51,9 @@ function PracticeContent(){
     return()=>{window.removeEventListener("keydown",close);document.body.style.overflow=""};
   },[launchTest]);
 
-  const selected=appCatalog.pillars.find((p:any)=>p.id===pillar);
+  const selected=appCatalog.pillars.find((p:any)=>p.id===activePillar);
   const allTests=appCatalog.tests;
-  const baseTests=pillar?allTests.filter((t:any)=>testPillar(t)===pillar):allTests;
+  const baseTests=activePillar?allTests.filter((t:any)=>testPillar(t)===activePillar):allTests;
   const tests=useMemo(()=>{
     const q=query.trim().toLowerCase();
     if(!q)return baseTests;
@@ -52,21 +63,21 @@ function PracticeContent(){
   const safePage=Math.min(page,totalPages);
   const visibleTests=tests.slice((safePage-1)*pageSize,safePage*pageSize);
   const questionCount=baseTests.reduce((sum:number,t:any)=>sum+questionsForTest(t.test_id).length,0);
-  const choosePillar=(id:string)=>{setQuery("");setPage(1);window.localStorage.setItem(`aptitude-practice-page:${id||"all"}`,"1");router.push(id?`/practice?pillar=${id}`:"/practice")};
+  const choosePillar=(id:string)=>{setQuery("");setPage(1);setRestoredPillar(id);window.localStorage.setItem("aptitude-practice-last-pillar",id);window.localStorage.setItem(`aptitude-practice-page:${id||"all"}`,"1");router.push(id?`/practice?pillar=${id}`:"/practice")};
   const latest=(id:string)=>attempts.filter(a=>a.testId===id).sort((a,b)=>new Date(b.updatedAt).getTime()-new Date(a.updatedAt).getTime())[0];
 
   return <div className="app-page practice-library-page">
     <header className="practice-library-header">
       <div><p className="eyebrow">Practice</p><h1>{selected?.name||"Practice library"}</h1><p className="practice-library-description">{selected?.description||"Explore every reasoning category and choose a focused practice session."}</p></div>
-      <div className="library-count"><strong>{pillar?baseTests.length:allTests.length}</strong><span>Total tests</span></div>
+      <div className="library-count"><strong>{activePillar?baseTests.length:allTests.length}</strong><span>Total tests</span></div>
     </header>
 
     <div className="library-summary"><span>{questionCount.toLocaleString()} questions indexed</span>{query&&<span>Showing results for “{query}”</span>}</div>
 
     <div className="category-nav practice-category-nav">
       <div className="category-buttons">
-        <button type="button" className={!pillar?"active":""} onClick={()=>choosePillar("")}>All</button>
-        {appCatalog.pillars.map((p:any)=><button key={p.id} type="button" className={pillar===p.id?"active":""} onClick={()=>choosePillar(p.id)}>{p.name}</button>)}
+        <button type="button" className={!activePillar?"active":""} onClick={()=>choosePillar("")}>All</button>
+        {appCatalog.pillars.map((p:any)=><button key={p.id} type="button" className={activePillar===p.id?"active":""} onClick={()=>choosePillar(p.id)}>{p.name}</button>)}
       </div>
       <label className="search-wrap"><span aria-hidden="true">⌕</span><input value={query} onChange={e=>{setQuery(e.target.value);setPage(1);}} placeholder="Search practice sets..." aria-label="Search practice sets" />{query&&<button type="button" className="search-clear" onClick={()=>setQuery("")} aria-label="Clear search">×</button>}</label>
     </div>
@@ -97,7 +108,7 @@ function PracticeContent(){
         <h2 id="launch-title">{launchTest.title.replaceAll("_"," ")}</h2>
         <div className="launch-meta"><span>{questionsForTest(launchTest.test_id).length} questions</span><span>{questionsForTest(launchTest.test_id).length} minutes</span><span>Timed</span></div>
         <p className="launch-copy">Ready to begin? Your answers and progress will be saved as you work through the test.</p>
-        <div className="launch-actions"><button type="button" className="outline-action" onClick={()=>setLaunchTest(null)}>Not yet</button><button type="button" className="yellow-button" onClick={()=>{window.localStorage.setItem(pageStorageKey,String(safePage));router.push(`/tests/${launchTest.test_id}`)}}>Start test →</button></div>
+        <div className="launch-actions"><button type="button" className="outline-action" onClick={()=>setLaunchTest(null)}>Not yet</button><button type="button" className="yellow-button" onClick={()=>{window.localStorage.setItem("aptitude-practice-last-pillar",activePillar);window.localStorage.setItem(pageStorageKey,String(safePage));window.localStorage.setItem("aptitude-practice-return-page",String(safePage));router.push(`/tests/${launchTest.test_id}`)}}>Start test →</button></div>
       </div>
     </div>}
 

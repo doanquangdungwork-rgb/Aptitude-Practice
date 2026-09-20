@@ -72,14 +72,22 @@ function PracticeContent(){
       <div className="library-count"><strong>{activePillar?baseTests.length:allTests.length}</strong><span>Total tests</span></div>
     </header>
 
-    <div className="library-summary"><span>{questionCount.toLocaleString()} questions indexed</span>{query&&<span>Showing results for “{query}”</span>}</div>
-
-    <div className="category-nav practice-category-nav">
+    <div className="library-filter-bar practice-library-filter-bar">
+      <div className="library-filter-top">
+        <div className="library-index-count">
+          <span>{questionCount.toLocaleString()} questions indexed</span>
+          {query&&<span className="library-search-status">Showing results for “{query}”</span>}
+        </div>
+        <label className="search-wrap">
+          <span aria-hidden="true">⌕</span>
+          <input value={query} onChange={e=>{setQuery(e.target.value);setPage(1);}} placeholder="Search practice sets..." aria-label="Search practice sets" />
+          {query&&<button type="button" className="search-clear" onClick={()=>setQuery("")} aria-label="Clear search">×</button>}
+        </label>
+      </div>
       <div className="category-buttons">
         <button type="button" className={!activePillar?"active":""} onClick={()=>choosePillar("")}>All</button>
         {appCatalog.pillars.map((p:any)=><button key={p.id} type="button" className={activePillar===p.id?"active":""} onClick={()=>choosePillar(p.id)}>{p.name}</button>)}
       </div>
-      <label className="search-wrap"><span aria-hidden="true">⌕</span><input value={query} onChange={e=>{setQuery(e.target.value);setPage(1);}} placeholder="Search practice sets..." aria-label="Search practice sets" />{query&&<button type="button" className="search-clear" onClick={()=>setQuery("")} aria-label="Clear search">×</button>}</label>
     </div>
 
     {visibleTests.length?<div className="test-library-grid">

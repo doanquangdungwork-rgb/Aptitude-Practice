@@ -23,15 +23,16 @@ function PracticeContent(){
   const pageStorageKey=`aptitude-practice-page:${pillar||"all"}`;
 
   useEffect(()=>{
+    const urlPage=Number(searchParams.get("page"));
     const saved=Number(window.localStorage.getItem(pageStorageKey));
-    setPage(Number.isFinite(saved) && saved>0 ? saved : 1);
+    const restored=Number.isFinite(urlPage) && urlPage>0 ? urlPage : Number.isFinite(saved) && saved>0 ? saved : 1;
+    setPage(restored);
     setAttempts(getAttempts());
     setStars(getStarredTests());
-  },[pageStorageKey]);
+  },[pageStorageKey,searchParams]);
   useEffect(()=>{
     if (page > 0) window.localStorage.setItem(pageStorageKey,String(page));
   },[pageStorageKey,page]);
-  useEffect(()=>setPage(1),[query]);
   useEffect(()=>{
     const close=(e:KeyboardEvent)=>e.key==="Escape"&&setLaunchTest(null);
     window.addEventListener("keydown",close);
@@ -51,7 +52,7 @@ function PracticeContent(){
   const safePage=Math.min(page,totalPages);
   const visibleTests=tests.slice((safePage-1)*pageSize,safePage*pageSize);
   const questionCount=baseTests.reduce((sum:number,t:any)=>sum+questionsForTest(t.test_id).length,0);
-  const choosePillar=(id:string)=>{setQuery("");router.push(id?`/practice?pillar=${id}`:"/practice")};
+  const choosePillar=(id:string)=>{setQuery("");setPage(1);window.localStorage.setItem(`aptitude-practice-page:${id||"all"}`,"1");router.push(id?`/practice?pillar=${id}`:"/practice")};
   const latest=(id:string)=>attempts.filter(a=>a.testId===id).sort((a,b)=>new Date(b.updatedAt).getTime()-new Date(a.updatedAt).getTime())[0];
 
   return <div className="app-page practice-library-page">
@@ -67,7 +68,7 @@ function PracticeContent(){
         <button type="button" className={!pillar?"active":""} onClick={()=>choosePillar("")}>All</button>
         {appCatalog.pillars.map((p:any)=><button key={p.id} type="button" className={pillar===p.id?"active":""} onClick={()=>choosePillar(p.id)}>{p.name}</button>)}
       </div>
-      <label className="search-wrap"><span aria-hidden="true">⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search practice sets..." aria-label="Search practice sets" />{query&&<button type="button" className="search-clear" onClick={()=>setQuery("")} aria-label="Clear search">×</button>}</label>
+      <label className="search-wrap"><span aria-hidden="true">⌕</span><input value={query} onChange={e=>{setQuery(e.target.value);setPage(1);}} placeholder="Search practice sets..." aria-label="Search practice sets" />{query&&<button type="button" className="search-clear" onClick={()=>setQuery("")} aria-label="Clear search">×</button>}</label>
     </div>
 
     {visibleTests.length?<div className="test-library-grid">

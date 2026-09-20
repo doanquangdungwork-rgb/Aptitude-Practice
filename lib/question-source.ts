@@ -123,8 +123,9 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const sourceLetterCount = sourceLetter ? sourceLetter.charCodeAt(0) - 64 : 0;
  const baseCount = forcedCount ?? override?.optionCount ?? generatedOptionCount(q);
  const count = Math.max(baseCount, baseResponse.type === "single_choice" ? sourceLetterCount : 0);
- const overrideMultipleCount = Array.isArray(override?.answer) ? override.answer.length : undefined;
- const overrideComposite = override?.responseType === "composite" && Array.isArray(override.answer) && override.answer.length === 2;
+ const overrideAnswers = Array.isArray(override?.answer) ? override.answer : [];
+ const overrideMultipleCount = overrideAnswers.length || undefined;
+ const overrideComposite = override?.responseType === "composite" && overrideAnswers.length === 2;
  const response: CanonicalQuestion["response"] = overrideComposite
    ? {type:"composite",parts:[{id:"most",type:"single_choice"},{id:"least",type:"single_choice"}]}
    : isFigurePairTest(testId)
@@ -140,7 +141,7 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const optionIds = override?.optionIds?.length ? override.optionIds : generatedOptionIds(count);
  const options=optionTexts.length ? optionTexts.map((value,index)=>({id:optionIds[index] ?? String.fromCharCode(65+index),content:legacyBlock(value)})) : optionIds.map(id=>({id,content:legacyBlock(id)}));
  let answer: CanonicalQuestion["answer"];
- if (overrideComposite) answer = {type:"composite",parts:{most:String(override!.answer[0]),least:String(override!.answer[1])}};
+ if (overrideComposite) answer = {type:"composite",parts:{most:String(overrideAnswers[0]),least:String(overrideAnswers[1])}};
  else if (override) answer = Array.isArray(override.answer) ? {type:"multiple",values:override.answer} : {type:"single",value:override.answer};
  else if (isFigurePairTest(testId)) {
    const match = rawAnswer.match(/Figures?\s+(\d+)\s+and\s+(\d+)/i);

@@ -14,7 +14,12 @@ let cache: Record<string, AnswerOverride> | null = null;
 
 export function answerOverrideFor(id: string): AnswerOverride | null {
   if (cache) return cache[id] ?? null;
-  const json = gunzipSync(Buffer.from(DATA, "base64")).toString("utf8");
-  cache = JSON.parse(json) as Record<string, AnswerOverride>;
+  try {
+    const json = gunzipSync(Buffer.from(DATA, "base64")).toString("utf8");
+    cache = JSON.parse(json) as Record<string, AnswerOverride>;
+  } catch (error) {
+    console.warn("answer-overrides: invalid embedded map; falling back to source answers", error);
+    cache = {};
+  }
   return cache[id] ?? null;
 }

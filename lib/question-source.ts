@@ -95,10 +95,10 @@ function isTgbNumericalTest(testId:string){ return ["TEST_023","TEST_024","TEST_
 function normalizeOptionKey(value: unknown, options: { id: string; content: ContentBlock }[]): string {
  const raw = String(value ?? "").trim();
  if (!raw) return raw;
- const normalized = raw.toLowerCase().replace(/\\s+/g, " ");
+ const normalized = raw.toLowerCase().replace(/\s+/g, " ");
  const direct = options.find(option => option.id.toLowerCase() === normalized);
  if (direct) return direct.id;
- const numeric = /^\\d+$/.test(raw) ? Number(raw) : NaN;
+ const numeric = /^\d+$/.test(raw) ? Number(raw) : NaN;
  if (Number.isInteger(numeric) && numeric >= 1 && numeric <= options.length) return options[numeric - 1]?.id ?? raw;
  const letter = /^([a-z])(?:[.)])?$/i.exec(raw)?.[1]?.toUpperCase();
  if (letter) {
@@ -107,7 +107,7 @@ function normalizeOptionKey(value: unknown, options: { id: string; content: Cont
  }
  const byText = options.find(option => {
    if (option.content.type !== "text") return false;
-   return option.content.value.trim().toLowerCase().replace(/\\s+/g, " ") === normalized;
+   return option.content.value.trim().toLowerCase().replace(/\s+/g, " ") === normalized;
  });
  return byText?.id ?? raw;
 }
@@ -126,7 +126,7 @@ function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"],
  }
  const text=String(q.t ?? "");
  if(isTrueFalseCannotSay(text)){
-   const answerMatch=String(q.explanation ?? "").match(/correct answer is\\s+(true|false|cannot say)/i);
+   const answerMatch=String(q.explanation ?? "").match(/correct answer is\s+(true|false|cannot say)/i);
    return {type:"single",value:normalizeOptionKey((answerMatch?.[1] ?? rawAnswer).trim(),options)};
  }
  return {type:"single",value:normalizeOptionKey(rawAnswer,options)};

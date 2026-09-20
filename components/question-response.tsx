@@ -5,8 +5,12 @@ import {QuestionPrompt} from "./question-content";
 export default function QuestionResponse({response,options,answer,value,onChange,screenshotMode=false}:{response:CanonicalResponse;options:CanonicalOption[];answer?:CanonicalAnswer;value:unknown;onChange:(value:unknown)=>void;screenshotMode?:boolean}){
  const selected=Array.isArray(value)?value.map(String):[];
  const optionLabel=(i:number)=>String.fromCharCode(65+i);
- const isFigureOption=(o:CanonicalOption)=>o.content.type==="text" && /^Figure \d+$/i.test(o.content.value.trim());
- const optionDisplay=(o:CanonicalOption,i:number)=>isFigureOption(o)?o.content.value:o.id;
+ const isFigureOption=(o:CanonicalOption)=>{
+  if(o.content.type!=="text") return false;
+  const text=(o.content as {type:"text";value:string}).value;
+  return /^Figure \d+$/i.test(text.trim());
+ };
+ const optionDisplay=(o:CanonicalOption,i:number)=>isFigureOption(o)?((o.content as {type:"text";value:string}).value):o.id;
  const labelContent=(o:CanonicalOption,i:number)=>screenshotMode?<span>{optionLabel(i)}</span>:<QuestionPrompt blocks={[o.content]}/>;
 
  if(response.type==="ranking"){

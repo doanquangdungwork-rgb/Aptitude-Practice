@@ -127,26 +127,26 @@ export default function Home(){
         }
         .home-page .section-head{margin-top:10px;margin-bottom:7px}
         .home-page .practice-card{
-          min-height:148px;
-          height:148px;
+          min-height:160px;
+          height:160px;
           padding:13px 16px 11px;
         }
         .home-page .practice-card h3{
           margin-top:10px;
-          font-size:19px;
+          font-size:22px;
         }
         .home-page .practice-card p{
           display:block;
           margin-top:4px;
-          font-size:12px;
+          font-size:13.5px;
           line-height:1.4;
         }
-        .home-page .practice-meta{bottom:9px;font-size:10px}
+        .home-page .practice-meta{bottom:10px;font-size:11px}
         .home-page .practice-arrow{bottom:8px}
       }
       @media(min-width:901px) and (max-height:850px){
         .home-page .editorial-hero{min-height:225px;padding-top:18px;padding-bottom:10px}
-        .home-page .practice-card{min-height:140px;height:140px}
+        .home-page .practice-card{min-height:152px;height:152px}
         .home-page .practice-card p{display:block}
       }
     `}</style>

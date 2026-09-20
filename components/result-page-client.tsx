@@ -125,14 +125,31 @@ export default function ResultPageClient({ testId, test, qs, pillarMap }: { test
 
               {!itemSnapshotSrc && <div className="mt-4 text-lg font-medium leading-8"><QuestionPrompt blocks={q.prompt.blocks} hideImages={Boolean(itemReferenceMaterials.length || itemHasPassage)} /></div>}
 
-              {q.options.length > 0 && <div className="mt-5 grid gap-2">{q.options.map((o, j) => {
-                const selectedHere = Array.isArray(selected) ? selected.includes(o.id) : String(selected ?? "") === o.id;
-                const correctHere = q.answer.type === "single" ? normalizeChoice(o.id) === normalizeChoice(q.answer.value) : q.answer.type === "multiple" && q.answer.values.some(v => normalizeChoice(v) === normalizeChoice(o.id));
-                return <div key={o.id} className={`review-option ${correctHere ? "correct-answer" : selectedHere ? "selected-wrong" : ""}`}><span className="mr-2 font-bold">{String.fromCharCode(65 + j)}.</span><QuestionPrompt blocks={[o.content]}/>{correctHere && <span className="ml-2 text-xs">✓ Correct answer</span>}{selectedHere && !correctHere && <span className="ml-2 text-xs">Your answer</span>}</div>;
-              })}</div>}
+              {q.options.length > 0 && q.response.type === "composite" ? (
+                <div className="mt-5 grid gap-5">
+                  {["most", "least"].map((part) => {
+                    const selectedPart = selected && typeof selected === "object" && !Array.isArray(selected) ? String((selected as Record<string, unknown>)[part] ?? "") : "";
+                    const correctPart = q.answer.type === "composite" ? String(q.answer.parts[part] ?? "") : "";
+                    return <div key={part}>
+                      <div className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-[#77736b]">{part} likely to make</div>
+                      <div className="grid gap-2">{q.options.map((o, j) => {
+                        const selectedHere = selectedPart === o.id;
+                        const correctHere = correctPart === o.id;
+                        return <div key={o.id} className={`review-option ${correctHere ? "correct-answer" : selectedHere ? "selected-wrong" : ""}`}><span className="mr-2 font-bold">{String.fromCharCode(65 + j)}.</span><QuestionPrompt blocks={[o.content]}/>{correctHere && <span className="ml-2 text-xs">✓ Correct answer</span>}{selectedHere && !correctHere && <span className="ml-2 text-xs">Your answer</span>}</div>;
+                      })}</div>
+                    </div>;
+                  })}
+                </div>
+              ) : q.options.length > 0 ? (
+                <div className="mt-5 grid gap-2">{q.options.map((o, j) => {
+                  const selectedHere = Array.isArray(selected) ? selected.includes(o.id) : String(selected ?? "") === o.id;
+                  const correctHere = q.answer.type === "single" ? normalizeChoice(o.id) === normalizeChoice(q.answer.value) : q.answer.type === "multiple" && q.answer.values.some(v => normalizeChoice(v) === normalizeChoice(o.id));
+                  return <div key={o.id} className={`review-option ${correctHere ? "correct-answer" : selectedHere ? "selected-wrong" : ""}`}><span className="mr-2 font-bold">{String.fromCharCode(65 + j)}.</span><QuestionPrompt blocks={[o.content]}/>{correctHere && <span className="ml-2 text-xs">✓ Correct answer</span>}{selectedHere && !correctHere && <span className="ml-2 text-xs">Your answer</span>}</div>;
+                })}</div>
+              ) : null}
 
-              {skipped && <div className="mt-5 rounded-xl border border-[#e7e5de] bg-[#fbfaf6] p-4 text-sm"><b>Correct answer:</b> {answerLabel(correctValue)}</div>}
-              {!skipped && !isCorrect && <div className="mt-5 rounded-xl bg-[#fff8d8] p-4 text-sm"><b>Your answer:</b> {answerLabel(selected)}<br /><b>Correct answer:</b> {answerLabel(correctValue)}</div>}
+              {skipped && <div className="mt-5 rounded-xl border border-[#e7e5de] bg-[#fbfaf6] p-4 text-sm"><b>Correct answer:</b> {answerLabel(correctValue) || "Key not mapped"}</div>}
+              {!skipped && !isCorrect && <div className="mt-5 rounded-xl bg-[#fff8d8] p-4 text-sm"><b>Your answer:</b> {answerLabel(selected)}<br /><b>Correct answer:</b> {answerLabel(correctValue) || "Key not mapped"}</div>}
               {q.explanation && <div className="mt-5 border-t border-current/10 pt-4 text-sm leading-6 text-[#6f6b64]"><b>Explanation</b><div className="mt-1">{q.explanation.blocks.map((b, j) => b.type === "text" ? <span key={j} className="whitespace-pre-wrap">{b.value}</span> : null)}</div></div>}
               {!skipped && !isCorrect && <button onClick={(e) => { e.stopPropagation(); markWrong(q.id); }} className="mt-4 outline-action">Add/remove from wrong questions</button>}
             </article>;

@@ -39,7 +39,7 @@ export default function Bookmarks() {
           </p>
         </div>
 
-        <Link href="/tests" className="bookmarks-browse">
+        <Link href="/practice" className="bookmarks-browse">
           Browse practice →
         </Link>
       </header>
@@ -86,7 +86,7 @@ export default function Bookmarks() {
                 Start one from the practice library and it will appear here so
                 you can continue later.
               </p>
-              <Link href="/tests" className="yellow-button">
+              <Link href="/practice" className="yellow-button">
                 Browse tests
               </Link>
             </div>
@@ -471,6 +471,118 @@ export default function Bookmarks() {
           color: #66635d;
           font-size: 11px;
           line-height: 1.45;
+        }
+
+
+        @media (min-width: 901px) {
+          .bookmarks-page {
+            padding-top: 18px;
+            padding-bottom: 18px;
+          }
+
+          .bookmarks-hero {
+            padding: 14px 0 16px;
+          }
+
+          .bookmarks-hero h1 {
+            margin-top: 5px;
+          }
+
+          .bookmarks-lede {
+            margin-top: 7px;
+            font-size: 11px;
+          }
+
+          .bookmark-section {
+            padding: 17px 0 18px;
+          }
+
+          .bookmark-section-head h2 {
+            margin-top: 5px;
+            font-size: 25px;
+          }
+
+          .bookmark-section-head > div:first-child > p:last-child {
+            margin-top: 6px;
+            font-size: 10px;
+          }
+
+          .bookmark-empty {
+            margin-top: 16px;
+            min-height: 108px;
+            padding: 16px 20px;
+            gap: 20px;
+          }
+
+          .bookmark-icon {
+            width: 48px;
+            height: 48px;
+            flex-basis: 48px;
+            font-size: 25px;
+          }
+
+          .bookmark-icon-star {
+            font-size: 29px;
+          }
+
+          .bookmark-empty-copy strong {
+            font-size: 14px;
+          }
+
+          .bookmark-empty-copy p {
+            margin-top: 4px;
+            font-size: 10px;
+          }
+
+          .bookmark-empty-copy .yellow-button {
+            margin-top: 10px;
+          }
+
+          .bookmark-list {
+            margin-top: 16px;
+          }
+
+          .bookmark-test-row {
+            padding: 11px 4px;
+          }
+
+          .starred-grid {
+            margin-top: 16px;
+          }
+
+          .starred-card {
+            min-height: 130px;
+          }
+
+          .starred-card > a {
+            padding: 15px;
+          }
+
+          .starred-card h3 {
+            margin-top: 12px;
+            font-size: 17px;
+          }
+
+          .starred-card p {
+            margin-top: 5px;
+            font-size: 10px;
+          }
+
+          .bookmark-tip {
+            margin-top: 14px;
+            padding: 10px 14px;
+          }
+
+          .bookmark-tip .bookmark-icon {
+            width: 38px;
+            height: 38px;
+            flex-basis: 38px;
+            font-size: 21px;
+          }
+
+          .bookmark-tip p {
+            font-size: 10px;
+          }
         }
 
         @media (max-width: 900px) {

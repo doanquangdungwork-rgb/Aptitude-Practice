@@ -12,6 +12,36 @@ import QuestionNavigator from "../../../components/question-navigator";
 import ReferenceViewer from "../../../components/reference-viewer";
 import QuestionSnapshot from "../../../components/question-snapshot";
 
+type ReferenceMaterial = { id: string; assetRef: string; label: string };
+const CAPP_UNIQUE_CHARTS: ReferenceMaterial[] = [
+  { id: "CAPP_CHART_1", assetRef: "ASSET_0001", label: "Annual salary" },
+  { id: "CAPP_CHART_2", assetRef: "ASSET_0004", label: "Average property prices" },
+  { id: "CAPP_CHART_3", assetRef: "ASSET_0007", label: "Coffee prices" },
+  { id: "CAPP_CHART_4", assetRef: "ASSET_0010", label: "South American economies" },
+];
+function cappChartForQuestion(questionNumber: number): ReferenceMaterial { if (questionNumber <= 3) return CAPP_UNIQUE_CHARTS[0]; if (questionNumber <= 6) return CAPP_UNIQUE_CHARTS[1]; if (questionNumber <= 9) return CAPP_UNIQUE_CHARTS[2]; return CAPP_UNIQUE_CHARTS[3]; }
+const DEDUCTIVE_REFERENCES: Record<string, ReferenceMaterial[]> = {
+  TEST_030: [{ id: "DED1_BROADBAND", assetRef: "TEST_030_BROADBAND.svg", label: "Broadband plans" }, { id: "DED1_CONTRACTS", assetRef: "TEST_030_CONTRACTS.svg", label: "Salaries & contracts" }],
+  TEST_031: [{ id: "DED2_CANALS", assetRef: "TEST_031_CANALS_v2.svg", label: "Canals and Rivertrips" }, { id: "DED2_JULIA", assetRef: "TEST_031_JULIA_v2.svg", label: "Julia’s Requirements" }],
+  TEST_032: [{ id: "DED3_FLIGHTS", assetRef: "TEST_032_FLIGHTS_v2.svg", label: "Flights" }, { id: "DED3_TAX", assetRef: "TEST_032_TAX_v2.svg", label: "Council Tax Bands" }],
+  TEST_033: [{ id: "DED4_LIBRARY", assetRef: "TEST_033_LIBRARY_v2.svg", label: "Alphabetic Library" }, { id: "DED4_FURNITURE", assetRef: "TEST_033_SHOPS_v2.svg", label: "Shops" }],
+};
+function referenceMaterialsForQuestion(testId: string, questionNumber: number): ReferenceMaterial[] {
+  if (testId === "TEST_001" && questionNumber >= 1 && questionNumber <= 12) return [cappChartForQuestion(questionNumber)];
+  if (testId === "TEST_002" && questionNumber <= 16) return [{ id: "DATA_P2", assetRef: "TEST_002_DATA_P2", label: "Data Set 1" }];
+  if (testId === "TEST_002" && questionNumber <= 32) return [{ id: "DATA_P3", assetRef: "TEST_002_DATA_P3", label: "Data Set 2" }];
+  if (testId === "TEST_002") return [{ id: "DATA_P4", assetRef: "TEST_002_DATA_P4", label: "Data Set 3" }];
+  if (testId === "TEST_030" && (questionNumber === 5 || questionNumber === 6)) return [DEDUCTIVE_REFERENCES.TEST_030[0]];
+  if (testId === "TEST_030" && (questionNumber === 17 || questionNumber === 18)) return [DEDUCTIVE_REFERENCES.TEST_030[1]];
+  if (testId === "TEST_031" && (questionNumber === 5 || questionNumber === 6)) return [DEDUCTIVE_REFERENCES.TEST_031[0]];
+  if (testId === "TEST_031" && (questionNumber === 17 || questionNumber === 18)) return [DEDUCTIVE_REFERENCES.TEST_031[1]];
+  if (testId === "TEST_032" && (questionNumber === 5 || questionNumber === 6)) return [DEDUCTIVE_REFERENCES.TEST_032[0]];
+  if (testId === "TEST_032" && (questionNumber === 17 || questionNumber === 18)) return [DEDUCTIVE_REFERENCES.TEST_032[1]];
+  if (testId === "TEST_033" && (questionNumber === 5 || questionNumber === 6)) return [DEDUCTIVE_REFERENCES.TEST_033[0]];
+  if (testId === "TEST_033" && (questionNumber === 17 || questionNumber === 18)) return [DEDUCTIVE_REFERENCES.TEST_033[1]];
+  return [];
+}
+
 export default function TestPageClient({ testId, test, qs, pillarMap }: { testId: string; test: any; qs: any[]; pillarMap: Record<string, string> }) {
   const router = useRouter();
   const actualQuestionCount = qs.length;

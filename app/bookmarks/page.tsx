@@ -303,6 +303,9 @@ export default function Bookmarks() {
         }
 
         .bookmark-empty-copy .yellow-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
           margin-top: 17px;
           text-decoration: none;
         }

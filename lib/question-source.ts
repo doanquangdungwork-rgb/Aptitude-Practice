@@ -118,7 +118,11 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const rawOptions=Array.isArray(q.o)?q.o:[];
  const baseResponse=inferResponse(q);
  const forcedCount = isFigurePairTest(testId) ? 4 : isDiagrammaticSetTest(testId) ? 3 : isTgbNumericalTest(testId) ? 10 : undefined;
- const count=forcedCount ?? override?.optionCount ?? generatedOptionCount(q);
+ const rawAnswer = String(q.a ?? "").trim();
+ const sourceLetter = /^[A-J]$/i.test(rawAnswer) ? rawAnswer.toUpperCase() : "";
+ const sourceLetterCount = sourceLetter ? sourceLetter.charCodeAt(0) - 64 : 0;
+ const baseCount = forcedCount ?? override?.optionCount ?? generatedOptionCount(q);
+ const count = Math.max(baseCount, baseResponse.type === "single_choice" ? sourceLetterCount : 0);
  const overrideMultipleCount = Array.isArray(override?.answer) ? override.answer.length : undefined;
  const response: CanonicalQuestion["response"] = isFigurePairTest(testId)
    ? {type:"multiple_choice",minSelections:2,maxSelections:2}
@@ -130,8 +134,8 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
          ? {type:"single_choice"}
          : override?.optionCount && override.optionCount > 0 ? {type:"single_choice"} : baseResponse;
  const optionTexts=(isFigurePairTest(testId) || override?.figureChoice) ? Array.from({length: count || 4}, (_,i)=>`Figure ${i+1}`) : isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
- const options=optionTexts.length ? optionTexts.map((value,index)=>({id:String.fromCharCode(65+index),content:legacyBlock(value)})) : generatedOptionIds(count).map(id=>({id,content:legacyBlock(id)}));
- const rawAnswer = String(q.a ?? "").trim();
+ const optionIds = override?.optionIds?.length ? override.optionIds : generatedOptionIds(count);
+ const options=optionTexts.length ? optionTexts.map((value,index)=>({id:optionIds[index] ?? String.fromCharCode(65+index),content:legacyBlock(value)})) : optionIds.map(id=>({id,content:legacyBlock(id)}));
  let answer: CanonicalQuestion["answer"];
  if (override) answer = Array.isArray(override.answer) ? {type:"multiple",values:override.answer} : {type:"single",value:override.answer};
  else if (isFigurePairTest(testId)) {

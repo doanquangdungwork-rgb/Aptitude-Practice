@@ -142,7 +142,7 @@ export default function Bookmarks() {
             <div className="bookmark-empty-copy">
               <strong>Nothing starred yet.</strong>
               <p>Tap ☆ on any test in the practice library to keep it here.</p>
-              <Link href="/tests" className="yellow-button">
+              <Link href="/practice" className="yellow-button">
                 Browse tests
               </Link>
             </div>

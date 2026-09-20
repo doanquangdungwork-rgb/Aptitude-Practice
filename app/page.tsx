@@ -118,7 +118,6 @@ export default function Home(){
         .home-page .home-search-wrap{width:100%;flex-basis:auto}
         .home-page .practice-card{min-height:150px;height:150px}
       }
-    `}
       @media(min-width:901px){
         /* Keep the original typography scale; only reclaim unused vertical space. */
         .home-page .editorial-hero{

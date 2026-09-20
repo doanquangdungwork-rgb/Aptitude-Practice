@@ -90,7 +90,7 @@ export default function ResultPageClient({ testId, test, qs, pillarMap }: { test
       : selectedImageBlocks.length
         ? <div className="visual-choice-material"><span className="eyebrow">Question figure</span><QuestionPrompt blocks={selectedImageBlocks as any} /></div>
         : <div className="quiz-reference-empty"><span className="eyebrow">Question material</span><p>No reference material is attached to this question.</p></div>;
-  const practiceHref = test.pillar ? "/practice?pillar=" + encodeURIComponent(test.pillar) : "/practice";
+  const practiceHref = "/practice";
 
   return <div className="app-page quiz-page review-page">
     <div className="quiz-top review-top"><div><div className="text-sm font-bold">Test review <span className="font-normal text-[#aaa7a0]">· {correct}/{qs.length}</span></div><div className="mt-1 text-xs text-[#aaa7a0]">{pillarMap[test.pillar]} · {test.title.replaceAll("_", " ")}</div></div><div className="flex flex-wrap gap-2"><ShareCard kind="result" result={{ title: test.title.replaceAll("_", " "), correct, total: qs.length, accuracy, duration: formatTime(attempt.durationSeconds || 0) }} /><Link href={practiceHref} className="outline-action">Back to practice</Link></div></div>

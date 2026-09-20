@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { questionSnapshotSrc } from "../lib/question-snapshot";
 import { answersMatch } from "../lib/canonical-engine";
-import { completeAttempt, getAttempt, getBookmarks, getCompletedAttempt, getWrongQuestions, recordPracticeDay, saveAttempt, setWrongQuestions, toggleBookmark } from "../lib/progress";
+import { completeAttempt, getAttempt, getBookmarks, getWrongQuestions, recordPracticeDay, saveAttempt, setWrongQuestions, toggleBookmark } from "../lib/progress";
 import { supabase } from "../lib/supabase";
 import { QuestionPrompt } from "./question-content";
 import QuestionResponse from "./question-response";
@@ -51,16 +51,12 @@ export default function TestPageClient({ testId, test, qs, pillarMap }: { testId
   const [attemptId, setAttemptId] = useState("");
   const [startedAt, setStartedAt] = useState("");
   const [bookmarked, setBookmarked] = useState(false);
-  const [completed, setCompleted] = useState(false);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   useEffect(() => {
     const saved = getAttempt(testId);
-    const done = getCompletedAttempt(testId);
     if (saved) {
       setStarted(true); setAnswers(saved.answers); setAttemptId(saved.id); setStartedAt(saved.startedAt);
-    } else if (done) {
-      setCompleted(true);
     } else if (actualQuestionCount > 0) {
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
@@ -132,7 +128,6 @@ export default function TestPageClient({ testId, test, qs, pillarMap }: { testId
   };
 
   if (!test) return <div className="app-page"><div className="pastel-peach rounded-[16px] p-8"><h1 className="section-title">Test not found</h1><button onClick={() => router.push("/tests")} className="yellow-button mt-6">Back to tests</button></div></div>;
-  if (completed && !started) return <div className="app-page"><div className="quiz-card"><p className="eyebrow">Completed test</p><h1 className="section-title mt-3">{test.title.replaceAll("_", " ")}</h1><p className="mt-3 text-sm text-[#99968f]">You have already completed this test. Your result is saved.</p><div className="mt-7 flex flex-wrap gap-3"><button onClick={() => router.push(`/tests/${testId}/result`)} className="yellow-button">Review result →</button><button onClick={() => { const id = crypto.randomUUID(); const now = new Date().toISOString(); setCompleted(false); setStarted(true); setIdx(0); setAnswers({}); setAttemptId(id); setStartedAt(now); saveAttempt({ id, testId, startedAt: now, updatedAt: now, answers: {} }); }} className="outline-action">Retake test</button></div></div></div>;
   if (!started) return <div className="app-page"><div className="quiz-card"><p className="eyebrow">Loading test</p><h1 className="section-title mt-3">{test.title.replaceAll("_", " ")}</h1></div></div>;
   if (!q) return null;
 

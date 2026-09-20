@@ -165,7 +165,7 @@ function PracticeContent(){
         .practice-library-page .test-card-status{margin-top:4px;font-size:9px}
         .practice-library-page .test-start{padding:8px 10px;font-size:10px}
       }
-    </style>
+    `}</style>
   </div>
 }
 

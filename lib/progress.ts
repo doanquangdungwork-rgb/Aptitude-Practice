@@ -14,7 +14,10 @@ function read<T>(name: string, fallback: T): T {
   try { return JSON.parse(localStorage.getItem(key(name)) || "null") ?? fallback; } catch { return fallback; }
 }
 function write(name: string, value: unknown) {
-  if (typeof window !== "undefined") localStorage.setItem(key(name), JSON.stringify(value));
+  if (typeof window !== "undefined") {
+    localStorage.setItem(key(name), JSON.stringify(value));
+    window.dispatchEvent(new CustomEvent("aptitude:progress-updated", { detail: { name } }));
+  }
 }
 
 export function getAttempts(): Attempt[] { return read<Attempt[]>("attempts", []); }

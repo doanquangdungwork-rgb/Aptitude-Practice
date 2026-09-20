@@ -124,7 +124,10 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const baseCount = forcedCount ?? override?.optionCount ?? generatedOptionCount(q);
  const count = Math.max(baseCount, baseResponse.type === "single_choice" ? sourceLetterCount : 0);
  const overrideMultipleCount = Array.isArray(override?.answer) ? override.answer.length : undefined;
- const response: CanonicalQuestion["response"] = isFigurePairTest(testId)
+ const overrideComposite = override?.responseType === "composite" && Array.isArray(override.answer) && override.answer.length === 2;
+ const response: CanonicalQuestion["response"] = overrideComposite
+   ? {type:"composite",parts:[{id:"most",type:"single_choice"},{id:"least",type:"single_choice"}]}
+   : isFigurePairTest(testId)
    ? {type:"multiple_choice",minSelections:2,maxSelections:2}
    : override?.responseType === "multiple_choice" || override?.figureChoice
      ? {type:"multiple_choice",minSelections:overrideMultipleCount,maxSelections:overrideMultipleCount}
@@ -137,7 +140,8 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const optionIds = override?.optionIds?.length ? override.optionIds : generatedOptionIds(count);
  const options=optionTexts.length ? optionTexts.map((value,index)=>({id:optionIds[index] ?? String.fromCharCode(65+index),content:legacyBlock(value)})) : optionIds.map(id=>({id,content:legacyBlock(id)}));
  let answer: CanonicalQuestion["answer"];
- if (override) answer = Array.isArray(override.answer) ? {type:"multiple",values:override.answer} : {type:"single",value:override.answer};
+ if (overrideComposite) answer = {type:"composite",parts:{most:String(override!.answer[0]),least:String(override!.answer[1])}};
+ else if (override) answer = Array.isArray(override.answer) ? {type:"multiple",values:override.answer} : {type:"single",value:override.answer};
  else if (isFigurePairTest(testId)) {
    const match = rawAnswer.match(/Figures?\s+(\d+)\s+and\s+(\d+)/i);
    const values = match ? [Number(match[1]), Number(match[2])].map(n => String.fromCharCode(64 + n)) : [];

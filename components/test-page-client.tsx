@@ -107,7 +107,7 @@ export default function TestPageClient({ testId, test, qs, pillarMap }: { testId
     const session = await supabase?.auth.getSession();
     const uid = session?.data.session?.user?.id;
     if (uid) recordPracticeDay(uid, new Date());
-    router.push(`/tests/${testId}/result`);
+    router.replace(`/tests/${testId}/result`);
   };
 
   useEffect(() => {

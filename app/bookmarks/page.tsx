@@ -284,14 +284,6 @@ export default function Bookmarks() {
           border-bottom: 1px solid var(--line);
         }
 
-        /* The starred carousel is intentionally full-bleed: the card track should use the
-           whole viewport rather than the narrower reading column used by the hero. */
-        .bookmark-section-starred {
-          width: 100vw;
-          margin-left: calc(50% - 50vw);
-          padding-left: 0;
-          padding-right: 0;
-        }
 
         .bookmark-section-head {
           display: flex;
@@ -353,7 +345,7 @@ export default function Bookmarks() {
           width: 100%;
           box-sizing: border-box;
           margin-top: 20px;
-          padding: 17px 18px 70px;
+          padding: 16px 18px;
           border: 1px solid var(--line);
           border-radius: 16px;
           background: rgba(255,255,255,.45);
@@ -361,6 +353,7 @@ export default function Bookmarks() {
         }
 
         .progress-card {
+          width: 46%;
           min-width: 0;
           min-height: 96px;
           display: flex;
@@ -453,7 +446,8 @@ export default function Bookmarks() {
         .progress-carousel > .carousel-controls {
           position: absolute;
           right: 18px;
-          bottom: 12px;
+          top: 50%;
+          transform: translateY(-50%);
           z-index: 2;
         }
 
@@ -528,7 +522,11 @@ export default function Bookmarks() {
           width: 100%;
           box-sizing: border-box;
           margin-top: 20px;
-          padding-bottom: 58px;
+          padding: 16px;
+          border: 1px solid var(--line);
+          border-radius: 16px;
+          background: rgba(255,255,255,.42);
+          overflow: hidden;
         }
 
         .starred-grid {
@@ -618,8 +616,8 @@ export default function Bookmarks() {
 
         .starred-controls {
           position: absolute;
-          right: 0;
-          bottom: 0;
+          right: 16px;
+          top: -58px;
           justify-content: flex-end;
         }
 
@@ -686,6 +684,16 @@ export default function Bookmarks() {
           .bookmarks-summary { max-width: 430px; }
           .bookmark-section-head { align-items: flex-start; }
           .carousel-controls { justify-content: flex-end; }
+          .progress-card { width: 100%; }
+          .progress-carousel { padding-bottom: 68px; }
+          .progress-carousel > .carousel-controls {
+            top: auto;
+            right: 18px;
+            bottom: 12px;
+            transform: none;
+          }
+          .starred-carousel { padding: 12px 12px 68px; }
+          .starred-controls { top: auto; right: 12px; bottom: -56px; }
           .starred-grid { gap: 12px; }
           .starred-card {
             flex-basis: calc((100% - 12px) / 2);
@@ -706,6 +714,10 @@ export default function Bookmarks() {
           .progress-card-icon { width: 52px; height: 52px; flex-basis: 52px; font-size: 23px; }
           .progress-percent { display: none; }
           .progress-line { width: 100%; }
+          .progress-carousel { padding: 10px 10px 68px; }
+          .progress-carousel > .carousel-controls { right: 10px; bottom: 10px; }
+          .starred-carousel { padding: 10px 10px 66px; }
+          .starred-controls { right: 10px; bottom: -54px; }
           .starred-grid { gap: 10px; }
           .starred-card {
             flex-basis: 100%;

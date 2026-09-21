@@ -339,15 +339,16 @@ export default function Bookmarks() {
         }
 
         .progress-carousel {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 170px;
-          align-items: center;
-          gap: 26px;
+          position: relative;
+          display: block;
+          width: 100%;
+          box-sizing: border-box;
           margin-top: 20px;
-          padding: 17px 18px;
+          padding: 17px 18px 70px;
           border: 1px solid var(--line);
           border-radius: 16px;
           background: rgba(255,255,255,.45);
+          overflow: hidden;
         }
 
         .progress-card {
@@ -440,6 +441,13 @@ export default function Bookmarks() {
           gap: 11px;
         }
 
+        .progress-carousel > .carousel-controls {
+          position: absolute;
+          right: 18px;
+          bottom: 12px;
+          z-index: 2;
+        }
+
         .carousel-controls button {
           width: 44px;
           height: 44px;
@@ -506,22 +514,27 @@ export default function Bookmarks() {
         }
 
         .starred-carousel {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 170px;
-          align-items: center;
-          gap: 26px;
+          position: relative;
+          display: block;
+          width: 100%;
+          box-sizing: border-box;
           margin-top: 20px;
+          padding-bottom: 58px;
         }
 
         .starred-grid {
+          width: 100%;
           min-width: 0;
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          display: flex;
+          flex-wrap: nowrap;
           gap: 14px;
+          overflow: hidden;
         }
 
         .starred-card {
           position: relative;
+          flex: 0 0 calc((100% - 42px) / 4);
+          width: calc((100% - 42px) / 4);
           min-width: 0;
           min-height: 134px;
           overflow: hidden;
@@ -594,7 +607,12 @@ export default function Bookmarks() {
           font-size: 15px;
         }
 
-        .starred-controls { justify-content: flex-end; }
+        .starred-controls {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          justify-content: flex-end;
+        }
 
         .bookmark-tip {
           display: flex;
@@ -658,10 +676,12 @@ export default function Bookmarks() {
           .bookmarks-hero { grid-template-columns: 1fr; gap: 20px; }
           .bookmarks-summary { max-width: 430px; }
           .bookmark-section-head { align-items: flex-start; }
-          .progress-carousel,
-          .starred-carousel { grid-template-columns: 1fr; gap: 14px; }
           .carousel-controls { justify-content: flex-end; }
-          .starred-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+          .starred-grid { gap: 12px; }
+          .starred-card {
+            flex-basis: calc((100% - 12px) / 2);
+            width: calc((100% - 12px) / 2);
+          }
         }
 
         @media (max-width: 560px) {
@@ -677,7 +697,11 @@ export default function Bookmarks() {
           .progress-card-icon { width: 52px; height: 52px; flex-basis: 52px; font-size: 23px; }
           .progress-percent { display: none; }
           .progress-line { width: 100%; }
-          .starred-grid { grid-template-columns: 1fr; }
+          .starred-grid { gap: 10px; }
+          .starred-card {
+            flex-basis: 100%;
+            width: 100%;
+          }
           .bookmark-empty { align-items: flex-start; }
         }
       `}

@@ -284,6 +284,18 @@ export default function Bookmarks() {
           border-bottom: 1px solid var(--line);
         }
 
+        /* Keep the starred block on the same centered content rail as the rest of the page. */
+        .bookmark-section-starred {
+          width: 100%;
+          max-width: 100%;
+          margin-left: 0;
+          margin-right: 0;
+        }
+
+        .bookmark-section-starred .starred-carousel {
+          width: 100%;
+        }
+
 
         .bookmark-section-head {
           display: flex;

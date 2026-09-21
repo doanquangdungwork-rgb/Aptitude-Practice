@@ -515,16 +515,35 @@ export default function Bookmarks() {
         }
 
         .bookmark-icon-star { font-size: 32px; }
-        .bookmark-empty-copy strong { font-size: 14px; font-weight: 500; }
+        .bookmark-empty-copy {
+          min-width: 0;
+          flex: 1 1 auto;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .bookmark-empty-copy strong {
+          display: block;
+          font-size: 14px;
+          line-height: 1.25;
+          font-weight: 500;
+        }
+
         .bookmark-empty-copy p {
-          margin-top: 5px;
+          display: block;
+          width: 100%;
+          margin: 6px 0 0;
           color: var(--muted);
           font-size: 11px;
           line-height: 1.5;
         }
+
         .bookmark-empty-copy .yellow-button {
           display: inline-flex;
-          margin-top: 11px;
+          align-items: center;
+          flex: 0 0 auto;
+          margin-top: 12px;
           text-decoration: none;
         }
 
@@ -583,14 +602,14 @@ export default function Bookmarks() {
         .starred-card > a {
           display: block;
           height: 100%;
-          padding: 16px;
+          padding: 20px 22px;
           color: inherit;
           text-decoration: none;
         }
 
         .starred-card h3 {
           max-width: 205px;
-          margin-top: 15px;
+          margin-top: 18px;
           font-size: 16px;
           line-height: 1.1;
           letter-spacing: -.035em;
@@ -606,8 +625,8 @@ export default function Bookmarks() {
         .starred-card-star {
           position: absolute;
           z-index: 2;
-          top: 14px;
-          right: 16px;
+          top: 18px;
+          right: 20px;
           border: 0;
           padding: 0;
           background: transparent;
@@ -733,6 +752,8 @@ export default function Bookmarks() {
             gap: 10px;
           }
           .bookmark-empty { align-items: flex-start; }
+          .bookmark-empty-copy p { max-width: 100%; }
+          .bookmark-empty-copy .yellow-button { margin-top: 12px; }
         }
       `}
       </style>

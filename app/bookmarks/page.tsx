@@ -145,7 +145,7 @@ export default function Bookmarks() {
 
         {starred.length ? (
           <div className="starred-carousel">
-            <div className="starred-grid">
+            <div className="starred-grid" data-count={visibleStarred.length}>
               {visibleStarred.map((t: any, i: number) => (
                 <article key={t.test_id} className={`starred-card tone-${TONES[((starredPage * STARRED_PER_PAGE) + i) % TONES.length]}`}>
                   <button type="button" className="starred-card-star" aria-label="Remove bookmark" onClick={() => toggleStar(t.test_id)}>★</button>
@@ -538,22 +538,21 @@ export default function Bookmarks() {
           border: 1px solid var(--line);
           border-radius: 16px;
           background: rgba(255,255,255,.42);
-          overflow: hidden;
+          overflow: visible;
         }
 
         .starred-grid {
           width: 100%;
           min-width: 0;
-          display: flex;
-          flex-wrap: nowrap;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 14px;
           overflow: hidden;
         }
 
         .starred-card {
           position: relative;
-          flex: 0 0 calc((100% - 42px) / 4);
-          width: calc((100% - 42px) / 4);
+          width: 100%;
           min-width: 0;
           min-height: 134px;
           overflow: hidden;
@@ -704,12 +703,11 @@ export default function Bookmarks() {
             bottom: 12px;
             transform: none;
           }
-          .starred-carousel { padding: 12px 12px 68px; }
-          .starred-controls { top: auto; right: 12px; bottom: -56px; }
-          .starred-grid { gap: 12px; }
-          .starred-card {
-            flex-basis: calc((100% - 12px) / 2);
-            width: calc((100% - 12px) / 2);
+          .starred-carousel { padding: 12px 12px 16px; }
+          .starred-controls { top: -54px; right: 12px; bottom: auto; }
+          .starred-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
           }
         }
 
@@ -728,12 +726,11 @@ export default function Bookmarks() {
           .progress-line { width: 100%; }
           .progress-carousel { padding: 10px 10px 68px; }
           .progress-carousel > .carousel-controls { right: 10px; bottom: 10px; }
-          .starred-carousel { padding: 10px 10px 66px; }
-          .starred-controls { right: 10px; bottom: -54px; }
-          .starred-grid { gap: 10px; }
-          .starred-card {
-            flex-basis: 100%;
-            width: 100%;
+          .starred-carousel { padding: 10px; }
+          .starred-controls { top: -52px; right: 10px; bottom: auto; }
+          .starred-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
           }
           .bookmark-empty { align-items: flex-start; }
         }

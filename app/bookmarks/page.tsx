@@ -284,6 +284,15 @@ export default function Bookmarks() {
           border-bottom: 1px solid var(--line);
         }
 
+        /* The starred carousel is intentionally full-bleed: the card track should use the
+           whole viewport rather than the narrower reading column used by the hero. */
+        .bookmark-section-starred {
+          width: 100vw;
+          margin-left: calc(50% - 50vw);
+          padding-left: 0;
+          padding-right: 0;
+        }
+
         .bookmark-section-head {
           display: flex;
           align-items: flex-end;

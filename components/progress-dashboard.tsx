@@ -65,14 +65,38 @@ export default function ProgressDashboard({ compact = false }: { compact?: boole
   const [userId, setUserId] = useState("");
   const [refresh, setRefresh] = useState(0);
 
-  const loadProgress = () => {
-    setAttempts(getAttempts());
+  const loadProgress = async () => {
+    const local = getAttempts();
+    setAttempts(local);
     setBookmarks(getBookmarks().length);
     setWrong(getWrongQuestions().length);
+    if (!supabase) return;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const uid = sessionData.session?.user?.id;
+    if (!uid) return;
+    const { data, error } = await supabase
+      .from("attempts")
+      .select("id,test_id,started_at,completed_at,score,correct_count,question_count,attempt_answers(question_id,selected_answer,is_correct)")
+      .eq("user_id", uid)
+      .order("completed_at", { ascending: false });
+    if (error || !data) return;
+    const cloud = data.map((row: any) => ({
+      id: row.id,
+      testId: row.test_id,
+      startedAt: row.started_at,
+      updatedAt: row.completed_at || row.started_at,
+      completedAt: row.completed_at,
+      answers: Object.fromEntries((row.attempt_answers || []).map((a: any) => {
+        let value: unknown = a.selected_answer;
+        try { value = JSON.parse(a.selected_answer); } catch {}
+        return [a.question_id, value];
+      })),
+    }));
+    if (cloud.length) setAttempts(cloud);
   };
 
   useEffect(() => {
-    loadProgress();
+    void loadProgress();
     const onUpdate = () => {
       loadProgress();
       setRefresh((v) => v + 1);

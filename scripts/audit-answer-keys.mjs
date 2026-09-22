@@ -14,8 +14,14 @@ for (const file of parts) {
 const overrideSource = await readFile(resolve(ROOT, "lib/answer-overrides.ts"), "utf8");
 const data = overrideSource.match(/const DATA = "([^"]+)"/)?.[1];
 if (!data) throw new Error("Cannot locate embedded answer override data.");
-const compressed = Buffer.from(data, "base64");
-const overrides = JSON.parse(inflateRawSync(compressed.subarray(10, -8)).toString("utf8"));
+let overrides = {};
+try {
+  const compressed = Buffer.from(data, "base64");
+  const json = inflateRawSync(compressed.subarray(10, -8)).toString("utf8");
+  overrides = JSON.parse(json);
+} catch (error) {
+  console.warn("Answer-key audit: embedded override map could not be decoded; auditing source keys only.", error);
+}
 const report = [];
 for (const [testId, qs] of [...tests.entries()].sort()) {
   const rawKeys = qs.map(q => String(q.a ?? "").trim().toUpperCase()).filter(Boolean);

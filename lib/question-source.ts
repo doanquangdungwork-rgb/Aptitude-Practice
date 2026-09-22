@@ -14,6 +14,21 @@ type ReferenceMaterial = { id: string; assetRef: string; label: string };
 type DeductiveSourceQuestion = { id: string; testId: string; number: number; p: string; s: string; context: string; t: string; o: string[]; a: string; sourcePage: number; sourceFile: string };
 type CompactDeductiveQuestion = [number, string, string[], string, number];
 
+const TP_VERBAL_OPTIONS = [
+ "Definitely True",
+ "Probably True",
+ "Insufficient Information",
+ "Probably False",
+ "Definitely False",
+] as const;
+
+function isTpVerbalTest(testId: string) {
+ return ["TEST_103","TEST_104","TEST_105","TEST_106"].includes(testId);
+}
+function isLogicalGrid12Test(testId: string) {
+ return testId === "TEST_046";
+}
+
 const CAPP_UNIQUE_CHARTS: ReferenceMaterial[] = [
   { id: "CAPP_CHART_1", assetRef: "ASSET_0001", label: "Annual salary" },
   { id: "CAPP_CHART_2", assetRef: "ASSET_0004", label: "Average property prices" },
@@ -136,7 +151,17 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const override = answerOverrideFor(q.id);
  const rawOptions=Array.isArray(q.o)?q.o:[];
  const baseResponse=inferResponse(q);
- const forcedCount = isFigurePairTest(testId) ? 4 : isShapeChoiceTest(testId) ? 5 : isDiagrammaticSetTest(testId) ? 3 : isTgbNumericalTest(testId) ? 10 : undefined;
+ const forcedCount = isFigurePairTest(testId)
+   ? 4
+   : isShapeChoiceTest(testId)
+     ? (override?.optionCount ?? 4)
+     : isLogicalGrid12Test(testId)
+       ? 12
+       : isDiagrammaticSetTest(testId)
+         ? 3
+         : isTgbNumericalTest(testId)
+           ? 10
+           : undefined;
  const rawAnswer = String(q.a ?? "").trim();
  const sourceLetter = /^[A-J]$/i.test(rawAnswer) ? rawAnswer.toUpperCase() : "";
  const sourceLetterCount = sourceLetter ? sourceLetter.charCodeAt(0) - 64 : 0;
@@ -155,17 +180,26 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const response: CanonicalQuestion["response"] = overrideComposite
    ? {type:"composite",parts:[{id:"most",type:"single_choice"},{id:"least",type:"single_choice"}]}
    : isFigurePairTest(testId)
-   ? {type:"multiple_choice",minSelections:2,maxSelections:2}
-   : isShapeChoiceTest(testId)
-   ? {type:"single_choice"}
-   : override?.responseType === "multiple_choice" || override?.figureChoice
-     ? {type:"multiple_choice",minSelections:overrideMultipleCount,maxSelections:overrideMultipleCount}
-     : forcedCount && isDiagrammaticSetTest(testId)
+     ? {type:"multiple_choice",minSelections:2,maxSelections:2}
+     : isShapeChoiceTest(testId) || isLogicalGrid12Test(testId) || isTpVerbalTest(testId)
        ? {type:"single_choice"}
-       : forcedCount && isTgbNumericalTest(testId)
-         ? {type:"single_choice"}
-         : override?.optionCount && override.optionCount > 0 ? {type:"single_choice"} : baseResponse;
- const optionTexts=isShapeChoiceTest(testId) ? ["Triangle","Circle","Square","Cross","Star"] : (isFigurePairTest(testId) || override?.figureChoice) ? Array.from({length: count || 4}, (_,i)=>`Figure ${i+1}`) : isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
+       : override?.responseType === "multiple_choice" || override?.figureChoice
+         ? {type:"multiple_choice",minSelections:overrideMultipleCount,maxSelections:overrideMultipleCount}
+         : forcedCount && isDiagrammaticSetTest(testId)
+           ? {type:"single_choice"}
+           : forcedCount && isTgbNumericalTest(testId)
+             ? {type:"single_choice"}
+             : override?.optionCount && override.optionCount > 0 ? {type:"single_choice"} : baseResponse;
+ const shapeOptionTexts = override?.optionIds?.length
+   ? override.optionIds
+   : ["Triangle","Circle","Square","Cross"].slice(0, count || 4);
+ const optionTexts = isTpVerbalTest(testId)
+   ? [...TP_VERBAL_OPTIONS]
+   : isShapeChoiceTest(testId)
+     ? shapeOptionTexts
+     : (isFigurePairTest(testId) || isLogicalGrid12Test(testId) || override?.figureChoice)
+       ? Array.from({length: count || 4}, (_,i)=>`Figure ${i+1}`)
+       : isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
  const optionIds = override?.optionIds?.length ? override.optionIds : generatedOptionIds(count);
  const options=optionTexts.length ? optionTexts.map((value,index)=>({id:optionIds[index] ?? String.fromCharCode(65+index),content:legacyBlock(value)})) : optionIds.map(id=>({id,content:legacyBlock(id)}));
  let answer: CanonicalQuestion["answer"];
@@ -184,7 +218,14 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
    prompt:{blocks:legacyBlocks(q.t)}, options, response, answer,
    explanation:q.explanation?{blocks:legacyBlocks(q.explanation)}:null,
    taxonomy:{pillar:q.p,subtype:q.s},
-   source:{legacyId:q.id,sourceFile:q.sourceFile,sourcePage:q.sourcePage,referenceMaterialIds:referenceMaterialsForQuestion(testId,Number(q.number ?? 0)).map(x=>x.id)}
+   source:{
+   legacyId:q.id,
+   sourceFile:q.sourceFile,
+   sourcePage:q.sourcePage,
+   referenceMaterialIds:referenceMaterialsForQuestion(testId,Number(q.number ?? 0)).map(x=>x.id),
+   figureChoice: isFigurePairTest(testId) || isShapeChoiceTest(testId) || isLogicalGrid12Test(testId) || Boolean(override?.figureChoice),
+   answerMappingOrder: isLogicalGrid12Test(testId) || ["TEST_049","TEST_050","TEST_051"].includes(testId) ? "left_to_right_then_top_to_bottom" : "left_to_right"
+ }
  };
 }
 function deductiveQuestion(q: DeductiveSourceQuestion): CanonicalQuestion { const options = q.o.map((value, index) => ({ id: String.fromCharCode(65 + index), content: legacyBlock(value) })); const sourceAnswer = q.number === 12 ? "The deal between the syndicate and William was to fund his parliament." : q.a; const answer = options.find(o => o.content.type === "text" && o.content.value === sourceAnswer)?.id ?? sourceAnswer; return { id: q.id, number: q.number, context: q.context, prompt: { blocks: legacyBlocks(q.t) }, options, response: { type: "single_choice" }, answer: { type: "single", value: answer }, taxonomy: { pillar: q.p, subtype: q.s }, source: { sourceFile: q.sourceFile, sourcePage: q.sourcePage, referenceMaterialIds: referenceMaterialsForQuestion("TEST_030", q.number).map(x => x.id), answerAudit: q.number === 12 ? "Corrected from source solution key after checking the stated premises; option B is the only demonstrably false statement." : undefined } }; }

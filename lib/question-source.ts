@@ -92,6 +92,7 @@ function generatedOptionIds(count:number){ return Array.from({length:count},(_,i
 function isFigurePairTest(testId:string){ return ["TEST_007","TEST_008","TEST_009","TEST_010"].includes(testId); }
 function isDiagrammaticSetTest(testId:string){ return ["TEST_035","TEST_036","TEST_037","TEST_038","TEST_039"].includes(testId); }
 function isTgbNumericalTest(testId:string){ return ["TEST_023","TEST_024","TEST_025","TEST_026","TEST_027","TEST_028","TEST_029"].includes(testId); }
+function isShapeChoiceTest(testId:string){ return ["TEST_041","TEST_042"].includes(testId); }
 function normalizeOptionKey(value: unknown, options: { id: string; content: ContentBlock }[]): string {
  const raw = String(value ?? "").trim();
  if (!raw) return raw;
@@ -135,7 +136,7 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
  const override = answerOverrideFor(q.id);
  const rawOptions=Array.isArray(q.o)?q.o:[];
  const baseResponse=inferResponse(q);
- const forcedCount = isFigurePairTest(testId) ? 4 : isDiagrammaticSetTest(testId) ? 3 : isTgbNumericalTest(testId) ? 10 : undefined;
+ const forcedCount = isFigurePairTest(testId) ? 4 : isShapeChoiceTest(testId) ? 5 : isDiagrammaticSetTest(testId) ? 3 : isTgbNumericalTest(testId) ? 10 : undefined;
  const rawAnswer = String(q.a ?? "").trim();
  const sourceLetter = /^[A-J]$/i.test(rawAnswer) ? rawAnswer.toUpperCase() : "";
  const sourceLetterCount = sourceLetter ? sourceLetter.charCodeAt(0) - 64 : 0;
@@ -155,6 +156,8 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
    ? {type:"composite",parts:[{id:"most",type:"single_choice"},{id:"least",type:"single_choice"}]}
    : isFigurePairTest(testId)
    ? {type:"multiple_choice",minSelections:2,maxSelections:2}
+   : isShapeChoiceTest(testId)
+   ? {type:"single_choice"}
    : override?.responseType === "multiple_choice" || override?.figureChoice
      ? {type:"multiple_choice",minSelections:overrideMultipleCount,maxSelections:overrideMultipleCount}
      : forcedCount && isDiagrammaticSetTest(testId)
@@ -162,7 +165,7 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
        : forcedCount && isTgbNumericalTest(testId)
          ? {type:"single_choice"}
          : override?.optionCount && override.optionCount > 0 ? {type:"single_choice"} : baseResponse;
- const optionTexts=(isFigurePairTest(testId) || override?.figureChoice) ? Array.from({length: count || 4}, (_,i)=>`Figure ${i+1}`) : isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
+ const optionTexts=isShapeChoiceTest(testId) ? ["Triangle","Circle","Square","Cross","Star"] : (isFigurePairTest(testId) || override?.figureChoice) ? Array.from({length: count || 4}, (_,i)=>`Figure ${i+1}`) : isTrueFalseCannotSay(String(q.t ?? "")) ? ["True","False","Cannot Say"] : rawOptions.map(optionText);
  const optionIds = override?.optionIds?.length ? override.optionIds : generatedOptionIds(count);
  const options=optionTexts.length ? optionTexts.map((value,index)=>({id:optionIds[index] ?? String.fromCharCode(65+index),content:legacyBlock(value)})) : optionIds.map(id=>({id,content:legacyBlock(id)}));
  let answer: CanonicalQuestion["answer"];

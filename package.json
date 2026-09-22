@@ -1,1 +1,28 @@
-{"name":"aptitude-practice","version":"0.1.0","private":true,"scripts":{"dev":"next dev","build":"node scripts/prepare-question-assets.mjs && node scripts/audit-answer-keys.mjs && next build","start":"next start","lint":"next lint","audit:answer-keys":"node scripts/audit-answer-keys.mjs"},"dependencies":{"@supabase/supabase-js":"^2.57.4","next":"^16.3.4","react":"^19.2.0","react-dom":"^19.2.0"},"devDependencies":{"@types/node":"^20.19.0","@types/react":"^19.1.0","@types/react-dom":"^19.1.0","typescript":"^5.9.2","tailwindcss":"^4.1.13","@tailwindcss/postcss":"^4.1.13","postcss":"^8.5.6"}}
+{
+  "name": "aptitude-practice",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "node scripts/prepare-question-assets.mjs && node scripts/extract-visual-12-answer-keys.mjs && node scripts/audit-answer-keys.mjs && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "audit:answer-keys": "node scripts/audit-answer-keys.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "next": "^16.3.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sharp": "^0.34.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.9.2",
+    "tailwindcss": "^4.1.13",
+    "@tailwindcss/postcss": "^4.1.13",
+    "postcss": "^8.5.6"
+  }
+}

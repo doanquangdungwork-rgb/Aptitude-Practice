@@ -144,7 +144,7 @@ export default function ProgressDashboard({ compact = false }: { compact?: boole
         latest.forEach((a: any) => {
           const test = appCatalog.tests.find((t: any) => t.test_id === a.testId);
           if (test?.pillar !== p.id) return;
-          questionsForTest(a.testId).forEach((q: any) => {
+          questionsForEngine(a.testId).forEach((q: any) => {
             const value = a.answers?.[q.id];
             if (answeredValue(value)) {
               answered++;

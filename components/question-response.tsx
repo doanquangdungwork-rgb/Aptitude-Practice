@@ -16,6 +16,14 @@ export default function QuestionResponse({response,options,answer,value,onChange
  };
  const labelContent=(o:CanonicalOption,i:number)=>{
   if(screenshotMode) return null;
+  // The circular badge already displays the option label (A, B, C...).
+  // Some imported data stores that same label as the option text, so hide
+  // the redundant second label while preserving real answer text.
+  if(o.content.type==="text"){
+   const text=(o.content as {type:"text";value:string}).value.trim();
+   const label=optionLabel(i);
+   if(new RegExp(`^\\(?${label}\\)?[.:]?$\`, "i").test(text)) return null;
+  }
   return <QuestionPrompt blocks={[o.content]}/>;
  };
 

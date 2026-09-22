@@ -5,6 +5,7 @@ const DATA = "H4sIAKPermoC/72dS68cOY6F/8tdeyGSenpnX7uma3aDqV1hUPC9vt1toNo2/MCg0e
 export type AnswerOverride = {
   answer: string | string[];
   optionCount?: number;
+  optionIds?: string[];
   responseType?: string;
   figureChoice?: boolean;
 };

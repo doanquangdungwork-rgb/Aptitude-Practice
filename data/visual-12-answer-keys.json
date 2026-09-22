@@ -1,1 +1,20 @@
-{}\n
+{
+  "TEST_046_Q1": {
+    "answer": "B",
+    "source": "LogicalReasoningTest10-Solutions / Q1 visual rule verification",
+    "assetTestNumber": 10,
+    "row": 0,
+    "col": 1,
+    "rows": 3,
+    "cols": 4
+  },
+  "TEST_046_Q5": {
+    "answer": "A",
+    "source": "uploaded solution snapshot Q5",
+    "assetTestNumber": 10,
+    "row": 0,
+    "col": 0,
+    "rows": 3,
+    "cols": 4
+  }
+}

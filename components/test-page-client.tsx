@@ -80,6 +80,12 @@ export default function TestPageClient({ testId, test, qs, pillarMap }: { testId
   const progress = actualQuestionCount ? ((idx + 1) / actualQuestionCount) * 100 : 0;
   const snapshotSrc = q ? questionSnapshotSrc(testId, q.source?.sourceFile, q.number) : "";
   const isSnapshotTest = Boolean(snapshotSrc);
+  const answerMappingNote =
+    testId === "TEST_041" || testId === "TEST_042"
+      ? "Answer choices A–E follow the figures shown in the question from left to right."
+      : ["TEST_049","TEST_050","TEST_051"].includes(testId)
+        ? "Answer choices A–I follow the 3×3 figure grid from left to right, then top to bottom."
+        : "";
 
   useEffect(() => { if (q) setBookmarked(getBookmarks().includes(q.id)); }, [q?.id]);
 
@@ -150,6 +156,7 @@ export default function TestPageClient({ testId, test, qs, pillarMap }: { testId
         <article className="quiz-card quiz-question-card" id={`question-${q.number}`}>
           <div className="quiz-question-head"><div className="flex-1"><p className="eyebrow">{isSnapshotTest ? "Answer" : label}</p>{!isSnapshotTest && <div className="quiz-question mt-3"><QuestionPrompt blocks={q.prompt.blocks} hideImages={Boolean(currentReferenceMaterials.length || hasPassage)} /></div>}</div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
           <div className="quiz-answer-label">Choose your answer</div>
+          {answerMappingNote && <div className="answer-mapping-note">{answerMappingNote}</div>}
           <QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} screenshotMode={isSnapshotTest} />
         </article>
         <div className="quiz-nav"><button disabled={!idx} onClick={() => setIdx(idx - 1)} className="outline-action disabled:opacity-30">← Previous</button>{idx < actualQuestionCount - 1 ? <button onClick={() => setIdx(idx + 1)} className="yellow-button">Next →</button> : <button onClick={openFinishConfirmation} className="yellow-button">Finish test</button>}</div>
@@ -181,7 +188,8 @@ export default function TestPageClient({ testId, test, qs, pillarMap }: { testId
       .finish-confirm-copy{max-width:385px;margin:13px auto 0;font-size:12px;line-height:1.65;color:#77736b}
       .finish-confirm-actions{display:flex;justify-content:center;gap:12px;margin-top:24px}.finish-confirm-actions button{min-width:145px}.finish-keep-going{background:#fff}
       @media(max-width:560px){.finish-confirm-modal{padding:27px 22px 23px}.finish-confirm-actions{flex-direction:column-reverse}.finish-confirm-actions button{width:100%}}
-      .passage-test .quiz-reference-pane{grid-column:1;grid-row:1;min-height:0}.passage-test .quiz-question-pane{grid-column:2;grid-row:1;min-height:0}.quiz-reference-pane{min-height:0}.quiz-question-pane{min-height:0}.deductive-snapshot-pane{grid-column:1;grid-row:1;min-height:0}.deductive-snapshot-pane .question-snapshot-shell{height:100%;min-height:0}.quiz-question-card{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.02)}.test-countdown{min-width:72px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.02em;text-align:center;color:#4f4c47}.test-countdown.urgent{color:#b55a4d;border-color:#e6c4bd;background:#fff8f6}.visual-choice-material{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:28px}@media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.visual-choice-material{min-height:320px;padding:20px}}
+      .passage-test .quiz-reference-pane{grid-column:1;grid-row:1;min-height:0}.passage-test .quiz-question-pane{grid-column:2;grid-row:1;min-height:0}.quiz-reference-pane{min-height:0}.quiz-question-pane{min-height:0}.deductive-snapshot-pane{grid-column:1;grid-row:1;min-height:0}.deductive-snapshot-pane .question-snapshot-shell{height:100%;min-height:0}.quiz-question-card{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.02)}.test-countdown{min-width:72px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px;font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.02em;text-align:center;color:#4f4c47}.test-countdown.urgent{color:#b55a4d;border-color:#e6c4bd;background:#fff8f6}.visual-choice-material{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:28px}
+      .answer-mapping-note{margin:8px 0 -2px;color:#8a877f;font-size:11px;line-height:1.45}@media(max-width:800px){.passage-test .quiz-reference-pane,.passage-test .quiz-question-pane{grid-column:auto;grid-row:auto}.visual-choice-material{min-height:320px;padding:20px}}
     `}</style>
   </div>;
 }

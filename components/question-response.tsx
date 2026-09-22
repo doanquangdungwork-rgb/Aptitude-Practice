@@ -22,7 +22,7 @@ export default function QuestionResponse({response,options,answer,value,onChange
   if(o.content.type==="text"){
    const text=(o.content as {type:"text";value:string}).value.trim();
    const label=optionLabel(i);
-   if(new RegExp(`^\\(?${label}\\)?[.:]?$\`, "i").test(text)) return null;
+   if(text===label || text===`(${label})` || text===`${label}.` || text===`${label}:` || text===`(${label}).`) return null;
   }
   return <QuestionPrompt blocks={[o.content]}/>;
  };

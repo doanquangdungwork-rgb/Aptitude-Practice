@@ -7,7 +7,7 @@ const parts = Array.from({ length: 20 }, (_, i) => resolve(ROOT, "data/question-
 const tests = new Map();
 for (const file of parts) {
   const src = await readFile(file, "utf8");
-  const body = src.replace(/^export default\s+/, "").replace(/;\s*$/, "");
+  const body = src.replace(/^export default\s+/, "").replace(/\]\s+as\s+const\s*;?\s*$/, "]").replace(/;\s*$/, "");
   const rows = Function(`"use strict"; return (${body});`)();
   for (const q of rows) { const list = tests.get(q.testId) ?? []; list.push(q); tests.set(q.testId, list); }
 }

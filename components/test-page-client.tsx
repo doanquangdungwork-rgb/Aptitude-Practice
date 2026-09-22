@@ -162,7 +162,14 @@ export default function TestPageClient({ testId, test, qs, pillarMap }: { testId
           <div className="quiz-question-head"><div className="flex-1"><p className="eyebrow">{isSnapshotTest ? "Answer" : label}</p>{!isSnapshotTest && <div className="quiz-question mt-3"><QuestionPrompt blocks={q.prompt.blocks} hideImages={Boolean(currentReferenceMaterials.length || hasPassage)} /></div>}</div><button onClick={() => setBookmarked(toggleBookmark(q.id))} className="outline-action shrink-0">{bookmarked ? "★ Saved" : "☆ Save"}</button></div>
           <div className="quiz-answer-label">Choose your answer</div>
           {answerMappingNote && <div className="answer-mapping-note">{answerMappingNote}</div>}
-          <QuestionResponse response={q.response} options={q.options} answer={q.answer} value={answer} onChange={updateAnswer} screenshotMode={isSnapshotTest} />
+          <QuestionResponse
+  response={q.response}
+  options={q.options}
+  answer={q.answer}
+  value={answer}
+  onChange={updateAnswer}
+  screenshotMode={isSnapshotTest && Boolean(q.source?.figureChoice)}
+/>
         </article>
         <div className="quiz-nav"><button disabled={!idx} onClick={() => setIdx(idx - 1)} className="outline-action disabled:opacity-30">← Previous</button>{idx < actualQuestionCount - 1 ? <button onClick={() => setIdx(idx + 1)} className="yellow-button">Next →</button> : <button onClick={openFinishConfirmation} className="yellow-button">Finish test</button>}</div>
       </section>

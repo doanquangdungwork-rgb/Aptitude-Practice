@@ -10,6 +10,38 @@ export type AnswerOverride = {
   figureChoice?: boolean;
 };
 
+
+function parseEmbeddedJson(json: string): Record<string, AnswerOverride> {
+  const source = json.trim();
+  try {
+    return JSON.parse(source) as Record<string, AnswerOverride>;
+  } catch (error) {
+    if (!(error instanceof SyntaxError) || !/after JSON/.test(error.message)) throw error;
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let i = 0; i < source.length; i++) {
+      const ch = source[i];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (ch === "\\") escaped = true;
+        else if (ch === '"') inString = false;
+        continue;
+      }
+      if (ch === '"') { inString = true; continue; }
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          const candidate = source.slice(0, i + 1);
+          return JSON.parse(candidate) as Record<string, AnswerOverride>;
+        }
+      }
+    }
+    throw error;
+  }
+}
+
 let cache: Record<string, AnswerOverride> | null = null;
 
 export function answerOverrideFor(id: string): AnswerOverride | null {
@@ -23,6 +55,6 @@ export function answerOverrideFor(id: string): AnswerOverride | null {
     // without trusting the broken gzip trailer/checksum.
     json = inflateRawSync(compressed.subarray(10)).toString("utf8");
   }
-  cache = JSON.parse(json) as Record<string, AnswerOverride>;
+  cache = parseEmbeddedJson(json);
   return cache[id] ?? null;
 }

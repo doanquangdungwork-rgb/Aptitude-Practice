@@ -158,7 +158,7 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
      : isLogicalGrid12Test(testId)
        ? 12
        : isDiagrammaticSetTest(testId)
-         ? 3
+         ? 4
          : isTgbNumericalTest(testId)
            ? 10
            : undefined;
@@ -223,8 +223,17 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
    sourceFile:q.sourceFile,
    sourcePage:q.sourcePage,
    referenceMaterialIds:referenceMaterialsForQuestion(testId,Number(q.number ?? 0)).map(x=>x.id),
-   figureChoice: isFigurePairTest(testId) || isShapeChoiceTest(testId) || isLogicalGrid12Test(testId) || Boolean(override?.figureChoice),
-   answerMappingOrder: isLogicalGrid12Test(testId) || ["TEST_049","TEST_050","TEST_051"].includes(testId) ? "left_to_right_then_top_to_bottom" : "left_to_right"
+   figureChoice:
+     isFigurePairTest(testId) ||
+     isShapeChoiceTest(testId) ||
+     isLogicalGrid12Test(testId) ||
+     isDiagrammaticSetTest(testId) ||
+     ["TEST_049","TEST_050","TEST_051"].includes(testId) ||
+     Boolean(override?.figureChoice),
+   answerMappingOrder:
+     isLogicalGrid12Test(testId) || ["TEST_049","TEST_050","TEST_051"].includes(testId)
+       ? "left_to_right_then_top_to_bottom"
+       : "left_to_right"
  }
  };
 }

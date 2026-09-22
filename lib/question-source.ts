@@ -6,6 +6,7 @@ import { contexts as deductiveTest2Contexts, questions as deductiveTest2Question
 import { contexts as deductiveTest3Contexts, questions as deductiveTest3Questions } from "../data/deductive-test3";
 import { contexts as deductiveTest4Contexts, questions as deductiveTest4Questions } from "../data/deductive-test4";
 import { answerOverrideFor } from "./answer-overrides";
+import { resolveAnswerKey } from "./answer-key-registry";
 import deductiveLogicalLst1 from "../data/deductive-logical-lst-1.json";
 
 type LegacyOption = string | { id?: string; text?: string; label?: string; option?: string };
@@ -147,8 +148,9 @@ function inferAnswer(q: LegacyQuestion, response: CanonicalQuestion["response"],
  }
  return {type:"single",value:normalizeOptionKey(rawAnswer,options)};
 }
-function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
+function legacyQuestion(testId: string, q: LegacyQuestion, testSourceAnswers: unknown[]): CanonicalQuestion {
  const override = answerOverrideFor(q.id);
+ const resolvedSourceKey = resolveAnswerKey(testId, q.id, q.a, testSourceAnswers);
  const rawOptions=Array.isArray(q.o)?q.o:[];
  const baseResponse=inferResponse(q);
  const forcedCount = isFigurePairTest(testId)
@@ -162,7 +164,7 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
          : isTgbNumericalTest(testId)
            ? 10
            : undefined;
- const rawAnswer = String(q.a ?? "").trim();
+ const rawAnswer = String(resolvedSourceKey.answer ?? "").trim();
  const sourceLetter = /^[A-J]$/i.test(rawAnswer) ? rawAnswer.toUpperCase() : "";
  const sourceLetterCount = sourceLetter ? sourceLetter.charCodeAt(0) - 64 : 0;
  const sourceNumericKey = /^(?:[1-9]|1[0-9]|2[0-6])$/.test(rawAnswer) ? Number(rawAnswer) : 0;
@@ -211,7 +213,7 @@ function legacyQuestion(testId: string, q: LegacyQuestion): CanonicalQuestion {
    const match = rawAnswer.match(/Figures?\s+(\d+)\s+and\s+(\d+)/i);
    const values = match ? [Number(match[1]), Number(match[2])].map(n => String.fromCharCode(64 + n)) : [];
    answer = {type:"multiple",values};
- } else answer=inferAnswer(q,response,options);
+ } else answer=inferAnswer({...q, a: resolvedSourceKey.answer},response,options);
  return {
    id:`${testId}_${q.id}`,
    number:Number(q.number ?? 0), subquestion:q.subquestion ?? null,
@@ -271,7 +273,7 @@ canonicalOverrides.set("TEST_033", compactDeductiveTest("TEST_033", "DeductiveTe
 
 const grouped = new Map<string, LegacyQuestion[]>();
 for (const rawQuestion of allQuestions as LegacyQuestion[]) { const id = String(rawQuestion.testId ?? rawQuestion.id.split("_")[0]); const list = grouped.get(id) ?? []; list.push(rawQuestion); grouped.set(id, list); }
-const legacyTests: CanonicalTest[] = Array.from(grouped.entries()).map(([id, questions]) => { const catalogTest = appCatalog.tests.find(test => test.test_id === id); const first = questions[0]; return { id, title: catalogTest?.title ?? id, taxonomy: { pillar: String(first?.p ?? ""), subtype: first?.s ? String(first.s) : undefined }, timing: { mode: "none" }, questions: questions.map(q => legacyQuestion(id, q)) }; });
+const legacyTests: CanonicalTest[] = Array.from(grouped.entries()).map(([id, questions]) => { const catalogTest = appCatalog.tests.find(test => test.test_id === id); const first = questions[0]; return { id, title: catalogTest?.title ?? id, taxonomy: { pillar: String(first?.p ?? ""), subtype: first?.s ? String(first.s) : undefined }, timing: { mode: "none" }, questions: questions.map(q => legacyQuestion(id, q, questions.map(item => item.a))) }; });
 const legacyById = new Map(legacyTests.map(test => [test.id, test]));
 export const canonicalTests: CanonicalTest[] = appCatalog.tests.map((catalogTest) => canonicalOverrides.get(catalogTest.test_id) ?? legacyById.get(catalogTest.test_id)).filter((test): test is CanonicalTest => Boolean(test));
 export function questionsForEngine(testId: string): CanonicalQuestion[] { return canonicalTests.find(test => test.id === testId)?.questions ?? []; }

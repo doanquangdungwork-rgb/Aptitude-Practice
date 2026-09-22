@@ -8,6 +8,7 @@ import { contexts as deductiveTest4Contexts, questions as deductiveTest4Question
 import { answerOverrideFor } from "./answer-overrides";
 import { resolveAnswerKey } from "./answer-key-registry";
 import deductiveLogicalLst1 from "../data/deductive-logical-lst-1.json";
+import visual12AnswerKeys from "../data/visual-12-answer-keys.json";
 
 type LegacyOption = string | { id?: string; text?: string; label?: string; option?: string };
 type LegacyQuestion = { id: string; testId?: string; number?: number; subquestion?: string | null; p?: string; s?: string; t?: string; o?: LegacyOption[]; a?: unknown; explanation?: string; sourceFile?: string; sourcePage?: number; responseType?: string; optionCount?: number; sjt?: boolean };
@@ -26,8 +27,13 @@ const TP_VERBAL_OPTIONS = [
 function isTpVerbalTest(testId: string) {
  return ["TEST_103","TEST_104","TEST_105","TEST_106"].includes(testId);
 }
+const VISUAL_12_TEST_IDS = new Set(
+ Object.keys(visual12AnswerKeys as Record<string, unknown>)
+   .map(questionId => questionId.slice(0, 8))
+   .filter(Boolean)
+);
 function isLogicalGrid12Test(testId: string) {
- return testId === "TEST_046";
+ return testId === "TEST_046" || VISUAL_12_TEST_IDS.has(testId);
 }
 
 const CAPP_UNIQUE_CHARTS: ReferenceMaterial[] = [

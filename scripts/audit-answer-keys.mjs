@@ -1,6 +1,6 @@
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
-import { inflateRawSync } from "node:zlib";
+import { gunzipSync } from "node:zlib";
 
 const ROOT = resolve(".");
 const parts = Array.from({ length: 20 }, (_, i) => resolve(ROOT, "data/question-bank", `part${String(i).padStart(2,"0")}.ts`));
@@ -17,7 +17,7 @@ if (!data) throw new Error("Cannot locate embedded answer override data.");
 let overrides = {};
 try {
   const compressed = Buffer.from(data, "base64");
-  const json = inflateRawSync(compressed.subarray(10, -8)).toString("utf8");
+  const json = gunzipSync(compressed).toString("utf8");
   overrides = JSON.parse(json);
 } catch (error) {
   console.warn("Answer-key audit: embedded override map could not be decoded; auditing source keys only.", error);

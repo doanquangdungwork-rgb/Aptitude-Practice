@@ -23,10 +23,39 @@ try {
   } catch {
     json = inflateRawSync(compressed.subarray(10)).toString("utf8");
   }
-  overrides = JSON.parse(json);
+  overrides = parseEmbeddedJson(json);
 } catch (error) {
   console.warn("Answer-key audit: embedded override map could not be decoded; auditing source keys only.", error);
 }
+
+function parseEmbeddedJson(json) {
+  const source = json.trim();
+  try {
+    return JSON.parse(source);
+  } catch (error) {
+    if (!(error instanceof SyntaxError) || !/after JSON/.test(error.message)) throw error;
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let i = 0; i < source.length; i++) {
+      const ch = source[i];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (ch === "\\") escaped = true;
+        else if (ch === '"') inString = false;
+        continue;
+      }
+      if (ch === '"') { inString = true; continue; }
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) return JSON.parse(source.slice(0, i + 1));
+      }
+    }
+    throw error;
+  }
+}
+
 const report = [];
 for (const [testId, qs] of [...tests.entries()].sort()) {
   const rawKeys = qs.map(q => String(q.a ?? "").trim().toUpperCase()).filter(Boolean);

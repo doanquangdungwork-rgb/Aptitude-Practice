@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { answersMatch } from "./canonical-engine";
 
 export type Attempt = {
   id: string;
@@ -62,7 +63,7 @@ export function recordPracticeDay(userId: string, date = new Date()) {
   write(`practice-days:${userId}`, next);
 }
 
-export async function syncAttemptToSupabase(attempt: Attempt, questions: Array<{ id: string; answer?: { type?: string; value?: unknown; values?: unknown[]; parts?: Record<string, unknown> } }>, pillar = "") {
+export async function syncAttemptToSupabase(attempt: Attempt, questions: any[], pillar = "") {
   if (!supabase || !attempt.completedAt) return false;
   const { data: sessionData } = await supabase.auth.getSession();
   const userId = sessionData.session?.user?.id;
@@ -72,16 +73,7 @@ export async function syncAttemptToSupabase(attempt: Attempt, questions: Array<{
     const value = attempt.answers?.[q.id];
     return value !== undefined && value !== null && value !== "" && !(Array.isArray(value) && value.length === 0);
   });
-  const correctCount = answeredQuestions.filter((q) => {
-    const answer = q.answer;
-    const selected = attempt.answers?.[q.id];
-    if (!answer) return false;
-    const norm = (v: unknown) => String(v ?? "").trim().toLowerCase();
-    if (answer.type === "single" || answer.type === "text" || answer.type === "numeric") return norm(selected) === norm(answer.value);
-    if (answer.type === "multiple") return JSON.stringify(Array.isArray(selected) ? selected.map(String).sort() : [String(selected)]).toLowerCase() === JSON.stringify((answer.values ?? []).map(String).sort()).toLowerCase();
-    if (answer.type === "composite") return JSON.stringify(selected ?? {}) === JSON.stringify(answer.parts ?? {});
-    return false;
-  }).length;
+  const correctCount = answeredQuestions.filter((q) => answersMatch(q, attempt.answers?.[q.id])).length;
 
   const { error: attemptError } = await supabase.from("attempts").upsert({
     id: attempt.id,
@@ -94,18 +86,24 @@ export async function syncAttemptToSupabase(attempt: Attempt, questions: Array<{
     correct_count: correctCount,
     question_count: questions.length,
   }, { onConflict: "id" });
-  if (attemptError) { console.warn("Could not sync attempt:", attemptError.message); return false; }
+  if (attemptError) {
+    console.warn("Could not sync attempt:", attemptError.message);
+    return false;
+  }
 
   if (answeredQuestions.length) {
     const rows = answeredQuestions.map((q) => ({
       attempt_id: attempt.id,
       question_id: q.id,
       selected_answer: JSON.stringify(attempt.answers?.[q.id] ?? null),
-      is_correct: false,
+      is_correct: answersMatch(q, attempt.answers?.[q.id]),
       answered_at: attempt.updatedAt,
     }));
     const { error: answerError } = await supabase.from("attempt_answers").upsert(rows, { onConflict: "attempt_id,question_id" });
-    if (answerError) { console.warn("Could not sync attempt answers:", answerError.message); return false; }
+    if (answerError) {
+      console.warn("Could not sync attempt answers:", answerError.message);
+      return false;
+    }
   }
   return true;
 }

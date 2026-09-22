@@ -521,6 +521,7 @@ export default function Bookmarks() {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
+          gap: 9px;
         }
 
         .bookmark-empty-copy strong {
@@ -533,7 +534,7 @@ export default function Bookmarks() {
         .bookmark-empty-copy p {
           display: block;
           width: 100%;
-          margin: 6px 0 0;
+          margin: 0;
           color: var(--muted);
           font-size: 11px;
           line-height: 1.5;
@@ -543,7 +544,7 @@ export default function Bookmarks() {
           display: inline-flex;
           align-items: center;
           flex: 0 0 auto;
-          margin-top: 12px;
+          margin: 2px 0 0;
           text-decoration: none;
         }
 
@@ -602,7 +603,7 @@ export default function Bookmarks() {
         .starred-card > a {
           display: block;
           height: 100%;
-          padding: 20px 22px;
+          padding: 20px 30px;
           color: inherit;
           text-decoration: none;
         }
@@ -626,7 +627,7 @@ export default function Bookmarks() {
           position: absolute;
           z-index: 2;
           top: 18px;
-          right: 20px;
+          right: 24px;
           border: 0;
           padding: 0;
           background: transparent;
@@ -637,7 +638,7 @@ export default function Bookmarks() {
 
         .starred-card-arrow {
           position: absolute;
-          right: 14px;
+          right: 22px;
           bottom: 12px;
           width: 32px;
           height: 32px;

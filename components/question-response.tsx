@@ -10,8 +10,16 @@ export default function QuestionResponse({response,options,answer,value,onChange
   const text=(o.content as {type:"text";value:string}).value;
   return /^Figure \d+$/i.test(text.trim());
  };
- const optionDisplay=(o:CanonicalOption,i:number)=>isFigureOption(o)?((o.content as {type:"text";value:string}).value):o.id;
- const labelContent=(o:CanonicalOption,i:number)=>screenshotMode?<span>{optionLabel(i)}</span>:<QuestionPrompt blocks={[o.content]}/>;
+ const optionDisplay=(o:CanonicalOption,i:number)=>{
+  if(screenshotMode) return optionLabel(i);
+  return isFigureOption(o)?((o.content as {type:"text";value:string}).value):o.id;
+ };
+ const labelContent=(o:CanonicalOption,i:number)=>{
+  if(screenshotMode && isFigureOption(o)){
+   return <span>{(o.content as {type:"text";value:string}).value}</span>;
+  }
+  return screenshotMode?<span>{optionLabel(i)}</span>:<QuestionPrompt blocks={[o.content]}/>;
+ };
 
  if(response.type==="ranking"){
   const current=value&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,number>:{};

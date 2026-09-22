@@ -80,12 +80,17 @@ export default function TestPageClient({ testId, test, qs, pillarMap }: { testId
   const progress = actualQuestionCount ? ((idx + 1) / actualQuestionCount) * 100 : 0;
   const snapshotSrc = q ? questionSnapshotSrc(testId, q.source?.sourceFile, q.number) : "";
   const isSnapshotTest = Boolean(snapshotSrc);
-  const answerMappingNote =
-    testId === "TEST_041" || testId === "TEST_042"
-      ? "Answer choices A–E follow the figures shown in the question from left to right."
-      : ["TEST_049","TEST_050","TEST_051"].includes(testId)
-        ? "Answer choices A–I follow the 3×3 figure grid from left to right, then top to bottom."
-        : "";
+  const answerMappingNote = (() => {
+    const source = q?.source as { figureChoice?: boolean; answerMappingOrder?: string } | undefined;
+    if (!isSnapshotTest || !source?.figureChoice || !q?.options?.length) return "";
+    const count = q.options.length;
+    const endLabel = count > 0 && count <= 26 ? String.fromCharCode(64 + count) : "";
+    if (!endLabel) return "";
+    const order = source.answerMappingOrder === "left_to_right_then_top_to_bottom"
+      ? "from left to right, then top to bottom"
+      : "from left to right";
+    return `Answer choices A–${endLabel} follow the figures shown in the question ${order}.`;
+  })();
 
   useEffect(() => { if (q) setBookmarked(getBookmarks().includes(q.id)); }, [q?.id]);
 

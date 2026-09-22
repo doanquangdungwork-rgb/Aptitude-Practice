@@ -15,10 +15,8 @@ export default function QuestionResponse({response,options,answer,value,onChange
   return isFigureOption(o)?((o.content as {type:"text";value:string}).value):o.id;
  };
  const labelContent=(o:CanonicalOption,i:number)=>{
-  if(screenshotMode && isFigureOption(o)){
-   return <span>{(o.content as {type:"text";value:string}).value}</span>;
-  }
-  return screenshotMode?<span>{optionLabel(i)}</span>:<QuestionPrompt blocks={[o.content]}/>;
+  if(screenshotMode) return null;
+  return <QuestionPrompt blocks={[o.content]}/>;
  };
 
  if(response.type==="ranking"){

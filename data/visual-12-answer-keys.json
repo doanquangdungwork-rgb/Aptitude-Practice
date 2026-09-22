@@ -1,7 +1,7 @@
 {
   "TEST_046_Q1": {
     "answer": "B",
-    "source": "LogicalReasoningTest10-Solutions / Q1 visual rule verification",
+    "source": "supplied Q1 matrix: color-cycle + column arrow-rotation",
     "assetTestNumber": 10,
     "row": 0,
     "col": 1,
@@ -10,7 +10,7 @@
   },
   "TEST_046_Q5": {
     "answer": "A",
-    "source": "uploaded solution snapshot Q5",
+    "source": "supplied Q5 solution snapshot",
     "assetTestNumber": 10,
     "row": 0,
     "col": 0,

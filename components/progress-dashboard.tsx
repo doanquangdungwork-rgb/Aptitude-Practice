@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { appCatalog, questionsForTest } from "../lib/data";
+import { appCatalog } from "../lib/data";
+import { answersMatch } from "../lib/canonical-engine";
+import { questionsForEngine } from "../lib/question-source";
 import {
   getAttempts,
   getBookmarks,
@@ -117,11 +119,11 @@ export default function ProgressDashboard({ compact = false }: { compact?: boole
     let answered = 0;
     let correct = 0;
     latest.forEach((a) =>
-      questionsForTest(a.testId).forEach((q: any) => {
+      questionsForEngine(a.testId).forEach((q: any) => {
         const value = a.answers?.[q.id];
         if (answeredValue(value)) {
           answered++;
-          if (norm(value) === norm(q.a)) correct++;
+          if (answersMatch(q, value)) correct++;
         }
       })
     );
@@ -175,7 +177,7 @@ export default function ProgressDashboard({ compact = false }: { compact?: boole
         )
         .slice(0, 5)
         .map((a) => {
-          const qs = questionsForTest(a.testId);
+          const qs = questionsForEngine(a.testId);
           let answered = 0;
           let correct = 0;
           qs.forEach((q: any) => {
